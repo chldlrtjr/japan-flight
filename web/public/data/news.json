@@ -130,8 +130,8 @@
   {
     "id": "news_b363ec6bbd3e00754dc446928102b8f7",
     "title": "에어프레미아, 삿포로 취항 기념 프로모션",
-    "summary": "<a href=\"https://news.google.com/rss/articles/CBMicEFVX3lxTFA3ZlhqT2hFdElyQnZ5QU1jQXJmNnpvSzZBMWRBLW5BNmhRY3ZUSE1yTXJGNm5zTTg2ZVhITG4xaUFONmJiUElldV8zaVF3anNXa3BKX2xyZWtOT2ZidzMwYXJwaWtSWVNPcnZ4Y1RZWjM?oc=5\" target=\"_blank\">에어프레미아, 삿포로 취항 기념 프로모션</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">트래블데일리</font>",
-    "source": "트래블데일리",
+    "summary": "<a href=\"https://news.google.com/rss/articles/CBMicEFVX3lxTFA3ZlhqT2hFdElyQnZ5QU1jQXJmNnpvSzZBMWRBLW5BNmhRY3ZUSE1yTXJGNm5zTTg2ZVhITG4xaUFONmJiUElldV8zaVF3anNXa3BKX2xyZWtOT2ZidzMwYXJwaWtSWVNPcnZ4Y1RZWjM?oc=5\" target=\"_blank\">에어프레미아, 삿포로 취항 기념 프로모션</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">traveldaily.co.kr</font>",
+    "source": "traveldaily.co.kr",
     "link": "https://news.google.com/rss/articles/CBMicEFVX3lxTFA3ZlhqT2hFdElyQnZ5QU1jQXJmNnpvSzZBMWRBLW5BNmhRY3ZUSE1yTXJGNm5zTTg2ZVhITG4xaUFONmJiUElldV8zaVF3anNXa3BKX2xyZWtOT2ZidzMwYXJwaWtSWVNPcnZ4Y1RZWjM?oc=5",
     "published_at": "2026-09-27 13:16",
     "airline": "에어프레미아",
@@ -272,6 +272,22 @@
     "promo_end": null
   },
   {
+    "id": "news_91487b641f9d9ce26d97ab9560ad5b7e",
+    "title": "에어프레미아, 인천~삿포로 신규 취항…\"항공권 5% 할인\"",
+    "summary": "<a href=\"https://news.google.com/rss/articles/CBMiaEFVX3lxTFBFTG00aFVwajlPaUV6TDhQOGt0c3BQTk90N2wwVDB2WGluWk1Nc28xNEhCQjdhMnpfNDlvVHlGUmh6aEpGU2ZhUWhvSTVzbzg4a1BNY0FJUk8zM3hqbm5VQmpySmVpMWNf?oc=5\" target=\"_blank\">에어프레미아, 인천~삿포로 신규 취항…\"항공권 5% 할인\"</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">팍스경제TV</font>",
+    "source": "팍스경제TV",
+    "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBFTG00aFVwajlPaUV6TDhQOGt0c3BQTk90N2wwVDB2WGluWk1Nc28xNEhCQjdhMnpfNDlvVHlGUmh6aEpGU2ZhUWhvSTVzbzg4a1BNY0FJUk8zM3hqbm5VQmpySmVpMWNf?oc=5",
+    "published_at": "2026-09-21 07:00",
+    "airline": "에어프레미아",
+    "is_japan": 1,
+    "japan_cities": "삿포로",
+    "region_category": "일본",
+    "created_at": "2026-09-28 16:56:38",
+    "promo_status": "ACTIVE",
+    "promo_period_desc": "실시간 진행중",
+    "promo_end": null
+  },
+  {
     "id": "news_d76832cd798ccab9b3eb9ffbdfa291ea",
     "title": "에어프레미아, 인천·삿포로 노선 신규 취항 프로모션 진행",
     "summary": "<a href=\"https://news.google.com/rss/articles/CBMia0FVX3lxTFBKMXpzdjFDWFFGOUMxQ2FhZ0VlZldpNi1HYWJEWFAta3ZfUHVyNDNzZVRqZEljaW43NTA4aFdieWhiUzhPRlBnOC1YTkdpalFLUzItNmtpRTFsc0V2U0hPSEZPTTNIZUJOelhr?oc=5\" target=\"_blank\">에어프레미아, 인천·삿포로 노선 신규 취항 프로모션 진행</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">BBS불교방송</font>",
@@ -400,26 +416,10 @@
     "promo_end": null
   },
   {
-    "id": "news_91487b641f9d9ce26d97ab9560ad5b7e",
-    "title": "에어프레미아, 인천~삿포로 신규 취항…\"항공권 5% 할인\"",
-    "summary": "<a href=\"https://news.google.com/rss/articles/CBMiaEFVX3lxTFBFTG00aFVwajlPaUV6TDhQOGt0c3BQTk90N2wwVDB2WGluWk1Nc28xNEhCQjdhMnpfNDlvVHlGUmh6aEpGU2ZhUWhvSTVzbzg4a1BNY0FJUk8zM3hqbm5VQmpySmVpMWNf?oc=5\" target=\"_blank\">에어프레미아, 인천~삿포로 신규 취항…\"항공권 5% 할인\"</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">팍스경제TV</font>",
-    "source": "팍스경제TV",
-    "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBFTG00aFVwajlPaUV6TDhQOGt0c3BQTk90N2wwVDB2WGluWk1Nc28xNEhCQjdhMnpfNDlvVHlGUmh6aEpGU2ZhUWhvSTVzbzg4a1BNY0FJUk8zM3hqbm5VQmpySmVpMWNf?oc=5",
-    "published_at": "2026-09-21 00:08",
-    "airline": "에어프레미아",
-    "is_japan": 1,
-    "japan_cities": "삿포로",
-    "region_category": "일본",
-    "created_at": "2026-09-28 16:56:38",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "실시간 진행중",
-    "promo_end": null
-  },
-  {
     "id": "news_3c4beb6aee6795c2e4eff509be77eb00",
     "title": "에어프레미아, 삿포로 신규 취항 기념 항공권 할인",
-    "summary": "<a href=\"https://news.google.com/rss/articles/CBMiXEFVX3lxTFB5VU90aXNOaUhmM2NrTnRUbzNfQ3d2VmIxa19KVnZOckx6WUplTTBBYjhwOVMtbFRPSlB4Rkg0cFF0a2xXTzlycDZkZ1pVZENic19idG5kaW43bllP?oc=5\" target=\"_blank\">에어프레미아, 삿포로 신규 취항 기념 항공권 할인</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">부산파이낸셜뉴스</font>",
-    "source": "부산파이낸셜뉴스",
+    "summary": "<a href=\"https://news.google.com/rss/articles/CBMiXEFVX3lxTFB5VU90aXNOaUhmM2NrTnRUbzNfQ3d2VmIxa19KVnZOckx6WUplTTBBYjhwOVMtbFRPSlB4Rkg0cFF0a2xXTzlycDZkZ1pVZENic19idG5kaW43bllP?oc=5\" target=\"_blank\">에어프레미아, 삿포로 신규 취항 기념 항공권 할인</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">busan.fnnews.com</font>",
+    "source": "busan.fnnews.com",
     "link": "https://news.google.com/rss/articles/CBMiXEFVX3lxTFB5VU90aXNOaUhmM2NrTnRUbzNfQ3d2VmIxa19KVnZOckx6WUplTTBBYjhwOVMtbFRPSlB4Rkg0cFF0a2xXTzlycDZkZ1pVZENic19idG5kaW43bllP?oc=5",
     "published_at": "2026-09-21 00:04",
     "airline": "에어프레미아",
@@ -466,8 +466,8 @@
   {
     "id": "news_42ad65f007596fb7330c73b624defc12",
     "title": "에어프레미아, 삿포로 취항 기념 프로모션… 항공권 5% 할인",
-    "summary": "<a href=\"https://news.google.com/rss/articles/CBMiWkFVX3lxTE5IdVhxaGJpVFlzdWFLWVVjc1IzWXNmclN0YUVJcDlvTzR6aDNQc0NubEhWeEdxa0hRYUwyajVLRHdDdC1iclRSQm1EV1lJbGpGVnhUUlFJS095dw?oc=5\" target=\"_blank\">에어프레미아, 삿포로 취항 기념 프로모션… 항공권 5% 할인</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">viva100.com</font>",
-    "source": "viva100.com",
+    "summary": "<a href=\"https://news.google.com/rss/articles/CBMiWkFVX3lxTE5IdVhxaGJpVFlzdWFLWVVjc1IzWXNmclN0YUVJcDlvTzR6aDNQc0NubEhWeEdxa0hRYUwyajVLRHdDdC1iclRSQm1EV1lJbGpGVnhUUlFJS095dw?oc=5\" target=\"_blank\">에어프레미아, 삿포로 취항 기념 프로모션… 항공권 5% 할인</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">브릿지경제</font>",
+    "source": "브릿지경제",
     "link": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5IdVhxaGJpVFlzdWFLWVVjc1IzWXNmclN0YUVJcDlvTzR6aDNQc0NubEhWeEdxa0hRYUwyajVLRHdDdC1iclRSQm1EV1lJbGpGVnhUUlFJS095dw?oc=5",
     "published_at": "2026-09-20 23:53",
     "airline": "에어프레미아",
