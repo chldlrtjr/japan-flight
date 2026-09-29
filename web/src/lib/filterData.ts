@@ -67,6 +67,15 @@ export function filterPromotions(
     if (params.region === '소도시') {
       const towns = ['마쓰야마', '가고시마', '시즈오카', '히로시마', '다카마쓰', '기타큐슈', '도쿠시마', '소도시'];
       list = list.filter((p) => towns.some((t) => (p.destinations || '').includes(t) || p.title.includes(t)));
+    } else if (params.region === '나고야') {
+      list = list.filter((p) =>
+        (p.destinations || '').includes('나고야') ||
+        (p.destinations || '').includes('주부') ||
+        p.title.includes('나고야') ||
+        p.title.includes('주부') ||
+        (p.subtitle || '').includes('나고야') ||
+        (p.subtitle || '').includes('주부')
+      );
     } else {
       list = list.filter((p) => (p.destinations || '').includes(params.region) || p.title.includes(params.region) || (p.subtitle || '').includes(params.region));
     }

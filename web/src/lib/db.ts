@@ -79,6 +79,8 @@ export function queryPromotions(params: {
       if (params.region && params.region !== 'ALL') {
         if (params.region === '소도시') {
           query += " AND (destinations LIKE '%마쓰야마%' OR destinations LIKE '%가고시마%' OR destinations LIKE '%시즈오카%' OR destinations LIKE '%히로시마%' OR destinations LIKE '%다카마쓰%' OR destinations LIKE '%기타큐슈%' OR destinations LIKE '%도쿠시마%' OR title LIKE '%소도시%')";
+        } else if (params.region === '나고야') {
+          query += " AND (destinations LIKE '%나고야%' OR destinations LIKE '%주부%' OR title LIKE '%나고야%' OR title LIKE '%주부%' OR subtitle LIKE '%나고야%' OR subtitle LIKE '%주부%')";
         } else {
           const term = `%${params.region}%`;
           query += ' AND (destinations LIKE ? OR title LIKE ? OR subtitle LIKE ?)';
@@ -168,6 +170,15 @@ export function queryPromotions(params: {
     if (params.region === '소도시') {
       const towns = ['마쓰야마', '가고시마', '시즈오카', '히로시마', '다카마쓰', '기타큐슈', '도쿠시마', '소도시'];
       filtered = filtered.filter((p) => towns.some((t) => (p.destinations || '').includes(t) || p.title.includes(t)));
+    } else if (params.region === '나고야') {
+      filtered = filtered.filter((p) =>
+        (p.destinations || '').includes('나고야') ||
+        (p.destinations || '').includes('주부') ||
+        p.title.includes('나고야') ||
+        p.title.includes('주부') ||
+        (p.subtitle || '').includes('나고야') ||
+        (p.subtitle || '').includes('주부')
+      );
     } else {
       filtered = filtered.filter((p) => (p.destinations || '').includes(params.region!) || p.title.includes(params.region!) || (p.subtitle || '').includes(params.region!));
     }
