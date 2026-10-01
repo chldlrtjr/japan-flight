@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.824664",
-    "updated_at": "2026-10-01T15:06:33.009148"
+    "updated_at": "2026-10-01T16:05:04.214968"
   },
   {
     "id": "airdo_do_bargain",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.816108",
-    "updated_at": "2026-10-01T15:06:33.008254"
+    "updated_at": "2026-10-01T16:05:04.214101"
   },
   {
     "id": "starflyer_star_early",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.807944",
-    "updated_at": "2026-10-01T15:06:33.007286"
+    "updated_at": "2026-10-01T16:05:04.213204"
   },
   {
     "id": "skymark_imatoku_deal",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.799943",
-    "updated_at": "2026-10-01T15:06:33.006400"
+    "updated_at": "2026-10-01T16:05:04.212340"
   },
   {
     "id": "jetstar_super_star_sale",
@@ -102,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.783645",
-    "updated_at": "2026-10-01T15:06:33.004518"
+    "updated_at": "2026-10-01T16:05:04.210545"
   },
   {
     "id": "zipair_narita_special",
@@ -123,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.037619",
-    "updated_at": "2026-10-01T15:06:33.003659"
+    "updated_at": "2026-10-01T16:05:04.209670"
   },
   {
     "id": "peach_autumn_sale",
@@ -144,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.028709",
-    "updated_at": "2026-10-01T15:06:33.002789"
+    "updated_at": "2026-10-01T16:05:04.208754"
   },
   {
     "id": "peach_int_shorttrip",
@@ -165,7 +165,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.019953",
-    "updated_at": "2026-10-01T15:06:33.001823"
+    "updated_at": "2026-10-01T16:05:04.207872"
   },
   {
     "id": "ana_gimpo_sale",
@@ -186,7 +186,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.055352",
-    "updated_at": "2026-10-01T15:06:33.000912"
+    "updated_at": "2026-10-01T16:05:04.206581"
   },
   {
     "id": "jal_haneda_earlybird",
@@ -207,7 +207,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.045875",
-    "updated_at": "2026-10-01T15:06:32.999454"
+    "updated_at": "2026-10-01T16:05:04.205049"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -228,7 +228,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-01T15:06:24.881480"
+    "updated_at": "2026-10-01T16:04:56.124068"
   },
   {
     "id": "airpremia_sapporo_inauguration",
@@ -249,7 +249,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.132057",
-    "updated_at": "2026-10-01T15:06:24.880450"
+    "updated_at": "2026-10-01T16:04:56.123116"
   },
   {
     "id": "airbusan_fukuoka_winter",
@@ -270,7 +270,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.124558",
-    "updated_at": "2026-10-01T15:06:24.879515"
+    "updated_at": "2026-10-01T16:04:56.122237"
   },
   {
     "id": "airseoul_yonago_takamatsu",
@@ -291,7 +291,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.116055",
-    "updated_at": "2026-10-01T15:06:24.878611"
+    "updated_at": "2026-10-01T16:04:56.121204"
   },
   {
     "id": "asiana_japan_season_deal",
@@ -312,7 +312,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.108053",
-    "updated_at": "2026-10-01T15:06:24.877713"
+    "updated_at": "2026-10-01T16:04:56.117945"
   },
   {
     "id": "kal_japan_app_special",
@@ -333,7 +333,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.099450",
-    "updated_at": "2026-10-01T15:06:24.876747"
+    "updated_at": "2026-10-01T16:04:56.117056"
   },
   {
     "id": "jin_guam_superlow",
@@ -354,7 +354,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:44.319370",
-    "updated_at": "2026-10-01T15:06:24.874890"
+    "updated_at": "2026-10-01T16:04:56.114956"
   },
   {
     "id": "jin_japan_special",
@@ -375,7 +375,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:32.782543",
-    "updated_at": "2026-10-01T15:06:24.873983"
+    "updated_at": "2026-10-01T16:04:56.113976"
   },
   {
     "id": "jin_jinmarket_autumn",
@@ -396,70 +396,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:32.773187",
-    "updated_at": "2026-10-01T15:06:24.872753"
-  },
-  {
-    "id": "jeju_0000004277",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "나도 친구도 포인트 적립",
-    "subtitle": "친구 초대 이벤트",
-    "badge_text": "친구 초대 이벤트",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004277",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260914110153338.jpg",
-    "promo_start": "2026-09-15",
-    "promo_end": "2027-12-31",
-    "travel_period": "2026.09.15 ~ 2027.12.31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:30.617819",
-    "updated_at": "2026-10-01T15:06:13.212460"
-  },
-  {
-    "id": "jeju_0000004309",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "J 멤버스 더- 드림",
-    "subtitle": "함께 할인에 포인트를 더해요",
-    "badge_text": "함께 할인에 포인트를 더해요",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004309",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260916184837942.jpg",
-    "promo_start": "2026-09-21",
-    "promo_end": "2026-10-04",
-    "travel_period": "2026.09.21 ~ 2026.10.04",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:30.585505",
-    "updated_at": "2026-10-01T15:06:13.210654"
-  },
-  {
-    "id": "jeju_0000004308",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "가고시마 특가 따뜻한 겨울 여행",
-    "subtitle": "최대 20% 할인코드♨️",
-    "badge_text": "최대 20% 할인코드♨️",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004308",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260916133913712.jpg",
-    "promo_start": "2026-09-28",
-    "promo_end": "2026-10-11",
-    "travel_period": "2026.09.28 ~ 2026.10.11",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "가고시마",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-28T23:15:21.324118",
-    "updated_at": "2026-10-01T15:06:13.208595"
+    "updated_at": "2026-10-01T16:04:56.112423"
   },
   {
     "id": "eastar_2638",
@@ -480,7 +417,70 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-30T05:04:36.467088",
-    "updated_at": "2026-10-01T14:06:51.984458"
+    "updated_at": "2026-10-01T16:04:51.405244"
+  },
+  {
+    "id": "jeju_0000004277",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "나도 친구도 포인트 적립",
+    "subtitle": "친구 초대 이벤트",
+    "badge_text": "친구 초대 이벤트",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004277",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260914110153338.jpg",
+    "promo_start": "2026-09-15",
+    "promo_end": "2027-12-31",
+    "travel_period": "2026.09.15 ~ 2027.12.31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:30.617819",
+    "updated_at": "2026-10-01T16:04:42.830588"
+  },
+  {
+    "id": "jeju_0000004309",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "J 멤버스 더- 드림",
+    "subtitle": "함께 할인에 포인트를 더해요",
+    "badge_text": "함께 할인에 포인트를 더해요",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004309",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260916184837942.jpg",
+    "promo_start": "2026-09-21",
+    "promo_end": "2026-10-04",
+    "travel_period": "2026.09.21 ~ 2026.10.04",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:30.585505",
+    "updated_at": "2026-10-01T16:04:42.828742"
+  },
+  {
+    "id": "jeju_0000004308",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "가고시마 특가 따뜻한 겨울 여행",
+    "subtitle": "최대 20% 할인코드♨️",
+    "badge_text": "최대 20% 할인코드♨️",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004308",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260916133913712.jpg",
+    "promo_start": "2026-09-28",
+    "promo_end": "2026-10-11",
+    "travel_period": "2026.09.28 ~ 2026.10.11",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "가고시마",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-09-28T23:15:21.324118",
+    "updated_at": "2026-10-01T16:04:42.826791"
   },
   {
     "id": "jeju_0000004234",
@@ -564,7 +564,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:53.259063",
-    "updated_at": "2026-10-01T15:06:33.016380"
+    "updated_at": "2026-10-01T16:05:04.222533"
   },
   {
     "id": "orc_nagasaki_tsushima",
@@ -585,7 +585,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:53.251367",
-    "updated_at": "2026-10-01T15:06:33.015450"
+    "updated_at": "2026-10-01T16:05:04.221672"
   },
   {
     "id": "amx_mizoka_deal",
@@ -606,7 +606,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:53.243290",
-    "updated_at": "2026-10-01T15:06:33.014578"
+    "updated_at": "2026-10-01T16:05:04.220680"
   },
   {
     "id": "tokiair_niigata_sapporo",
@@ -627,7 +627,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.865404",
-    "updated_at": "2026-10-01T15:06:33.013687"
+    "updated_at": "2026-10-01T16:05:04.219749"
   },
   {
     "id": "rac_island_connect",
@@ -648,7 +648,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.857210",
-    "updated_at": "2026-10-01T15:06:33.012797"
+    "updated_at": "2026-10-01T16:05:04.218900"
   },
   {
     "id": "jta_okinawa_island_special",
@@ -669,7 +669,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.849208",
-    "updated_at": "2026-10-01T15:06:33.011851"
+    "updated_at": "2026-10-01T16:05:04.217998"
   },
   {
     "id": "ibex_tokuwari",
@@ -690,7 +690,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.840206",
-    "updated_at": "2026-10-01T15:06:33.010922"
+    "updated_at": "2026-10-01T16:05:04.217075"
   },
   {
     "id": "fda_dream_early",
@@ -711,7 +711,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.832666",
-    "updated_at": "2026-10-01T15:06:33.010069"
+    "updated_at": "2026-10-01T16:05:04.216082"
   },
   {
     "id": "spring_japan_tokyo_hiroshima",
@@ -732,7 +732,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.791645",
-    "updated_at": "2026-10-01T15:06:33.005400"
+    "updated_at": "2026-10-01T16:05:04.211489"
   },
   {
     "id": "parata_japan_paranweek",
@@ -753,196 +753,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.148061",
-    "updated_at": "2026-10-01T15:06:24.882405"
-  },
-  {
-    "id": "tway_2534",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "인천공항 프리미엄 체크인 혜택",
-    "subtitle": "전용 카운터에서 더 빠르고 여유로운 출발!",
-    "badge_text": "특가 프로모션",
-    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2534/being/now",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/0908/17cfb2bc-345c-4026-b3b1-e96e4e22e8ab.png",
-    "promo_start": "2026-07-27",
-    "promo_end": "2026-09-09",
-    "travel_period": "2026-07-27 ~ 2026-09-09",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "END",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:32.206642",
-    "updated_at": "2026-10-01T15:06:14.972045"
-  },
-  {
-    "id": "tway_2527",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "국립항공박물관 우대 요금 혜택",
-    "subtitle": "비행기도 타고, 박물관도 가자!",
-    "badge_text": "특가 프로모션",
-    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2527/being/now",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/0728/e96cff55-af8a-4749-8729-773fb678856b.png",
-    "promo_start": "2026-07-28",
-    "promo_end": "2026-09-09",
-    "travel_period": "2026-07-28 ~ 2026-09-09",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "END",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:32.198609",
-    "updated_at": "2026-10-01T15:06:14.970690"
-  },
-  {
-    "id": "tway_2535",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "썸머 파이널 세일",
-    "subtitle": "지금 바로 할인코드 & 쿠폰 확인!",
-    "badge_text": "쿠폰할인",
-    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2535/being/now",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/0727/62bfa659-40ee-4c4c-aece-eba9098c4ff3.png",
-    "promo_start": "2026-08-01",
-    "promo_end": "2026-08-13",
-    "travel_period": "2026-08-01 ~ 2026-08-13",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "END",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:32.191082",
-    "updated_at": "2026-10-01T15:06:14.969847"
-  },
-  {
-    "id": "tway_2536",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "싱가포르 창이공항 수하물 15% 할인",
-    "subtitle": "수하물 보관부터 호텔 배송까지!",
-    "badge_text": "특가 프로모션",
-    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2536/being/now",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/0728/632339dc-c196-4887-a6e6-53be530dd078.png",
-    "promo_start": "2026-08-06",
-    "promo_end": "2026-08-31",
-    "travel_period": "2026-08-06 ~ 2026-08-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "END",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:32.182552",
-    "updated_at": "2026-10-01T15:06:14.968929"
-  },
-  {
-    "id": "tway_2433",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "국제선 얼리버드 특가",
-    "subtitle": "유럽부터 일본까지 최대 16% 추가 할인",
-    "badge_text": "얼리버드",
-    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2433/being/now",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/0807/95d7be85-2033-41a5-a2e0-9b821a7a10b9.png",
-    "promo_start": "2026-08-10",
-    "promo_end": "2026-08-20",
-    "travel_period": "2026-08-10 ~ 2026-08-20",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "일본 전역",
-    "status": "END",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-28T23:15:23.032269",
-    "updated_at": "2026-10-01T15:06:14.968010"
-  },
-  {
-    "id": "tway_2429",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "우리 동네 할인",
-    "subtitle": "2주 간 최대 25,000원 할인",
-    "badge_text": "특가 프로모션",
-    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2429/being/now",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/0810/08248046-2fec-4d6a-8992-bc8134d607fd.jpg",
-    "promo_start": "2026-08-11",
-    "promo_end": "2026-08-23",
-    "travel_period": "2026-08-11 ~ 2026-08-23",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "END",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:32.166348",
-    "updated_at": "2026-10-01T15:06:14.967120"
-  },
-  {
-    "id": "tway_2550",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "8월 ~ 12월 출발, 국제선 특가",
-    "subtitle": "최대 14% 할인 + 3만원 중복 쿠폰",
-    "badge_text": "쿠폰할인",
-    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2550/being/now",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/0810/fad16eaa-cdbf-4a15-afb7-36034dc1758c.png",
-    "promo_start": "2026-08-20",
-    "promo_end": "2026-08-31",
-    "travel_period": "2026-08-20 ~ 2026-08-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "END",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:32.158821",
-    "updated_at": "2026-10-01T15:06:14.966181"
-  },
-  {
-    "id": "tway_2558",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "가을 여행, 지금 시작!",
-    "subtitle": "할인코드+쿠폰 혜택 모두 받기!",
-    "badge_text": "쿠폰할인",
-    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2558/being/now",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/0828/394a83ed-25e4-4cc6-8bb4-b7cdf63580ee.png",
-    "promo_start": "2026-09-01",
-    "promo_end": "2026-09-09",
-    "travel_period": "2026-09-01 ~ 2026-09-09",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "END",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:32.150285",
-    "updated_at": "2026-10-01T15:06:14.965205"
-  },
-  {
-    "id": "tway_2578",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "트리니티항공의 첫 프로모션",
-    "subtitle": "항공권부터 기내까지, 특별한 혜택",
-    "badge_text": "특가 프로모션",
-    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2578/being/now",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/0914/3ac7de14-d3b9-478a-9290-c91e306707d3.jpg",
-    "promo_start": "2026-09-14",
-    "promo_end": "2026-09-30",
-    "travel_period": "2026-09-14 ~ 2026-09-30",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "END",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-30T15:07:54.935463",
-    "updated_at": "2026-10-01T15:06:14.963871"
+    "updated_at": "2026-10-01T16:04:56.124942"
   },
   {
     "id": "eastar_2505",
@@ -963,7 +774,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T00:18:06.121932",
-    "updated_at": "2026-10-01T14:06:51.987589"
+    "updated_at": "2026-10-01T16:04:51.408441"
   },
   {
     "id": "eastar_2581",
@@ -984,7 +795,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:39.753733",
-    "updated_at": "2026-10-01T14:06:51.986591"
+    "updated_at": "2026-10-01T16:04:51.407451"
   },
   {
     "id": "eastar_2635",
@@ -1005,7 +816,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T17:00:52.937147",
-    "updated_at": "2026-10-01T14:06:51.985450"
+    "updated_at": "2026-10-01T16:04:51.406275"
   },
   {
     "id": "eastar_2639",
@@ -1026,7 +837,196 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-30T15:08:00.888280",
-    "updated_at": "2026-10-01T14:06:51.982698"
+    "updated_at": "2026-10-01T16:04:51.403630"
+  },
+  {
+    "id": "tway_2534",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "인천공항 프리미엄 체크인 혜택",
+    "subtitle": "전용 카운터에서 더 빠르고 여유로운 출발!",
+    "badge_text": "특가 프로모션",
+    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2534/being/now",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/0908/17cfb2bc-345c-4026-b3b1-e96e4e22e8ab.png",
+    "promo_start": "2026-07-27",
+    "promo_end": "2026-09-09",
+    "travel_period": "2026-07-27 ~ 2026-09-09",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "END",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:32.206642",
+    "updated_at": "2026-10-01T16:04:45.377103"
+  },
+  {
+    "id": "tway_2527",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "국립항공박물관 우대 요금 혜택",
+    "subtitle": "비행기도 타고, 박물관도 가자!",
+    "badge_text": "특가 프로모션",
+    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2527/being/now",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/0728/e96cff55-af8a-4749-8729-773fb678856b.png",
+    "promo_start": "2026-07-28",
+    "promo_end": "2026-09-09",
+    "travel_period": "2026-07-28 ~ 2026-09-09",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "END",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:32.198609",
+    "updated_at": "2026-10-01T16:04:45.376183"
+  },
+  {
+    "id": "tway_2535",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "썸머 파이널 세일",
+    "subtitle": "지금 바로 할인코드 & 쿠폰 확인!",
+    "badge_text": "쿠폰할인",
+    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2535/being/now",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/0727/62bfa659-40ee-4c4c-aece-eba9098c4ff3.png",
+    "promo_start": "2026-08-01",
+    "promo_end": "2026-08-13",
+    "travel_period": "2026-08-01 ~ 2026-08-13",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "END",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:32.191082",
+    "updated_at": "2026-10-01T16:04:45.375190"
+  },
+  {
+    "id": "tway_2536",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "싱가포르 창이공항 수하물 15% 할인",
+    "subtitle": "수하물 보관부터 호텔 배송까지!",
+    "badge_text": "특가 프로모션",
+    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2536/being/now",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/0728/632339dc-c196-4887-a6e6-53be530dd078.png",
+    "promo_start": "2026-08-06",
+    "promo_end": "2026-08-31",
+    "travel_period": "2026-08-06 ~ 2026-08-31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "END",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:32.182552",
+    "updated_at": "2026-10-01T16:04:45.374220"
+  },
+  {
+    "id": "tway_2433",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "국제선 얼리버드 특가",
+    "subtitle": "유럽부터 일본까지 최대 16% 추가 할인",
+    "badge_text": "얼리버드",
+    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2433/being/now",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/0807/95d7be85-2033-41a5-a2e0-9b821a7a10b9.png",
+    "promo_start": "2026-08-10",
+    "promo_end": "2026-08-20",
+    "travel_period": "2026-08-10 ~ 2026-08-20",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "일본 전역",
+    "status": "END",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-28T23:15:23.032269",
+    "updated_at": "2026-10-01T16:04:45.373210"
+  },
+  {
+    "id": "tway_2429",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "우리 동네 할인",
+    "subtitle": "2주 간 최대 25,000원 할인",
+    "badge_text": "특가 프로모션",
+    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2429/being/now",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/0810/08248046-2fec-4d6a-8992-bc8134d607fd.jpg",
+    "promo_start": "2026-08-11",
+    "promo_end": "2026-08-23",
+    "travel_period": "2026-08-11 ~ 2026-08-23",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "END",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:32.166348",
+    "updated_at": "2026-10-01T16:04:45.372255"
+  },
+  {
+    "id": "tway_2550",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "8월 ~ 12월 출발, 국제선 특가",
+    "subtitle": "최대 14% 할인 + 3만원 중복 쿠폰",
+    "badge_text": "쿠폰할인",
+    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2550/being/now",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/0810/fad16eaa-cdbf-4a15-afb7-36034dc1758c.png",
+    "promo_start": "2026-08-20",
+    "promo_end": "2026-08-31",
+    "travel_period": "2026-08-20 ~ 2026-08-31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "END",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:32.158821",
+    "updated_at": "2026-10-01T16:04:45.371219"
+  },
+  {
+    "id": "tway_2558",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "가을 여행, 지금 시작!",
+    "subtitle": "할인코드+쿠폰 혜택 모두 받기!",
+    "badge_text": "쿠폰할인",
+    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2558/being/now",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/0828/394a83ed-25e4-4cc6-8bb4-b7cdf63580ee.png",
+    "promo_start": "2026-09-01",
+    "promo_end": "2026-09-09",
+    "travel_period": "2026-09-01 ~ 2026-09-09",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "END",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:32.150285",
+    "updated_at": "2026-10-01T16:04:45.370147"
+  },
+  {
+    "id": "tway_2578",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "트리니티항공의 첫 프로모션",
+    "subtitle": "항공권부터 기내까지, 특별한 혜택",
+    "badge_text": "특가 프로모션",
+    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2578/being/now",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/0914/3ac7de14-d3b9-478a-9290-c91e306707d3.jpg",
+    "promo_start": "2026-09-14",
+    "promo_end": "2026-09-30",
+    "travel_period": "2026-09-14 ~ 2026-09-30",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "END",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-30T15:07:54.935463",
+    "updated_at": "2026-10-01T16:04:45.368889"
   },
   {
     "id": "tway_2340",
