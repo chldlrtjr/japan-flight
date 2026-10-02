@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.824664",
-    "updated_at": "2026-10-02T00:04:32.047659"
+    "updated_at": "2026-10-02T01:05:50.712001"
   },
   {
     "id": "airdo_do_bargain",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.816108",
-    "updated_at": "2026-10-02T00:04:32.046129"
+    "updated_at": "2026-10-02T01:05:50.711216"
   },
   {
     "id": "starflyer_star_early",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.807944",
-    "updated_at": "2026-10-02T00:04:32.045077"
+    "updated_at": "2026-10-02T01:05:50.710442"
   },
   {
     "id": "skymark_imatoku_deal",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.799943",
-    "updated_at": "2026-10-02T00:04:32.044216"
+    "updated_at": "2026-10-02T01:05:50.709651"
   },
   {
     "id": "jetstar_super_star_sale",
@@ -102,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.783645",
-    "updated_at": "2026-10-02T00:04:32.042381"
+    "updated_at": "2026-10-02T01:05:50.707800"
   },
   {
     "id": "zipair_narita_special",
@@ -123,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.037619",
-    "updated_at": "2026-10-02T00:04:32.041169"
+    "updated_at": "2026-10-02T01:05:50.707040"
   },
   {
     "id": "peach_autumn_sale",
@@ -144,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.028709",
-    "updated_at": "2026-10-02T00:04:31.824424"
+    "updated_at": "2026-10-02T01:05:50.706276"
   },
   {
     "id": "peach_int_shorttrip",
@@ -165,7 +165,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.019953",
-    "updated_at": "2026-10-02T00:04:31.823424"
+    "updated_at": "2026-10-02T01:05:50.705486"
   },
   {
     "id": "ana_gimpo_sale",
@@ -186,7 +186,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.055352",
-    "updated_at": "2026-10-02T00:04:31.822221"
+    "updated_at": "2026-10-02T01:05:50.704626"
   },
   {
     "id": "jal_haneda_earlybird",
@@ -207,7 +207,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.045875",
-    "updated_at": "2026-10-02T00:04:31.705824"
+    "updated_at": "2026-10-02T01:05:50.703364"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -228,7 +228,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-02T00:04:23.580936"
+    "updated_at": "2026-10-02T01:05:42.563781"
   },
   {
     "id": "airpremia_sapporo_inauguration",
@@ -249,7 +249,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.132057",
-    "updated_at": "2026-10-02T00:04:23.578616"
+    "updated_at": "2026-10-02T01:05:42.562975"
   },
   {
     "id": "airbusan_fukuoka_winter",
@@ -270,7 +270,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.124558",
-    "updated_at": "2026-10-02T00:04:23.449316"
+    "updated_at": "2026-10-02T01:05:42.562180"
   },
   {
     "id": "airseoul_yonago_takamatsu",
@@ -291,7 +291,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.116055",
-    "updated_at": "2026-10-02T00:04:23.448395"
+    "updated_at": "2026-10-02T01:05:42.561384"
   },
   {
     "id": "asiana_japan_season_deal",
@@ -312,7 +312,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.108053",
-    "updated_at": "2026-10-02T00:04:23.447451"
+    "updated_at": "2026-10-02T01:05:42.560600"
   },
   {
     "id": "kal_japan_app_special",
@@ -333,7 +333,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.099450",
-    "updated_at": "2026-10-02T00:04:23.446473"
+    "updated_at": "2026-10-02T01:05:42.559799"
   },
   {
     "id": "jin_guam_superlow",
@@ -354,7 +354,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:44.319370",
-    "updated_at": "2026-10-02T00:04:23.443788"
+    "updated_at": "2026-10-02T01:05:42.558129"
   },
   {
     "id": "jin_japan_special",
@@ -375,7 +375,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:32.782543",
-    "updated_at": "2026-10-02T00:04:23.150759"
+    "updated_at": "2026-10-02T01:05:42.557285"
   },
   {
     "id": "jin_jinmarket_autumn",
@@ -396,70 +396,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:32.773187",
-    "updated_at": "2026-10-02T00:04:23.149045"
-  },
-  {
-    "id": "jeju_0000004277",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "나도 친구도 포인트 적립",
-    "subtitle": "친구 초대 이벤트",
-    "badge_text": "친구 초대 이벤트",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004277",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260914110153338.jpg",
-    "promo_start": "2026-09-15",
-    "promo_end": "2027-12-31",
-    "travel_period": "2026.09.15 ~ 2027.12.31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:30.617819",
-    "updated_at": "2026-10-02T00:04:12.393664"
-  },
-  {
-    "id": "jeju_0000004309",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "J 멤버스 더- 드림",
-    "subtitle": "함께 할인에 포인트를 더해요",
-    "badge_text": "함께 할인에 포인트를 더해요",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004309",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260916184837942.jpg",
-    "promo_start": "2026-09-21",
-    "promo_end": "2026-10-04",
-    "travel_period": "2026.09.21 ~ 2026.10.04",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:30.585505",
-    "updated_at": "2026-10-02T00:04:12.392009"
-  },
-  {
-    "id": "jeju_0000004308",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "가고시마 특가 따뜻한 겨울 여행",
-    "subtitle": "최대 20% 할인코드♨️",
-    "badge_text": "최대 20% 할인코드♨️",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004308",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260916133913712.jpg",
-    "promo_start": "2026-09-28",
-    "promo_end": "2026-10-11",
-    "travel_period": "2026.09.28 ~ 2026.10.11",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "가고시마",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-28T23:15:21.324118",
-    "updated_at": "2026-10-02T00:04:12.390232"
+    "updated_at": "2026-10-02T01:05:42.555658"
   },
   {
     "id": "eastar_2638",
@@ -480,7 +417,91 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-30T05:04:36.467088",
-    "updated_at": "2026-10-01T23:02:49.861264"
+    "updated_at": "2026-10-02T01:05:37.897790"
+  },
+  {
+    "id": "jeju_0000004277",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "나도 친구도 포인트 적립",
+    "subtitle": "친구 초대 이벤트",
+    "badge_text": "친구 초대 이벤트",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004277",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260914110153338.jpg",
+    "promo_start": "2026-09-15",
+    "promo_end": "2027-12-31",
+    "travel_period": "2026.09.15 ~ 2027.12.31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:30.617819",
+    "updated_at": "2026-10-02T01:05:30.196777"
+  },
+  {
+    "id": "jeju_0000004309",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "J 멤버스 더- 드림",
+    "subtitle": "함께 할인에 포인트를 더해요",
+    "badge_text": "함께 할인에 포인트를 더해요",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004309",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260916184837942.jpg",
+    "promo_start": "2026-09-21",
+    "promo_end": "2026-10-04",
+    "travel_period": "2026.09.21 ~ 2026.10.04",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:30.585505",
+    "updated_at": "2026-10-02T01:05:30.195140"
+  },
+  {
+    "id": "jeju_0000004308",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "가고시마 특가 따뜻한 겨울 여행",
+    "subtitle": "최대 20% 할인코드♨️",
+    "badge_text": "최대 20% 할인코드♨️",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004308",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260916133913712.jpg",
+    "promo_start": "2026-09-28",
+    "promo_end": "2026-10-11",
+    "travel_period": "2026.09.28 ~ 2026.10.11",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "가고시마",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-09-28T23:15:21.324118",
+    "updated_at": "2026-10-02T01:05:30.193474"
+  },
+  {
+    "id": "jeju_0000004343",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "10월 황금 연휴 최대 55% 할인",
+    "subtitle": "연휴 딱 10일간!",
+    "badge_text": "연휴 딱 10일간!",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004343",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261001080404054.png",
+    "promo_start": "2026-10-02",
+    "promo_end": "2026-10-11",
+    "travel_period": "2026.10.02 ~ 2026.10.11",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-10-02T01:05:30.188934",
+    "updated_at": "2026-10-02T01:05:30.191770"
   },
   {
     "id": "jeju_0000004234",
@@ -564,7 +585,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:53.259063",
-    "updated_at": "2026-10-02T00:04:32.060542"
+    "updated_at": "2026-10-02T01:05:50.718262"
   },
   {
     "id": "orc_nagasaki_tsushima",
@@ -585,7 +606,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:53.251367",
-    "updated_at": "2026-10-02T00:04:32.059337"
+    "updated_at": "2026-10-02T01:05:50.717502"
   },
   {
     "id": "amx_mizoka_deal",
@@ -606,7 +627,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:53.243290",
-    "updated_at": "2026-10-02T00:04:32.057458"
+    "updated_at": "2026-10-02T01:05:50.716680"
   },
   {
     "id": "tokiair_niigata_sapporo",
@@ -627,7 +648,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.865404",
-    "updated_at": "2026-10-02T00:04:32.052016"
+    "updated_at": "2026-10-02T01:05:50.715937"
   },
   {
     "id": "rac_island_connect",
@@ -648,7 +669,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.857210",
-    "updated_at": "2026-10-02T00:04:32.051083"
+    "updated_at": "2026-10-02T01:05:50.715152"
   },
   {
     "id": "jta_okinawa_island_special",
@@ -669,7 +690,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.849208",
-    "updated_at": "2026-10-02T00:04:32.050207"
+    "updated_at": "2026-10-02T01:05:50.714395"
   },
   {
     "id": "ibex_tokuwari",
@@ -690,7 +711,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.840206",
-    "updated_at": "2026-10-02T00:04:32.049327"
+    "updated_at": "2026-10-02T01:05:50.713647"
   },
   {
     "id": "fda_dream_early",
@@ -711,7 +732,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.832666",
-    "updated_at": "2026-10-02T00:04:32.048515"
+    "updated_at": "2026-10-02T01:05:50.712802"
   },
   {
     "id": "spring_japan_tokyo_hiroshima",
@@ -732,7 +753,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.791645",
-    "updated_at": "2026-10-02T00:04:32.043333"
+    "updated_at": "2026-10-02T01:05:50.708718"
   },
   {
     "id": "parata_japan_paranweek",
@@ -753,7 +774,91 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.148061",
-    "updated_at": "2026-10-02T00:04:23.587859"
+    "updated_at": "2026-10-02T01:05:42.564556"
+  },
+  {
+    "id": "eastar_2581",
+    "airline": "이스타항공",
+    "airline_code": "EASTAR",
+    "title": "이스타항공 x 국립항공박물관 할인 이벤트",
+    "subtitle": "이벤트기간 : 2026-07-28~2026-12-31",
+    "badge_text": "특가",
+    "detail_url": "https://www.eastarjet.com/newstar/PGWTA00002?eventNo=2581&gubun=I&searchIndex=1",
+    "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20260728110616_%ED%95%AD%EA%B3%B5%EB%B0%95%EB%AC%BC%EA%B4%80__%EB%AA%A8%EB%B0%94%EC%9D%BC_%EB%A9%94%EC%9D%B8%EB%B0%B0%EB%84%88%EA%B0%80%EC%9D%B4%EB%93%9C.jpg",
+    "promo_start": "2026-07-28",
+    "promo_end": "2026-12-31",
+    "travel_period": "이스타항공 x 국립항공박물관 할인 이벤트\n\n이벤트기간 : 2026-07-28~2026-12-31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "일본 전역",
+    "status": "ING",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-29T02:55:39.753733",
+    "updated_at": "2026-10-02T01:05:37.899621"
+  },
+  {
+    "id": "eastar_2635",
+    "airline": "이스타항공",
+    "airline_code": "EASTAR",
+    "title": "액티브 시니어 고객 국제선 할인!",
+    "subtitle": "이벤트기간 : 2026-09-29~2026-12-31",
+    "badge_text": "특가",
+    "detail_url": "https://www.eastarjet.com/newstar/PGWTA00002?eventNo=2635&gubun=I&searchIndex=1",
+    "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20260929083936_2609_%EC%8B%9C%EB%8B%88%EC%96%B4%ED%94%84%EB%A1%9C%EB%AA%A8%EC%85%98_%EB%AA%A8%EB%B0%94%EC%9D%BC_%EB%A9%94%EC%9D%B8%EB%B0%B0%EB%84%88.jpg",
+    "promo_start": "2026-09-29",
+    "promo_end": "2026-12-31",
+    "travel_period": "액티브 시니어 고객 국제선 할인!\n\n이벤트기간 : 2026-09-29~2026-12-31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "",
+    "status": "ING",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-29T17:00:52.937147",
+    "updated_at": "2026-10-02T01:05:37.898682"
+  },
+  {
+    "id": "eastar_2639",
+    "airline": "이스타항공",
+    "airline_code": "EASTAR",
+    "title": "이스타항공 x 신한카드 10월 혜택 안내",
+    "subtitle": "이벤트기간 : 2026-10-01~2026-10-31",
+    "badge_text": "제휴혜택",
+    "detail_url": "https://www.eastarjet.com/newstar/PGWTA00002?eventNo=2639&gubun=I&searchIndex=1",
+    "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20260930015538_%EC%8B%A0%ED%95%9C%EC%B9%B4%EB%93%9C%20%EC%9D%B4%EB%B2%A4%ED%8A%B8%20%EB%B0%B0%EB%84%88.jpg",
+    "promo_start": "2026-10-01",
+    "promo_end": "2026-10-31",
+    "travel_period": "이스타항공 x 신한카드 10월 혜택 안내\n\n이벤트기간 : 2026-10-01~2026-10-31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "일본 전역",
+    "status": "ING",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-30T15:08:00.888280",
+    "updated_at": "2026-10-02T01:05:37.896965"
+  },
+  {
+    "id": "eastar_2645",
+    "airline": "이스타항공",
+    "airline_code": "EASTAR",
+    "title": "특별한 여행, 엔믹스 x 이스타항공",
+    "subtitle": "이벤트기간 : 2026-10-01~2026-12-31",
+    "badge_text": "특가",
+    "detail_url": "https://www.eastarjet.com/newstar/PGWTA00002?eventNo=2645&gubun=I&searchIndex=1",
+    "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20261001012012_%EB%AA%A8%EB%B0%94%EC%9D%BC_%EB%A9%94%EC%9D%B8%EB%B0%B0%EB%84%88%EA%B0%80%EC%9D%B4%EB%93%9C.jpg",
+    "promo_start": "2026-10-01",
+    "promo_end": "2026-12-31",
+    "travel_period": "특별한 여행, 엔믹스 x 이스타항공\n\n이벤트기간 : 2026-10-01~2026-12-31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "일본 전역",
+    "status": "ING",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-10-02T01:05:37.895297",
+    "updated_at": "2026-10-02T01:05:37.895297"
   },
   {
     "id": "tway_2534",
@@ -774,7 +879,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.206642",
-    "updated_at": "2026-10-02T00:04:14.621097"
+    "updated_at": "2026-10-02T01:05:32.273682"
   },
   {
     "id": "tway_2527",
@@ -795,7 +900,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.198609",
-    "updated_at": "2026-10-02T00:04:14.620111"
+    "updated_at": "2026-10-02T01:05:32.272866"
   },
   {
     "id": "tway_2535",
@@ -816,7 +921,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.191082",
-    "updated_at": "2026-10-02T00:04:14.618030"
+    "updated_at": "2026-10-02T01:05:32.272078"
   },
   {
     "id": "tway_2536",
@@ -837,7 +942,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.182552",
-    "updated_at": "2026-10-02T00:04:14.616256"
+    "updated_at": "2026-10-02T01:05:32.271191"
   },
   {
     "id": "tway_2433",
@@ -858,7 +963,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:23.032269",
-    "updated_at": "2026-10-02T00:04:14.615335"
+    "updated_at": "2026-10-02T01:05:32.270279"
   },
   {
     "id": "tway_2429",
@@ -879,7 +984,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.166348",
-    "updated_at": "2026-10-02T00:04:14.613806"
+    "updated_at": "2026-10-02T01:05:32.269375"
   },
   {
     "id": "tway_2550",
@@ -900,7 +1005,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.158821",
-    "updated_at": "2026-10-02T00:04:14.612818"
+    "updated_at": "2026-10-02T01:05:32.268418"
   },
   {
     "id": "tway_2558",
@@ -921,7 +1026,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.150285",
-    "updated_at": "2026-10-02T00:04:14.611828"
+    "updated_at": "2026-10-02T01:05:32.267489"
   },
   {
     "id": "tway_2578",
@@ -942,7 +1047,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-30T15:07:54.935463",
-    "updated_at": "2026-10-02T00:04:14.581515"
+    "updated_at": "2026-10-02T01:05:32.266229"
   },
   {
     "id": "eastar_2505",
@@ -964,69 +1069,6 @@
     "view_count": 0,
     "created_at": "2026-09-29T00:18:06.121932",
     "updated_at": "2026-10-01T23:02:49.864268"
-  },
-  {
-    "id": "eastar_2581",
-    "airline": "이스타항공",
-    "airline_code": "EASTAR",
-    "title": "이스타항공 x 국립항공박물관 할인 이벤트",
-    "subtitle": "이벤트기간 : 2026-07-28~2026-12-31",
-    "badge_text": "특가",
-    "detail_url": "https://www.eastarjet.com/newstar/PGWTA00002?eventNo=2581&gubun=I&searchIndex=1",
-    "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20260728110616_%ED%95%AD%EA%B3%B5%EB%B0%95%EB%AC%BC%EA%B4%80__%EB%AA%A8%EB%B0%94%EC%9D%BC_%EB%A9%94%EC%9D%B8%EB%B0%B0%EB%84%88%EA%B0%80%EC%9D%B4%EB%93%9C.jpg",
-    "promo_start": "2026-07-28",
-    "promo_end": "2026-12-31",
-    "travel_period": "이스타항공 x 국립항공박물관 할인 이벤트\n\n이벤트기간 : 2026-07-28~2026-12-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "일본 전역",
-    "status": "ING",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:55:39.753733",
-    "updated_at": "2026-10-01T23:02:49.863381"
-  },
-  {
-    "id": "eastar_2635",
-    "airline": "이스타항공",
-    "airline_code": "EASTAR",
-    "title": "액티브 시니어 고객 국제선 할인!",
-    "subtitle": "이벤트기간 : 2026-09-29~2026-12-31",
-    "badge_text": "특가",
-    "detail_url": "https://www.eastarjet.com/newstar/PGWTA00002?eventNo=2635&gubun=I&searchIndex=1",
-    "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20260929083936_2609_%EC%8B%9C%EB%8B%88%EC%96%B4%ED%94%84%EB%A1%9C%EB%AA%A8%EC%85%98_%EB%AA%A8%EB%B0%94%EC%9D%BC_%EB%A9%94%EC%9D%B8%EB%B0%B0%EB%84%88.jpg",
-    "promo_start": "2026-09-29",
-    "promo_end": "2026-12-31",
-    "travel_period": "액티브 시니어 고객 국제선 할인!\n\n이벤트기간 : 2026-09-29~2026-12-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "",
-    "status": "ING",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T17:00:52.937147",
-    "updated_at": "2026-10-01T23:02:49.862428"
-  },
-  {
-    "id": "eastar_2639",
-    "airline": "이스타항공",
-    "airline_code": "EASTAR",
-    "title": "이스타항공 x 신한카드 10월 혜택 안내",
-    "subtitle": "이벤트기간 : 2026-10-01~2026-10-31",
-    "badge_text": "제휴혜택",
-    "detail_url": "https://www.eastarjet.com/newstar/PGWTA00002?eventNo=2639&gubun=I&searchIndex=1",
-    "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20260930015538_%EC%8B%A0%ED%95%9C%EC%B9%B4%EB%93%9C%20%EC%9D%B4%EB%B2%A4%ED%8A%B8%20%EB%B0%B0%EB%84%88.jpg",
-    "promo_start": "2026-10-01",
-    "promo_end": "2026-10-31",
-    "travel_period": "이스타항공 x 신한카드 10월 혜택 안내\n\n이벤트기간 : 2026-10-01~2026-10-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "일본 전역",
-    "status": "ING",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-30T15:08:00.888280",
-    "updated_at": "2026-10-01T23:02:49.859625"
   },
   {
     "id": "tway_2340",
