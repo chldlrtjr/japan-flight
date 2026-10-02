@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.824664",
-    "updated_at": "2026-10-02T14:06:06.037106"
+    "updated_at": "2026-10-02T15:05:39.809139"
   },
   {
     "id": "airdo_do_bargain",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.816108",
-    "updated_at": "2026-10-02T14:06:06.036186"
+    "updated_at": "2026-10-02T15:05:39.807789"
   },
   {
     "id": "starflyer_star_early",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.807944",
-    "updated_at": "2026-10-02T14:06:06.035342"
+    "updated_at": "2026-10-02T15:05:39.806859"
   },
   {
     "id": "skymark_imatoku_deal",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.799943",
-    "updated_at": "2026-10-02T14:06:06.034482"
+    "updated_at": "2026-10-02T15:05:39.805937"
   },
   {
     "id": "jetstar_super_star_sale",
@@ -102,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.783645",
-    "updated_at": "2026-10-02T14:06:06.032698"
+    "updated_at": "2026-10-02T15:05:39.803985"
   },
   {
     "id": "zipair_narita_special",
@@ -123,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.037619",
-    "updated_at": "2026-10-02T14:06:06.031861"
+    "updated_at": "2026-10-02T15:05:39.802785"
   },
   {
     "id": "peach_autumn_sale",
@@ -144,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.028709",
-    "updated_at": "2026-10-02T14:06:06.030946"
+    "updated_at": "2026-10-02T15:05:39.801883"
   },
   {
     "id": "peach_int_shorttrip",
@@ -165,7 +165,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.019953",
-    "updated_at": "2026-10-02T14:06:06.030027"
+    "updated_at": "2026-10-02T15:05:39.800935"
   },
   {
     "id": "ana_gimpo_sale",
@@ -186,7 +186,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.055352",
-    "updated_at": "2026-10-02T14:06:06.028908"
+    "updated_at": "2026-10-02T15:05:39.799770"
   },
   {
     "id": "jal_haneda_earlybird",
@@ -207,7 +207,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.045875",
-    "updated_at": "2026-10-02T14:06:05.906144"
+    "updated_at": "2026-10-02T15:05:39.797852"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -228,7 +228,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-02T14:05:57.728416"
+    "updated_at": "2026-10-02T15:05:31.650681"
   },
   {
     "id": "airpremia_sapporo_inauguration",
@@ -249,7 +249,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.132057",
-    "updated_at": "2026-10-02T14:05:57.727536"
+    "updated_at": "2026-10-02T15:05:31.649595"
   },
   {
     "id": "airbusan_fukuoka_winter",
@@ -270,7 +270,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.124558",
-    "updated_at": "2026-10-02T14:05:57.726502"
+    "updated_at": "2026-10-02T15:05:31.648214"
   },
   {
     "id": "airseoul_yonago_takamatsu",
@@ -291,7 +291,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.116055",
-    "updated_at": "2026-10-02T14:05:57.725600"
+    "updated_at": "2026-10-02T15:05:31.647111"
   },
   {
     "id": "asiana_japan_season_deal",
@@ -312,7 +312,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.108053",
-    "updated_at": "2026-10-02T14:05:57.724628"
+    "updated_at": "2026-10-02T15:05:31.645930"
   },
   {
     "id": "kal_japan_app_special",
@@ -333,7 +333,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.099450",
-    "updated_at": "2026-10-02T14:05:57.723531"
+    "updated_at": "2026-10-02T15:05:31.644578"
   },
   {
     "id": "jin_guam_superlow",
@@ -354,7 +354,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:44.319370",
-    "updated_at": "2026-10-02T14:05:57.721512"
+    "updated_at": "2026-10-02T15:05:31.641992"
   },
   {
     "id": "jin_japan_special",
@@ -375,7 +375,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:32.782543",
-    "updated_at": "2026-10-02T14:05:57.719978"
+    "updated_at": "2026-10-02T15:05:31.640778"
   },
   {
     "id": "jin_jinmarket_autumn",
@@ -396,7 +396,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:32.773187",
-    "updated_at": "2026-10-02T14:05:57.718488"
+    "updated_at": "2026-10-02T15:05:31.638310"
   },
   {
     "id": "eastar_2638",
@@ -417,7 +417,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-30T05:04:36.467088",
-    "updated_at": "2026-10-02T14:05:53.016578"
+    "updated_at": "2026-10-02T15:05:26.923404"
   },
   {
     "id": "jeju_0000004277",
@@ -438,7 +438,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:30.617819",
-    "updated_at": "2026-10-02T14:05:43.788938"
+    "updated_at": "2026-10-02T15:05:19.288312"
   },
   {
     "id": "jeju_0000004309",
@@ -459,7 +459,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:30.585505",
-    "updated_at": "2026-10-02T14:05:43.787086"
+    "updated_at": "2026-10-02T15:05:19.286072"
   },
   {
     "id": "jeju_0000004308",
@@ -480,7 +480,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:21.324118",
-    "updated_at": "2026-10-02T14:05:43.785062"
+    "updated_at": "2026-10-02T15:05:19.283828"
   },
   {
     "id": "jeju_0000004343",
@@ -501,7 +501,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-02T01:05:30.188934",
-    "updated_at": "2026-10-02T14:05:43.782672"
+    "updated_at": "2026-10-02T15:05:19.281717"
   },
   {
     "id": "jeju_0000004234",
@@ -585,7 +585,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:53.259063",
-    "updated_at": "2026-10-02T14:06:06.047163"
+    "updated_at": "2026-10-02T15:05:39.819063"
   },
   {
     "id": "orc_nagasaki_tsushima",
@@ -606,7 +606,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:53.251367",
-    "updated_at": "2026-10-02T14:06:06.046175"
+    "updated_at": "2026-10-02T15:05:39.817890"
   },
   {
     "id": "amx_mizoka_deal",
@@ -627,7 +627,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:53.243290",
-    "updated_at": "2026-10-02T14:06:06.042407"
+    "updated_at": "2026-10-02T15:05:39.816760"
   },
   {
     "id": "tokiair_niigata_sapporo",
@@ -648,7 +648,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.865404",
-    "updated_at": "2026-10-02T14:06:06.041567"
+    "updated_at": "2026-10-02T15:05:39.815558"
   },
   {
     "id": "rac_island_connect",
@@ -669,7 +669,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.857210",
-    "updated_at": "2026-10-02T14:06:06.040701"
+    "updated_at": "2026-10-02T15:05:39.814294"
   },
   {
     "id": "jta_okinawa_island_special",
@@ -690,7 +690,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.849208",
-    "updated_at": "2026-10-02T14:06:06.039863"
+    "updated_at": "2026-10-02T15:05:39.813111"
   },
   {
     "id": "ibex_tokuwari",
@@ -711,7 +711,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.840206",
-    "updated_at": "2026-10-02T14:06:06.039002"
+    "updated_at": "2026-10-02T15:05:39.811751"
   },
   {
     "id": "fda_dream_early",
@@ -732,7 +732,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.832666",
-    "updated_at": "2026-10-02T14:06:06.038067"
+    "updated_at": "2026-10-02T15:05:39.810256"
   },
   {
     "id": "spring_japan_tokyo_hiroshima",
@@ -753,7 +753,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:52.791645",
-    "updated_at": "2026-10-02T14:06:06.033635"
+    "updated_at": "2026-10-02T15:05:39.804966"
   },
   {
     "id": "parata_japan_paranweek",
@@ -774,7 +774,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.148061",
-    "updated_at": "2026-10-02T14:05:57.729346"
+    "updated_at": "2026-10-02T15:05:31.651773"
   },
   {
     "id": "eastar_2581",
@@ -795,7 +795,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:39.753733",
-    "updated_at": "2026-10-02T14:05:53.018687"
+    "updated_at": "2026-10-02T15:05:26.925398"
   },
   {
     "id": "eastar_2635",
@@ -816,7 +816,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T17:00:52.937147",
-    "updated_at": "2026-10-02T14:05:53.017735"
+    "updated_at": "2026-10-02T15:05:26.924485"
   },
   {
     "id": "eastar_2639",
@@ -837,7 +837,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-30T15:08:00.888280",
-    "updated_at": "2026-10-02T14:05:53.015463"
+    "updated_at": "2026-10-02T15:05:26.922333"
   },
   {
     "id": "eastar_2645",
@@ -858,7 +858,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-10-02T01:05:37.895297",
-    "updated_at": "2026-10-02T14:05:53.013514"
+    "updated_at": "2026-10-02T15:05:26.920775"
   },
   {
     "id": "tway_2534",
@@ -879,7 +879,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.206642",
-    "updated_at": "2026-10-02T14:05:46.044119"
+    "updated_at": "2026-10-02T15:05:21.138715"
   },
   {
     "id": "tway_2527",
@@ -900,7 +900,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.198609",
-    "updated_at": "2026-10-02T14:05:46.043136"
+    "updated_at": "2026-10-02T15:05:21.137422"
   },
   {
     "id": "tway_2535",
@@ -921,7 +921,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.191082",
-    "updated_at": "2026-10-02T14:05:46.042140"
+    "updated_at": "2026-10-02T15:05:21.136380"
   },
   {
     "id": "tway_2536",
@@ -942,7 +942,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.182552",
-    "updated_at": "2026-10-02T14:05:46.041185"
+    "updated_at": "2026-10-02T15:05:21.135075"
   },
   {
     "id": "tway_2433",
@@ -963,7 +963,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:23.032269",
-    "updated_at": "2026-10-02T14:05:46.040303"
+    "updated_at": "2026-10-02T15:05:21.133820"
   },
   {
     "id": "tway_2429",
@@ -984,7 +984,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.166348",
-    "updated_at": "2026-10-02T14:05:46.039337"
+    "updated_at": "2026-10-02T15:05:21.132558"
   },
   {
     "id": "tway_2550",
@@ -1005,7 +1005,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.158821",
-    "updated_at": "2026-10-02T14:05:46.038347"
+    "updated_at": "2026-10-02T15:05:21.131358"
   },
   {
     "id": "tway_2558",
@@ -1026,7 +1026,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:55:32.150285",
-    "updated_at": "2026-10-02T14:05:46.037296"
+    "updated_at": "2026-10-02T15:05:21.130307"
   },
   {
     "id": "tway_2578",
@@ -1047,7 +1047,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-30T15:07:54.935463",
-    "updated_at": "2026-10-02T14:05:46.035825"
+    "updated_at": "2026-10-02T15:05:21.128997"
   },
   {
     "id": "eastar_2505",
