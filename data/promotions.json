@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.132057",
-    "updated_at": "2026-10-03T09:43:23.842564"
+    "updated_at": "2026-10-03T09:47:46.886516"
   },
   {
     "id": "zipair_narita_special",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.037619",
-    "updated_at": "2026-10-03T09:43:19.868483"
+    "updated_at": "2026-10-03T09:47:41.483105"
   },
   {
     "id": "peach_autumn_sale",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.028709",
-    "updated_at": "2026-10-03T09:43:19.867545"
+    "updated_at": "2026-10-03T09:47:41.482275"
   },
   {
     "id": "peach_int_shorttrip",
@@ -102,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.019953",
-    "updated_at": "2026-10-03T09:43:19.866553"
+    "updated_at": "2026-10-03T09:47:41.481384"
   },
   {
     "id": "ana_gimpo_sale",
@@ -123,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.055352",
-    "updated_at": "2026-10-03T09:43:19.865462"
+    "updated_at": "2026-10-03T09:47:41.480252"
   },
   {
     "id": "jal_haneda_earlybird",
@@ -144,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.045875",
-    "updated_at": "2026-10-03T09:43:19.863977"
+    "updated_at": "2026-10-03T09:47:41.478767"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -165,7 +165,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-03T09:43:11.742941"
+    "updated_at": "2026-10-03T09:47:33.334433"
   },
   {
     "id": "airbusan_fukuoka_winter",
@@ -186,7 +186,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.124558",
-    "updated_at": "2026-10-03T09:43:11.741132"
+    "updated_at": "2026-10-03T09:47:33.332640"
   },
   {
     "id": "airseoul_yonago_takamatsu",
@@ -207,7 +207,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.116055",
-    "updated_at": "2026-10-03T09:43:11.740250"
+    "updated_at": "2026-10-03T09:47:33.331683"
   },
   {
     "id": "asiana_japan_season_deal",
@@ -228,7 +228,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.108053",
-    "updated_at": "2026-10-03T09:43:11.739259"
+    "updated_at": "2026-10-03T09:47:33.330778"
   },
   {
     "id": "kal_japan_app_special",
@@ -249,7 +249,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.099450",
-    "updated_at": "2026-10-03T09:43:11.738322"
+    "updated_at": "2026-10-03T09:47:33.329821"
   },
   {
     "id": "jin_sapporo_okinawa_sale",
@@ -270,7 +270,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03 09:00:21",
-    "updated_at": "2026-10-03T09:43:11.736343"
+    "updated_at": "2026-10-03T09:47:33.327939"
   },
   {
     "id": "jin_japan_special",
@@ -291,7 +291,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:32.782543",
-    "updated_at": "2026-10-03T09:43:11.735153"
+    "updated_at": "2026-10-03T09:47:33.326772"
   },
   {
     "id": "jin_jinmarket_autumn",
@@ -312,7 +312,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T18:00:48.811463",
-    "updated_at": "2026-10-03T09:43:11.731628"
+    "updated_at": "2026-10-03T09:47:33.325307"
   },
   {
     "id": "jeju_0000004308",
@@ -333,7 +333,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:21.324118",
-    "updated_at": "2026-10-03T09:42:59.227284"
+    "updated_at": "2026-10-03T09:47:20.478980"
   },
   {
     "id": "eastar_2645",
@@ -375,7 +375,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.148061",
-    "updated_at": "2026-10-03T09:43:11.743805"
+    "updated_at": "2026-10-03T09:47:33.335297"
   },
   {
     "id": "tway_2433",
@@ -396,7 +396,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:23.032269",
-    "updated_at": "2026-10-03T09:43:01.168540"
+    "updated_at": "2026-10-03T09:47:21.824690"
   },
   {
     "id": "eastar_2505",
