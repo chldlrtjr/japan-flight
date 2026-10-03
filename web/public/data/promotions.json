@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.132057",
-    "updated_at": "2026-10-03T18:38:31.772114"
+    "updated_at": "2026-10-03T09:43:23.842564"
   },
   {
     "id": "zipair_narita_special",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.037619",
-    "updated_at": "2026-10-03T09:06:15.698122"
+    "updated_at": "2026-10-03T09:43:19.868483"
   },
   {
     "id": "peach_autumn_sale",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.028709",
-    "updated_at": "2026-10-03T09:06:15.697124"
+    "updated_at": "2026-10-03T09:43:19.867545"
   },
   {
     "id": "peach_int_shorttrip",
@@ -102,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.019953",
-    "updated_at": "2026-10-03T09:06:15.696188"
+    "updated_at": "2026-10-03T09:43:19.866553"
   },
   {
     "id": "ana_gimpo_sale",
@@ -123,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.055352",
-    "updated_at": "2026-10-03T09:06:15.695187"
+    "updated_at": "2026-10-03T09:43:19.865462"
   },
   {
     "id": "jal_haneda_earlybird",
@@ -144,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.045875",
-    "updated_at": "2026-10-03T09:06:15.693921"
+    "updated_at": "2026-10-03T09:43:19.863977"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -165,7 +165,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-03T09:06:07.547097"
+    "updated_at": "2026-10-03T09:43:11.742941"
   },
   {
     "id": "airbusan_fukuoka_winter",
@@ -186,7 +186,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.124558",
-    "updated_at": "2026-10-03T09:06:07.545470"
+    "updated_at": "2026-10-03T09:43:11.741132"
   },
   {
     "id": "airseoul_yonago_takamatsu",
@@ -207,7 +207,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.116055",
-    "updated_at": "2026-10-03T09:06:07.544628"
+    "updated_at": "2026-10-03T09:43:11.740250"
   },
   {
     "id": "asiana_japan_season_deal",
@@ -228,7 +228,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.108053",
-    "updated_at": "2026-10-03T09:06:07.543730"
+    "updated_at": "2026-10-03T09:43:11.739259"
   },
   {
     "id": "kal_japan_app_special",
@@ -249,7 +249,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.099450",
-    "updated_at": "2026-10-03T09:06:07.542686"
+    "updated_at": "2026-10-03T09:43:11.738322"
   },
   {
     "id": "jin_sapporo_okinawa_sale",
@@ -270,7 +270,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03 09:00:21",
-    "updated_at": "2026-10-03T09:06:07.541018"
+    "updated_at": "2026-10-03T09:43:11.736343"
   },
   {
     "id": "jin_japan_special",
@@ -291,7 +291,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:32.782543",
-    "updated_at": "2026-10-03T09:06:07.540031"
+    "updated_at": "2026-10-03T09:43:11.735153"
   },
   {
     "id": "jin_jinmarket_autumn",
@@ -312,7 +312,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T18:00:48.811463",
-    "updated_at": "2026-10-03T09:06:07.538604"
+    "updated_at": "2026-10-03T09:43:11.731628"
   },
   {
     "id": "jeju_0000004308",
@@ -333,28 +333,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:21.324118",
-    "updated_at": "2026-10-03T09:05:53.945141"
-  },
-  {
-    "id": "parata_japan_paranweek",
-    "airline": "파라타항공",
-    "airline_code": "PARATA",
-    "title": "파라타항공 일본 전 노선 취항 준비 파란위크 시즌 한정 특별 프로모션",
-    "subtitle": "새롭게 날아오르는 파라타항공과 함께하는 일본 노선 얼리버드 혜택",
-    "badge_text": "파란위크얼리버드",
-    "detail_url": "https://www.parataair.com",
-    "image_url": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80",
-    "promo_start": "2026-09-28",
-    "promo_end": "2026-10-23",
-    "travel_period": "2026-10-03 ~ 2027-01-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "일본 전역",
-    "status": "ING",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:25:29.148061",
-    "updated_at": "2026-10-03T18:00:48.891236"
+    "updated_at": "2026-10-03T09:42:59.227284"
   },
   {
     "id": "eastar_2645",
@@ -396,7 +375,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.148061",
-    "updated_at": "2026-10-03T09:06:07.547973"
+    "updated_at": "2026-10-03T09:43:11.743805"
   },
   {
     "id": "tway_2433",
@@ -417,7 +396,7 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:23.032269",
-    "updated_at": "2026-10-03T09:05:55.815345"
+    "updated_at": "2026-10-03T09:43:01.168540"
   },
   {
     "id": "eastar_2505",
