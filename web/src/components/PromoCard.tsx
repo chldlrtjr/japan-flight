@@ -366,9 +366,9 @@ export const PromoCard: React.FC<PromoCardProps> = ({
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200/80 px-2.5 py-1 rounded-lg transition-all shadow-2xs"
-            title={`${promo.airline} 공식 이벤트 페이지 이동`}
+            title={`${promo.airline} 바로가기`}
           >
-            <span>공식 이벤트 보기</span>
+            <span>바로가기</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
