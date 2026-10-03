@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-03T11:48:25.311535"
+    "updated_at": "2026-10-03T11:57:14.594762"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-03T11:48:25.310330"
+    "updated_at": "2026-10-03T11:57:14.593844"
   },
   {
     "id": "airbusan_october_coupon",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-03T11:48:25.309302"
+    "updated_at": "2026-10-03T11:57:14.592798"
   },
   {
     "id": "airseoul_takamatsu_10th",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-03T11:48:25.308153"
+    "updated_at": "2026-10-03T11:57:14.591749"
   },
   {
     "id": "airseoul_october_hurry",
@@ -102,7 +102,28 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.139189",
-    "updated_at": "2026-10-03T11:48:25.307185"
+    "updated_at": "2026-10-03T11:57:14.590795"
+  },
+  {
+    "id": "jin_october_newmember_baggage",
+    "airline": "진에어",
+    "airline_code": "JIN",
+    "title": "진에어 신규가입 혜택! 국제선 수하물팩 3만원 할인 쿠폰 및 왕복 항공권 추첨",
+    "subtitle": "한국·일본·대만 고객 대상 10월 한정 신규가입 프로모션 (기본 15kg + 추가 5kg 혜택)",
+    "badge_text": "수하물팩할인",
+    "detail_url": "https://www.jinair.com/promotion/eventList",
+    "image_url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "promo_start": "2026-10-01",
+    "promo_end": "2026-10-31",
+    "travel_period": "2026-10-01 ~ 2027-01-31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "도쿄, 오사카, 후쿠오카, 삿포로, 오키나와",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-10-03T11:57:14.587765",
+    "updated_at": "2026-10-03T11:57:14.587765"
   },
   {
     "id": "tway_2587",
@@ -123,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:47.007649",
-    "updated_at": "2026-10-03T11:48:15.134277"
+    "updated_at": "2026-10-03T11:57:04.282065"
   },
   {
     "id": "eastar_2645",
