@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, ExternalLink, Calendar, MapPin, Tag, Bookmark, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Promotion } from '@/types';
+import { getPromoEventUrl } from '@/lib/filterData';
 
 interface PromoModalProps {
   promo: Promotion | null;
@@ -19,6 +20,7 @@ export const PromoModal: React.FC<PromoModalProps> = ({
 }) => {
   if (!promo) return null;
 
+  const eventUrl = getPromoEventUrl(promo);
   const destList = promo.destinations
     ? promo.destinations.split(',').map((d) => d.trim()).filter(Boolean)
     : [];
@@ -149,7 +151,7 @@ export const PromoModal: React.FC<PromoModalProps> = ({
           {/* Direct CTA */}
           <div className="pt-2">
             <a
-              href={promo.detail_url}
+              href={eventUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-4 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 text-white font-bold flex items-center justify-center gap-2 hover:opacity-95 shadow-lg shadow-sky-600/25 active:scale-[0.99] transition-all text-base"

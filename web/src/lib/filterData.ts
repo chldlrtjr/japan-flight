@@ -280,3 +280,35 @@ export function filterNewsArticles(
 
   return list;
 }
+
+export const AIRLINE_OFFICIAL_EVENT_URLS: Record<string, string> = {
+  KAL: 'https://www.koreanair.com/contents/promotion/event/list',
+  AAR: 'https://flyasiana.com/I/KO/KR/Event/Index.do',
+  AIR_SEOUL: 'https://flyairseoul.com/CW/KO/event/eventList.do',
+  AIR_BUSAN: 'https://www.airbusan.com/content/common/flynjoy/event/',
+  AIR_PREMIA: 'https://www.airpremia.com/kr/ko/event',
+  AERO_K: 'https://www.aerok.com/ko-KR/event-benefit/event/being',
+  PARATA: 'https://www.parataair.com/ko/contents/event/eventList.do',
+  JEJU: 'https://www.jejuair.net/ko/event/event.do',
+  JIN: 'https://www.jinair.com/promotion/eventList',
+  TWAY: 'https://www.twayair.com/app/promotion/event/main',
+  EASTAR: 'https://www.eastarjet.com/newstar/PGWTA00001',
+  PEACH: 'https://www.flypeach.com/kr/um/specials/sale',
+  ZIPAIR: 'https://www.zipair.net/ko/topic',
+  JAL: 'https://www.jal.co.jp/kr/ko/offers/',
+  ANA: 'https://www.ana.co.jp/ko/kr/plan-book/promotions/',
+};
+
+export function getPromoEventUrl(promo: { detail_url?: string; airline_code?: string; airline?: string }): string {
+  const url = promo.detail_url || '';
+  const isEventUrl = /event|special|promotion|offer|topic|sale|detail/i.test(url) && !/\.(net|com|co\.jp|kr)\/?$/i.test(url);
+  if (isEventUrl) {
+    return url;
+  }
+  const code = promo.airline_code || '';
+  if (code && AIRLINE_OFFICIAL_EVENT_URLS[code]) {
+    return AIRLINE_OFFICIAL_EVENT_URLS[code];
+  }
+  return url || 'https://www.google.com';
+}
+

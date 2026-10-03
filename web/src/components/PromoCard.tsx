@@ -3,6 +3,7 @@
 import React from 'react';
 import { ExternalLink, Calendar, MapPin, Bookmark, Clock, Tag } from 'lucide-react';
 import { Promotion } from '@/types';
+import { getPromoEventUrl } from '@/lib/filterData';
 
 interface PromoCardProps {
   promo: Promotion;
@@ -221,6 +222,7 @@ export const PromoCard: React.FC<PromoCardProps> = ({
 
   const airlineStyle = getAirlineBadge(promo.airline);
   const dday = calculateDday(promo.promo_end, promo.status);
+  const eventUrl = getPromoEventUrl(promo);
   const destList = promo.destinations
     ? promo.destinations.split(',').map((d) => d.trim()).filter(Boolean)
     : [];
@@ -307,7 +309,16 @@ export const PromoCard: React.FC<PromoCardProps> = ({
 
           {/* Title */}
           <h3 className="text-base font-bold text-slate-900 line-clamp-2 leading-snug group-hover:text-sky-600 transition-colors">
-            {promo.title}
+            <a
+              href={eventUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="hover:underline"
+              title={`${promo.airline} 공식 이벤트 페이지 바로가기`}
+            >
+              {promo.title}
+            </a>
           </h3>
 
           {/* Subtitle */}
@@ -350,15 +361,15 @@ export const PromoCard: React.FC<PromoCardProps> = ({
           </div>
 
           <a
-            href={promo.detail_url}
+            href={eventUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 text-xs font-bold text-sky-600 hover:text-sky-800 transition-colors p-1"
-            title="항공사 공식 이벤트 페이지 이동"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200/80 px-2.5 py-1 rounded-lg transition-all shadow-2xs"
+            title={`${promo.airline} 공식 이벤트 페이지 이동`}
           >
-            <span>예매하기</span>
-            <ExternalLink className="w-3 h-3" />
+            <span>공식 이벤트 보기</span>
+            <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
       </div>
