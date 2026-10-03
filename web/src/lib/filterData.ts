@@ -157,7 +157,7 @@ export function filterPromotions(
   params: {
     airline: string;
     region: string;
-    status: string;
+    status?: string;
     search: string;
     sort: string;
     bookmarkedIds: string[];
@@ -207,12 +207,8 @@ export function filterPromotions(
     });
   }
 
-  // Status filter: By default ('ING'), automatically take down all expired promotions!
-  if (params.status === 'ING') {
-    list = list.filter((p) => p.status === 'ING' && !isPromoExpired(p));
-  } else if (params.status === 'END') {
-    list = list.filter((p) => isPromoExpired(p));
-  }
+  // Status filter: Completely eliminate ended or expired promotions
+  list = list.filter((p) => p.status !== 'END' && !isPromoExpired(p));
 
   // Search term
   if (params.search && params.search.trim() !== '') {

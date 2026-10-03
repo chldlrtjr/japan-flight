@@ -239,16 +239,10 @@ export const PromoCard: React.FC<PromoCardProps> = ({
     ? promo.image_url
     : defaultBg;
 
-  const isEnded = dday.text === '종료';
-
   return (
     <div
       onClick={() => onSelectPromo(promo)}
-      className={`group bg-white rounded-2xl border ${
-        isEnded
-          ? 'border-slate-200 opacity-70 grayscale-[25%] hover:opacity-90 hover:grayscale-0'
-          : 'border-slate-200 hover:border-sky-300'
-      } shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden cursor-pointer relative`}
+      className="group bg-white rounded-2xl border border-slate-200 hover:border-sky-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden cursor-pointer relative"
     >
       {/* Thumbnail Banner */}
       <div className="relative h-44 w-full overflow-hidden bg-slate-100">
@@ -263,15 +257,6 @@ export const PromoCard: React.FC<PromoCardProps> = ({
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
-
-        {/* Ended Banner Overlay */}
-        {isEnded && (
-          <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex items-center justify-center pointer-events-none">
-            <span className="bg-slate-900/95 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-full border border-slate-700/80 shadow-md">
-              기간 종료된 특가
-            </span>
-          </div>
-        )}
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">

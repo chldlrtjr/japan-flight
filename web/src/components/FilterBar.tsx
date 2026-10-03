@@ -10,12 +10,9 @@ interface FilterBarProps {
   onSelectRegion: (region: string) => void;
   selectedAirline: string;
   onSelectAirline: (airline: string) => void;
-  selectedStatus: string;
-  onSelectStatus: (status: string) => void;
   sortOrder: string;
   onSortChange: (sort: string) => void;
   totalFilteredCount: number;
-  expiredCount?: number;
 }
 
 export const JAPAN_CITIES = [
@@ -66,12 +63,9 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onSelectRegion,
   selectedAirline,
   onSelectAirline,
-  selectedStatus,
-  onSelectStatus,
   sortOrder,
   onSortChange,
   totalFilteredCount,
-  expiredCount = 0,
 }) => {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm mb-6 space-y-4">
@@ -97,53 +91,12 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           )}
         </div>
 
-        {/* Sort & Status controls */}
-        <div className="flex items-center flex-wrap gap-2">
-          {/* Status Segmented Control */}
-          <div className="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-semibold text-slate-600">
-            <button
-              onClick={() => onSelectStatus('ING')}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
-                selectedStatus === 'ING'
-                  ? 'bg-white text-emerald-600 shadow-sm font-bold'
-                  : 'hover:text-slate-900'
-              }`}
-              title={expiredCount > 0 ? `종료된 특가 ${expiredCount}건이 피드에서 내려갔습니다` : '현재 진행 중인 특가만 표시'}
-            >
-              <span>진행중만</span>
-              {expiredCount > 0 && (
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700 font-bold">
-                  {expiredCount}건 내림
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => onSelectStatus('END')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                selectedStatus === 'END'
-                  ? 'bg-white text-rose-600 shadow-sm font-bold'
-                  : 'hover:text-slate-900'
-              }`}
-            >
-              마감/종료만
-            </button>
-            <button
-              onClick={() => onSelectStatus('ALL')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                selectedStatus === 'ALL'
-                  ? 'bg-white text-slate-900 shadow-sm font-bold'
-                  : 'hover:text-slate-900'
-              }`}
-            >
-              전체
-            </button>
-          </div>
-
-          {/* Sort selector */}
+        {/* Sort selector */}
+        <div className="flex items-center gap-2">
           <select
             value={sortOrder}
             onChange={(e) => onSortChange(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer"
+            className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer shadow-2xs"
           >
             <option value="default">인기/추천순</option>
             <option value="end_soon">마감임박순</option>

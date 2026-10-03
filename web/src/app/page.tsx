@@ -28,7 +28,6 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('ALL');
   const [selectedAirline, setSelectedAirline] = useState('ALL');
-  const [selectedStatus, setSelectedStatus] = useState('ING');
   const [sortOrder, setSortOrder] = useState('default');
   const [showOnlyBookmarks, setShowOnlyBookmarks] = useState(false);
 
@@ -104,31 +103,24 @@ export default function Home() {
     setIsRefreshing(true);
     await loadData();
     setIsRefreshing(false);
-    const count = rawPromotions.filter(isPromoExpired).length;
-    setRefreshMessage(`최신 특가 데이터를 갱신했습니다! (마감/종료 특가 ${count}건 자동 내림 완료)`);
+    setRefreshMessage('최신 특가 데이터를 갱신했습니다!');
     setTimeout(() => setRefreshMessage(null), 4000);
   };
 
   // Computed: Stats
   const stats = useMemo(() => calculatePromoStats(rawPromotions), [rawPromotions]);
 
-  // Computed: Expired promos count
-  const expiredPromosCount = useMemo(() => {
-    return rawPromotions.filter(isPromoExpired).length;
-  }, [rawPromotions]);
-
   // Computed: Filtered Promotions
   const displayedPromotions = useMemo(() => {
     return filterPromotions(rawPromotions, {
       airline: selectedAirline,
       region: selectedRegion,
-      status: selectedStatus,
       search: searchTerm,
       sort: sortOrder,
       bookmarkedIds,
       showOnlyBookmarks,
     });
-  }, [rawPromotions, selectedAirline, selectedRegion, selectedStatus, searchTerm, sortOrder, bookmarkedIds, showOnlyBookmarks]);
+  }, [rawPromotions, selectedAirline, selectedRegion, searchTerm, sortOrder, bookmarkedIds, showOnlyBookmarks]);
 
   // Computed: Filtered News Articles
   const filteredNews = useMemo(() => {
@@ -250,12 +242,9 @@ export default function Home() {
               onSelectRegion={setSelectedRegion}
               selectedAirline={selectedAirline}
               onSelectAirline={setSelectedAirline}
-              selectedStatus={selectedStatus}
-              onSelectStatus={setSelectedStatus}
               sortOrder={sortOrder}
               onSortChange={setSortOrder}
               totalFilteredCount={displayedPromotions.length}
-              expiredCount={expiredPromosCount}
             />
 
             {/* Promotions Grid */}

@@ -155,6 +155,20 @@ def init_db():
           AND title NOT LIKE '%오키나와%'
     """)
 
+    # Permanently delete any expired promotions or news
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    cursor.execute("""
+        DELETE FROM promotions
+        WHERE status = 'END'
+           OR (promo_end IS NOT NULL AND promo_end < ?)
+    """, (today_str,))
+
+    cursor.execute("""
+        DELETE FROM news_articles
+        WHERE promo_status = 'END'
+           OR (promo_end IS NOT NULL AND promo_end < ?)
+    """, (today_str,))
+
     cursor.execute("""
         UPDATE promotions
         SET destinations = '도쿄, 오사카, 후쿠오카, 삿포로, 오키나와'
@@ -174,8 +188,11 @@ def upsert_news(news: Dict[str, Any]) -> bool:
         if kw in news.get('title', ''):
             return False
 
-    # Reject if promo_end is in the past
-    if news.get("promo_end") and news["promo_end"] < "2026-09-29":
+    # Reject if expired
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    if news.get("promo_status") == "END":
+        return False
+    if news.get("promo_end") and news["promo_end"] < today_str:
         return False
 
     conn = get_connection()
@@ -224,6 +241,13 @@ def upsert_news(news: Dict[str, Any]) -> bool:
     return True
 
 def upsert_promotion(promo: Dict[str, Any]) -> bool:
+    # Strictly reject expired promotions
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    if promo.get("status") == "END":
+        return False
+    if promo.get("promo_end") and promo["promo_end"] < today_str:
+        return False
+
     # Strictly reject non-Japan promotions
     title = promo.get('title', '')
     dests = promo.get('destinations', '')
