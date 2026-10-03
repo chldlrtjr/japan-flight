@@ -99,7 +99,7 @@ def run_all_crawlers() -> dict:
     print(f"==========================================")
     try:
         from crawler.expire_checker import check_and_expire_promotions
-        expire_res = check_and_expire_promotions()
+        expire_res = check_and_expire_promotions(check_live=True)
         summary["expired_promos_taken_down"] = expire_res.get("newly_expired_count", 0)
     except Exception as e:
         print(f"[ExpireChecker] Failed: {e}")

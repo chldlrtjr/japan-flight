@@ -2,7 +2,7 @@ import os
 import sys
 import re
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 import requests
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -19,21 +19,12 @@ HEADERS = {
     'Accept-Language': 'ko-KR,ko;q=0.9,ja;q=0.8,en;q=0.7'
 }
 
-def check_live_url_expired(url: str, timeout: int = 4) -> bool:
-    """Check if the detail page returns 404 or contains messages indicating expiration."""
-    if not url or not url.startswith('http'):
-        return False
-    try:
-        res = requests.get(url, headers=HEADERS, timeout=timeout, allow_redirects=True)
-        if res.status_code in [404, 410]:
-            return True
-        html = res.text[:15000]
-        for kw in EXPIRED_PAGE_KEYWORDS:
-            if kw in html:
-                return True
-    except Exception:
-        pass
-    return False
+from crawler.url_verifier import is_promotion_valid, verify_url_with_browser
+
+def check_live_url_expired(url: str) -> Tuple[bool, str]:
+    """Check if the detail page is invalid, empty, or expired."""
+    is_valid, reason = is_promotion_valid(url)
+    return (not is_valid), reason
 
 def check_and_expire_promotions(today_str: Optional[str] = None, check_live: bool = False) -> Dict[str, Any]:
     """
@@ -75,9 +66,10 @@ def check_and_expire_promotions(today_str: Optional[str] = None, check_live: boo
             is_expired = True
             reason = f"기간 만료 ({promo_end} < {today_str})"
         elif check_live and detail_url:
-            if check_live_url_expired(detail_url):
+            is_dead, fail_reason = check_live_url_expired(detail_url)
+            if is_dead:
                 is_expired = True
-                reason = "웹페이지 종료 확인"
+                reason = f"페이지 검증 탈락 ({fail_reason})"
 
         if is_expired:
             delete_promo_ids.append(p_id)
