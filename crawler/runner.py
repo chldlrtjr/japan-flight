@@ -93,6 +93,17 @@ def run_all_crawlers() -> dict:
         summary["news_error"] = str(e)
         print(f"[News] Crawl failed: {e}")
 
+    # Check & Take down Expired Promotions
+    print(f"\n==========================================")
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Checking & Taking down Expired Promotions...")
+    print(f"==========================================")
+    try:
+        from crawler.expire_checker import check_and_expire_promotions
+        expire_res = check_and_expire_promotions()
+        summary["expired_promos_taken_down"] = expire_res.get("newly_expired_count", 0)
+    except Exception as e:
+        print(f"[ExpireChecker] Failed: {e}")
+
     # Query DB stats
     conn = get_connection()
     cursor = conn.cursor()
@@ -100,6 +111,8 @@ def run_all_crawlers() -> dict:
     total_in_db = cursor.fetchone()["cnt"]
     cursor.execute("SELECT count(*) as cnt FROM promotions WHERE is_international = 1")
     intl_in_db = cursor.fetchone()["cnt"]
+    cursor.execute("SELECT count(*) as cnt FROM promotions WHERE status = 'ING'")
+    active_in_db = cursor.fetchone()["cnt"]
     cursor.execute("SELECT count(*) as cnt FROM news_articles")
     news_in_db = cursor.fetchone()["cnt"]
     cursor.execute("SELECT count(*) as cnt FROM news_articles WHERE is_japan = 1")
@@ -108,6 +121,7 @@ def run_all_crawlers() -> dict:
 
     summary["db_total"] = total_in_db
     summary["db_international"] = intl_in_db
+    summary["db_active"] = active_in_db
     summary["db_news_total"] = news_in_db
     summary["db_news_japan"] = japan_news_in_db
 

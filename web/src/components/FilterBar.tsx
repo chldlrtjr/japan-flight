@@ -15,6 +15,7 @@ interface FilterBarProps {
   sortOrder: string;
   onSortChange: (sort: string) => void;
   totalFilteredCount: number;
+  expiredCount?: number;
 }
 
 export const JAPAN_CITIES = [
@@ -70,6 +71,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   sortOrder,
   onSortChange,
   totalFilteredCount,
+  expiredCount = 0,
 }) => {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm mb-6 space-y-4">
@@ -82,7 +84,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             type="text"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="목적지(도쿄, 다낭, 괌, 홍콩...) 또는 특가명 검색"
+            placeholder="목적지(도쿄, 후쿠오카, 삿포로...) 또는 특가명 검색"
             className="w-full pl-11 pr-10 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-slate-900 placeholder:text-slate-400"
           />
           {searchTerm && (
@@ -96,18 +98,34 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
 
         {/* Sort & Status controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center flex-wrap gap-2">
           {/* Status Segmented Control */}
           <div className="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-semibold text-slate-600">
             <button
               onClick={() => onSelectStatus('ING')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
+              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
                 selectedStatus === 'ING'
                   ? 'bg-white text-emerald-600 shadow-sm font-bold'
                   : 'hover:text-slate-900'
               }`}
+              title={expiredCount > 0 ? `종료된 특가 ${expiredCount}건이 피드에서 내려갔습니다` : '현재 진행 중인 특가만 표시'}
             >
-              진행중만
+              <span>진행중만</span>
+              {expiredCount > 0 && (
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-700 font-bold">
+                  {expiredCount}건 내림
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => onSelectStatus('END')}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                selectedStatus === 'END'
+                  ? 'bg-white text-rose-600 shadow-sm font-bold'
+                  : 'hover:text-slate-900'
+              }`}
+            >
+              마감/종료만
             </button>
             <button
               onClick={() => onSelectStatus('ALL')}
@@ -117,7 +135,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                   : 'hover:text-slate-900'
               }`}
             >
-              종료 포함 전체
+              전체
             </button>
           </div>
 

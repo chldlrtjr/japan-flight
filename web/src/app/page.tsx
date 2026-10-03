@@ -8,7 +8,7 @@ import { PromoCard } from '@/components/PromoCard';
 import { PromoModal } from '@/components/PromoModal';
 import { NewsCard } from '@/components/NewsCard';
 import { clusterNewsArticles } from '@/lib/clusterNews';
-import { filterPromotions, filterNewsArticles, calculatePromoStats } from '@/lib/filterData';
+import { filterPromotions, filterNewsArticles, calculatePromoStats, isPromoExpired } from '@/lib/filterData';
 import { Promotion, CrawlStats, NewsArticle, GroupedNews } from '@/types';
 import { BookmarkX, PlaneTakeoff, Newspaper, RefreshCw } from 'lucide-react';
 
@@ -104,12 +104,18 @@ export default function Home() {
     setIsRefreshing(true);
     await loadData();
     setIsRefreshing(false);
-    setRefreshMessage('최신 데이터를 불러왔습니다! (GitHub Actions 1시간마다 자동 크롤링)');
+    const count = rawPromotions.filter(isPromoExpired).length;
+    setRefreshMessage(`최신 특가 데이터를 갱신했습니다! (마감/종료 특가 ${count}건 자동 내림 완료)`);
     setTimeout(() => setRefreshMessage(null), 4000);
   };
 
   // Computed: Stats
   const stats = useMemo(() => calculatePromoStats(rawPromotions), [rawPromotions]);
+
+  // Computed: Expired promos count
+  const expiredPromosCount = useMemo(() => {
+    return rawPromotions.filter(isPromoExpired).length;
+  }, [rawPromotions]);
 
   // Computed: Filtered Promotions
   const displayedPromotions = useMemo(() => {
@@ -249,6 +255,7 @@ export default function Home() {
               sortOrder={sortOrder}
               onSortChange={setSortOrder}
               totalFilteredCount={displayedPromotions.length}
+              expiredCount={expiredPromosCount}
             />
 
             {/* Promotions Grid */}

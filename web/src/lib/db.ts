@@ -88,9 +88,11 @@ export function queryPromotions(params: {
         }
       }
 
-      if (params.status && params.status !== 'ALL') {
-        query += ' AND status = ?';
-        queryParams.push(params.status);
+      const todayStr = new Date().toISOString().slice(0, 10);
+      if (params.status === 'ING') {
+        query += ` AND status = 'ING' AND (promo_end IS NULL OR promo_end >= '${todayStr}')`;
+      } else if (params.status === 'END') {
+        query += ` AND (status = 'END' OR (promo_end IS NOT NULL AND promo_end < '${todayStr}'))`;
       }
 
       if (params.search && params.search.trim() !== '') {
@@ -101,11 +103,11 @@ export function queryPromotions(params: {
 
       // Sorting
       if (params.sort === 'end_soon') {
-        query += " ORDER BY CASE WHEN status = 'ING' THEN 0 ELSE 1 END, promo_end ASC NULLS LAST, created_at DESC";
+        query += ` ORDER BY CASE WHEN status = 'ING' AND (promo_end IS NULL OR promo_end >= '${todayStr}') THEN 0 ELSE 1 END, promo_end ASC NULLS LAST, created_at DESC`;
       } else if (params.sort === 'start_recent') {
         query += ' ORDER BY promo_start DESC NULLS LAST, created_at DESC';
       } else {
-        query += " ORDER BY is_featured DESC, CASE WHEN status = 'ING' THEN 0 ELSE 1 END, created_at DESC";
+        query += ` ORDER BY is_featured DESC, CASE WHEN status = 'ING' AND (promo_end IS NULL OR promo_end >= '${todayStr}') THEN 0 ELSE 1 END, created_at DESC`;
       }
 
       const stmt = db.prepare(query);

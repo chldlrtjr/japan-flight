@@ -39,7 +39,17 @@ npm run dev
 ```
 - 브라우저 접속: `http://localhost:3000`
 
-## 🔄 크롤러 수동 실행
+## 🔄 크롤러 및 특가 자동 갱신
 ```bash
+# 전체 항공사 및 뉴스 크롤러 수동 실행
 python crawler/runner.py
+
+# 🛑 종료/마감된 특가 검사 및 피드에서 즉시 내리기
+python scripts/check_expired.py
+
+# 웹페이지 링크 실시간 생존 여부까지 검사하여 내리기
+python scripts/check_expired.py --live
+
+# 만료된 특가 영구 삭제 모드
+python scripts/check_expired.py --purge
 ```

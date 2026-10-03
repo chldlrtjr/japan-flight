@@ -203,7 +203,7 @@
     "japan_cities": "일본 전역",
     "region_category": "일본",
     "created_at": "2026-09-28 16:56:39",
-    "promo_status": "ACTIVE",
+    "promo_status": "END",
     "promo_period_desc": "9월 30일 마감 (국제선 최대 15% 운임 할인)",
     "promo_end": "2026-09-30"
   },
@@ -235,7 +235,7 @@
     "japan_cities": "도쿄, 오사카, 후쿠오카, 기타큐슈",
     "region_category": "일본",
     "created_at": "2026-09-28 17:09:23",
-    "promo_status": "ACTIVE",
+    "promo_status": "END",
     "promo_period_desc": "9월 30일 마감 (국제선 최대 15% 운임 할인)",
     "promo_end": "2026-09-30"
   },
@@ -251,7 +251,7 @@
     "japan_cities": "도쿄, 오사카, 후쿠오카",
     "region_category": "일본",
     "created_at": "2026-09-28 17:09:23",
-    "promo_status": "ACTIVE",
+    "promo_status": "END",
     "promo_period_desc": "9월 30일 마감 (국제선 최대 15% 운임 할인)",
     "promo_end": "2026-09-30"
   },
@@ -267,7 +267,7 @@
     "japan_cities": "도쿄, 오사카, 후쿠오카, 다카마쓰",
     "region_category": "일본",
     "created_at": "2026-09-28 17:09:23",
-    "promo_status": "ACTIVE",
+    "promo_status": "END",
     "promo_period_desc": "9월 30일 마감 (국제선 최대 15% 운임 할인)",
     "promo_end": "2026-09-30"
   },
@@ -283,7 +283,7 @@
     "japan_cities": "도쿄, 오사카, 후쿠오카, 기타큐슈",
     "region_category": "일본",
     "created_at": "2026-09-28 17:09:23",
-    "promo_status": "ACTIVE",
+    "promo_status": "END",
     "promo_period_desc": "9월 30일 마감 (국제선 최대 15% 운임 할인)",
     "promo_end": "2026-09-30"
   },
@@ -299,7 +299,7 @@
     "japan_cities": "도쿄, 오사카, 후쿠오카",
     "region_category": "일본",
     "created_at": "2026-09-28 17:09:23",
-    "promo_status": "ACTIVE",
+    "promo_status": "END",
     "promo_period_desc": "9월 30일 마감 (국제선 최대 15% 운임 할인)",
     "promo_end": "2026-09-30"
   },
@@ -507,7 +507,7 @@
     "japan_cities": "삿포로",
     "region_category": "일본",
     "created_at": "2026-09-28 16:56:38",
-    "promo_status": "ACTIVE",
+    "promo_status": "END",
     "promo_period_desc": "9월 30일 마감 (5% 할인코드 CTSNEW5)",
     "promo_end": "2026-09-30"
   },
@@ -539,7 +539,7 @@
     "japan_cities": "삿포로",
     "region_category": "일본",
     "created_at": "2026-09-28 16:56:38",
-    "promo_status": "ACTIVE",
+    "promo_status": "END",
     "promo_period_desc": "9월 30일 마감 (5% 할인코드 CTSNEW5)",
     "promo_end": "2026-09-30"
   },
@@ -555,7 +555,7 @@
     "japan_cities": "삿포로",
     "region_category": "일본",
     "created_at": "2026-09-28 16:56:38",
-    "promo_status": "ACTIVE",
+    "promo_status": "END",
     "promo_period_desc": "9월 30일 마감 (5% 할인코드 CTSNEW5)",
     "promo_end": "2026-09-30"
   }

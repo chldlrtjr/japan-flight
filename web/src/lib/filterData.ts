@@ -1,5 +1,16 @@
 import { Promotion, CrawlStats, NewsArticle } from '@/types';
 
+export function isPromoExpired(promo: Promotion): boolean {
+  if (promo.status === 'END') return true;
+  if (!promo.promo_end) return false;
+  try {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    return promo.promo_end < todayStr;
+  } catch {
+    return false;
+  }
+}
+
 export function calculatePromoStats(promotions: Promotion[]): CrawlStats {
   const japanPromos = promotions.filter(isStrictJapanPromo);
   let activeCount = 0;
@@ -9,7 +20,8 @@ export function calculatePromoStats(promotions: Promotion[]): CrawlStats {
   let lastUpdated = '';
 
   for (const r of japanPromos) {
-    if (r.status === 'ING') activeCount++;
+    const expired = isPromoExpired(r);
+    if (!expired && r.status === 'ING') activeCount++;
     if (r.is_international === 1) internationalCount++;
 
     airlineCounts[r.airline] = (airlineCounts[r.airline] || 0) + 1;
@@ -195,9 +207,11 @@ export function filterPromotions(
     });
   }
 
-  // Status filter
-  if (params.status && params.status !== 'ALL') {
-    list = list.filter((p) => p.status === params.status);
+  // Status filter: By default ('ING'), automatically take down all expired promotions!
+  if (params.status === 'ING') {
+    list = list.filter((p) => p.status === 'ING' && !isPromoExpired(p));
+  } else if (params.status === 'END') {
+    list = list.filter((p) => isPromoExpired(p));
   }
 
   // Search term
@@ -213,11 +227,19 @@ export function filterPromotions(
 
   // Sorting
   if (params.sort === 'end_soon') {
-    list.sort((a, b) => (a.status === 'ING' ? 0 : 1) - (b.status === 'ING' ? 0 : 1) || (a.promo_end || '9999').localeCompare(b.promo_end || '9999'));
+    list.sort((a, b) => {
+      const aExpired = isPromoExpired(a) ? 1 : 0;
+      const bExpired = isPromoExpired(b) ? 1 : 0;
+      return aExpired - bExpired || (a.promo_end || '9999').localeCompare(b.promo_end || '9999');
+    });
   } else if (params.sort === 'start_recent') {
     list.sort((a, b) => (b.promo_start || '').localeCompare(a.promo_start || ''));
   } else {
-    list.sort((a, b) => (b.is_featured || 0) - (a.is_featured || 0) || (a.status === 'ING' ? 0 : 1) - (b.status === 'ING' ? 0 : 1) || b.created_at.localeCompare(a.created_at));
+    list.sort((a, b) => {
+      const aExpired = isPromoExpired(a) ? 1 : 0;
+      const bExpired = isPromoExpired(b) ? 1 : 0;
+      return (b.is_featured || 0) - (a.is_featured || 0) || aExpired - bExpired || b.created_at.localeCompare(a.created_at);
+    });
   }
 
   return list;
