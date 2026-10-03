@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List, Dict, Any
 from .destinations import analyze_promotion, extract_dates
 
-TWAY_URL = "https://www.twayair.com/app/promotion/event/now"
+TWAY_URL = "https://www.twayair.com/app/promotion/event/being"
 TWAY_BASE = "https://www.twayair.com"
 
 HEADERS = {

@@ -282,33 +282,43 @@ export function filterNewsArticles(
 }
 
 export const AIRLINE_OFFICIAL_EVENT_URLS: Record<string, string> = {
-  KAL: 'https://www.koreanair.com/contents/promotion/event/list',
-  AAR: 'https://flyasiana.com/I/KO/KR/Event/Index.do',
-  AIR_SEOUL: 'https://flyairseoul.com/CW/KO/event/eventList.do',
-  AIR_BUSAN: 'https://www.airbusan.com/content/common/flynjoy/event/',
-  AIR_PREMIA: 'https://www.airpremia.com/kr/ko/event',
+  KAL: 'https://www.koreanair.com/contents/promotion/event',
+  AAR: 'https://flyasiana.com/I/KR/KO/EventList.do',
+  AIR_SEOUL: 'https://flyairseoul.com/CW/ko/ingEvent.do',
+  AIR_BUSAN: 'https://www.airbusan.com/content/common/flynjoy/flyNEvent/',
+  AIR_PREMIA: 'https://www.airpremia.com/kr/ko/event/promotionList',
   AERO_K: 'https://www.aerok.com/ko-KR/event-benefit/event/being',
-  PARATA: 'https://www.parataair.com/ko/contents/event/eventList.do',
   JEJU: 'https://www.jejuair.net/ko/event/event.do',
   JIN: 'https://www.jinair.com/promotion/eventList',
-  TWAY: 'https://www.twayair.com/app/promotion/event/main',
+  TWAY: 'https://www.twayair.com/app/promotion/event/being',
   EASTAR: 'https://www.eastarjet.com/newstar/PGWTA00001',
-  PEACH: 'https://www.flypeach.com/kr/um/specials/sale',
-  ZIPAIR: 'https://www.zipair.net/ko/topic',
-  JAL: 'https://www.jal.co.jp/kr/ko/offers/',
+  PEACH: 'https://www.flypeach.com/kr/um/specials/int_shorttrip',
+  ZIPAIR: 'https://www.zipair.net/ko/promotion',
+  JAL: 'https://www.jal.co.jp/kr/ko/',
   ANA: 'https://www.ana.co.jp/ko/kr/plan-book/promotions/',
 };
 
 export function getPromoEventUrl(promo: { detail_url?: string; airline_code?: string; airline?: string }): string {
-  const url = promo.detail_url || '';
-  const isEventUrl = /event|special|promotion|offer|topic|sale|detail/i.test(url) && !/\.(net|com|co\.jp|kr)\/?$/i.test(url);
-  if (isEventUrl) {
+  const url = (promo.detail_url || '').trim();
+
+  // If a specific, working URL is available, use it directly
+  if (
+    url.startsWith('http') &&
+    !url.includes('eventList.do') && // excludes broken guessed air seoul path
+    !url.includes('trinityairways.com/app/promotion/event/main') &&
+    !url.includes('parataair.com') &&
+    !url.includes('error')
+  ) {
     return url;
   }
+
+  // Fallback to verified official airline promotion page
   const code = promo.airline_code || '';
   if (code && AIRLINE_OFFICIAL_EVENT_URLS[code]) {
     return AIRLINE_OFFICIAL_EVENT_URLS[code];
   }
+
   return url || 'https://www.google.com';
 }
+
 

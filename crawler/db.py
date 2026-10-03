@@ -170,9 +170,14 @@ def init_db():
     """, (today_str,))
 
     cursor.execute("""
-        UPDATE promotions
-        SET destinations = '도쿄, 오사카, 후쿠오카, 삿포로, 오키나와'
-        WHERE id = 'jin_jinmarket_autumn'
+        DELETE FROM promotions
+        WHERE id IN (
+            'parata_japan_paranweek', 'peach_autumn_sale', 'airseoul_yonago_takamatsu',
+            'airbusan_fukuoka_winter', 'jin_jinmarket_autumn', 'jin_japan_special',
+            'jin_sapporo_okinawa_sale'
+        )
+        OR airline LIKE '%파라타%'
+        OR airline_code = 'PARATA'
     """)
 
     conn.commit()
