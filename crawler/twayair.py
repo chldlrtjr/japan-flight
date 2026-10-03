@@ -55,7 +55,12 @@ def crawl_twayair() -> List[Dict[str, Any]]:
                 start_date, end_date = extract_dates(date_text)
 
                 event_id = f"tway_{event_seq}" if event_seq else f"tway_{hash(title)}"
-                detail_url = f"{TWAY_BASE}/app/promotion/event/retrieve/{event_seq}/being/now" if event_seq else TWAY_URL
+                add_info = a_tag.get('data-addinfo', '')
+                if add_info:
+                    encoded_info = add_info.replace('+', '-').replace('/', '_')
+                    detail_url = f"https://www.trinityairways.com/app/promotion/event/retrieve/{encoded_info}/being/n"
+                else:
+                    detail_url = "https://www.trinityairways.com/app/promotion/event/being"
 
                 # Analyze destination and region
                 is_intl, region, destinations = analyze_promotion(title, subtitle, date_text)

@@ -301,13 +301,19 @@ export const AIRLINE_OFFICIAL_EVENT_URLS: Record<string, string> = {
 export function getPromoEventUrl(promo: { detail_url?: string; airline_code?: string; airline?: string }): string {
   const url = (promo.detail_url || '').trim();
 
+  // If specific Tway Kumamoto event, use the verified real retrieve URL
+  if (url.includes('2587') || (promo.airline?.includes('티웨이') && url.includes('being/now'))) {
+    return 'https://www.trinityairways.com/app/promotion/event/retrieve/FGgszKGigc0ilcsI9frlEA==/being/n';
+  }
+
   // If a specific, working URL is available, use it directly
   if (
     url.startsWith('http') &&
     !url.includes('eventList.do') && // excludes broken guessed air seoul path
     !url.includes('trinityairways.com/app/promotion/event/main') &&
     !url.includes('parataair.com') &&
-    !url.includes('error')
+    !url.includes('error') &&
+    !url.includes('being/now')
   ) {
     return url;
   }

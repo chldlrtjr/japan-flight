@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.037619",
-    "updated_at": "2026-10-03T11:27:18.315425"
+    "updated_at": "2026-10-03T20:37:18.600391"
   },
   {
     "id": "peach_int_shorttrip",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.019953",
-    "updated_at": "2026-10-03T11:27:18.314457"
+    "updated_at": "2026-10-03T20:37:18.592845"
   },
   {
     "id": "ana_gimpo_sale",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.055352",
-    "updated_at": "2026-10-03T11:27:18.313543"
+    "updated_at": "2026-10-03T20:37:18.584800"
   },
   {
     "id": "jal_haneda_earlybird",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.045875",
-    "updated_at": "2026-10-03T11:27:18.312670"
+    "updated_at": "2026-10-03T20:37:18.576798"
   },
   {
     "id": "asiana_japan_season_deal",
@@ -102,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.108053",
-    "updated_at": "2026-10-03T11:27:18.310898"
+    "updated_at": "2026-10-03T20:37:18.560772"
   },
   {
     "id": "kal_japan_app_special",
@@ -123,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.099450",
-    "updated_at": "2026-10-03T11:27:18.309829"
+    "updated_at": "2026-10-03T20:37:18.553109"
   },
   {
     "id": "airpremia_sapporo_inauguration",
@@ -144,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-03T11:27:18.308867"
+    "updated_at": "2026-10-03T20:37:18.544114"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -165,7 +165,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-03T11:27:18.307995"
+    "updated_at": "2026-10-03T20:37:18.536618"
   },
   {
     "id": "airbusan_october_coupon",
@@ -186,7 +186,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-03T11:27:18.307087"
+    "updated_at": "2026-10-03T20:37:18.529092"
   },
   {
     "id": "airseoul_takamatsu_10th",
@@ -207,7 +207,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-03T11:27:18.305933"
+    "updated_at": "2026-10-03T20:37:18.520450"
   },
   {
     "id": "airseoul_october_hurry",
@@ -228,7 +228,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.139189",
-    "updated_at": "2026-10-03T11:27:18.304911"
+    "updated_at": "2026-10-03T20:37:18.512384"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -249,7 +249,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.146220",
-    "updated_at": "2026-10-03T11:27:18.302642"
+    "updated_at": "2026-10-03T20:37:18.495697"
   },
   {
     "id": "tway_2587",
@@ -258,7 +258,7 @@
     "title": "가까워서 더 좋은 여행, 구마모토",
     "subtitle": "항공권 최대 15% 할인 + 2만원 중복쿠폰까지",
     "badge_text": "쿠폰할인",
-    "detail_url": "https://www.twayair.com/app/promotion/event/retrieve/2587/being/now",
+    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/FGgszKGigc0ilcsI9frlEA==/being/n",
     "image_url": "https://contents-image.trinityairways.com/contents/2026/0921/156f8130-bdb5-46a4-9582-38cbc38f62a4.png",
     "promo_start": "2026-09-28",
     "promo_end": "2026-10-11",
@@ -270,7 +270,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:47.007649",
-    "updated_at": "2026-10-03T11:27:07.825002"
+    "updated_at": "2026-10-03T20:37:09.297621"
   },
   {
     "id": "jeju_0000004308",
@@ -291,7 +291,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:21.324118",
-    "updated_at": "2026-10-03T11:27:06.240003"
+    "updated_at": "2026-10-03T20:37:08.403985"
   },
   {
     "id": "eastar_2645",
