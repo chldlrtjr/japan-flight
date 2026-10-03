@@ -10,7 +10,7 @@ import { NewsCard } from '@/components/NewsCard';
 import { clusterNewsArticles } from '@/lib/clusterNews';
 import { filterPromotions, filterNewsArticles, calculatePromoStats, isPromoExpired } from '@/lib/filterData';
 import { Promotion, CrawlStats, NewsArticle, GroupedNews } from '@/types';
-import { BookmarkX, PlaneTakeoff, Newspaper, RefreshCw } from 'lucide-react';
+import { BookmarkX, PlaneTakeoff, Newspaper, RefreshCw, Search, X } from 'lucide-react';
 
 export default function Home() {
   const [rawPromotions, setRawPromotions] = useState<Promotion[]>([]);
@@ -293,78 +293,61 @@ export default function Home() {
           </>
         ) : (
           /* News Feed Mode */
-          <div className="space-y-6">
-            {/* News Filter Header */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+          <div className="space-y-4">
+            {/* Seamless Natural Filter Row */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
               {/* News Status Filter (All / Active / Upcoming) */}
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-semibold text-slate-600">
-                  <button
-                    onClick={() => setNewsStatusFilter('ALL')}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      newsStatusFilter === 'ALL'
-                        ? 'bg-white text-slate-900 shadow-sm font-bold'
-                        : 'hover:text-slate-900'
-                    }`}
-                  >
-                    전체
-                  </button>
-                  <button
-                    onClick={() => setNewsStatusFilter('ACTIVE')}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      newsStatusFilter === 'ACTIVE'
-                        ? 'bg-white text-emerald-600 shadow-sm font-bold'
-                        : 'hover:text-slate-900'
-                    }`}
-                  >
-                    🔥 진행중
-                  </button>
-                  <button
-                    onClick={() => setNewsStatusFilter('UPCOMING')}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${
-                      newsStatusFilter === 'UPCOMING'
-                        ? 'bg-white text-amber-600 shadow-sm font-bold'
-                        : 'hover:text-slate-900'
-                    }`}
-                  >
-                    ⏰ 오픈 예정
-                  </button>
-                </div>
-
-                {/* Japan Only Filter Toggle */}
+              <div className="inline-flex rounded-xl bg-slate-200/70 p-1 text-xs font-semibold text-slate-600 w-fit">
                 <button
-                  onClick={() => setIsJapanOnlyNews(!isJapanOnlyNews)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                    isJapanOnlyNews
-                      ? 'bg-rose-50 text-rose-700 border-rose-200 shadow-sm'
-                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                  onClick={() => setNewsStatusFilter('ALL')}
+                  className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                    newsStatusFilter === 'ALL'
+                      ? 'bg-white text-slate-900 shadow-sm font-bold'
+                      : 'hover:text-slate-900'
                   }`}
                 >
-                  🇯🇵 일본 노선 전용 ({japanNewsCount})
+                  전체
                 </button>
-
-                {/* Topic Clustering Toggle */}
                 <button
-                  onClick={() => setIsGroupingEnabled(!isGroupingEnabled)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                    isGroupingEnabled
-                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm'
-                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                  onClick={() => setNewsStatusFilter('ACTIVE')}
+                  className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                    newsStatusFilter === 'ACTIVE'
+                      ? 'bg-white text-emerald-600 shadow-sm font-bold'
+                      : 'hover:text-slate-900'
                   }`}
                 >
-                  🔗 동일 기사 묶어보기
+                  🔥 진행중
+                </button>
+                <button
+                  onClick={() => setNewsStatusFilter('UPCOMING')}
+                  className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                    newsStatusFilter === 'UPCOMING'
+                      ? 'bg-white text-amber-600 shadow-sm font-bold'
+                      : 'hover:text-slate-900'
+                  }`}
+                >
+                  ⏰ 오픈 예정
                 </button>
               </div>
 
               {/* News Search */}
-              <div className="w-full lg:w-72">
+              <div className="w-full sm:w-72 relative">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="기사 검색 (도쿄, 오사카, 할인...)"
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                  className="w-full pl-9 pr-9 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-xs placeholder:text-slate-400"
                 />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
 
