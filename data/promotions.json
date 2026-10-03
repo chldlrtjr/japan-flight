@@ -1,26 +1,5 @@
 [
   {
-    "id": "zipair_narita_special",
-    "airline": "집에어 (ZIPAIR)",
-    "airline_code": "ZIPAIR",
-    "title": "JAL 계열 하이브리드 LCC 집에어, 인천 ↔ 도쿄(나리타) 공식 프로모션",
-    "subtitle": "전 좌석 무료 기내 Wi-Fi 제공 및 보잉 787 드림라이너 쾌적한 비행",
-    "badge_text": "기내무료와이파이",
-    "detail_url": "https://www.zipair.net/ko/promotion",
-    "image_url": "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80",
-    "promo_start": "2026-09-29",
-    "promo_end": "2026-11-02",
-    "travel_period": "2026-10-03 ~ 2027-04-01",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿄, 나리타",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-28T23:54:53.037619",
-    "updated_at": "2026-10-03T11:42:47.230548"
-  },
-  {
     "id": "peach_int_shorttrip",
     "airline": "피치항공 (Peach)",
     "airline_code": "PEACH",
@@ -39,91 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:54:53.019953",
-    "updated_at": "2026-10-03T11:42:47.229663"
-  },
-  {
-    "id": "ana_gimpo_sale",
-    "airline": "전일본공수 (ANA)",
-    "airline_code": "ANA",
-    "title": "전일본공수(ANA) 한국 출발 일본 노선 공식 프로모션",
-    "subtitle": "김포 ↔ 도쿄(하네다) 도심 직항 및 5스타 항공사 고품격 특별 할인",
-    "badge_text": "5스타항공사",
-    "detail_url": "https://www.ana.co.jp/ko/kr/plan-book/promotions/",
-    "image_url": "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
-    "promo_start": "2026-09-28",
-    "promo_end": "2026-10-23",
-    "travel_period": "2026-10-03 ~ 2027-01-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿄, 하네다",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-28T23:54:53.055352",
-    "updated_at": "2026-10-03T11:42:47.228709"
-  },
-  {
-    "id": "jal_haneda_earlybird",
-    "airline": "일본항공 (JAL)",
-    "airline_code": "JAL",
-    "title": "일본항공(JAL) 한국 출발 공식 여행 프로모션 및 국내선 환승 혜택",
-    "subtitle": "김포 ↔ 도쿄(하네다) 도심 직항 및 일본 국내선 특가 패스 안내",
-    "badge_text": "공식프로모션",
-    "detail_url": "https://www.jal.co.jp/kr/ko/world/japan_explorer_pass/kr/",
-    "image_url": "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80",
-    "promo_start": "2026-10-01",
-    "promo_end": "2026-10-28",
-    "travel_period": "2026-10-17 ~ 2027-03-02",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿄, 하네다",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-28T23:54:53.045875",
-    "updated_at": "2026-10-03T11:42:47.227845"
-  },
-  {
-    "id": "asiana_japan_season_deal",
-    "airline": "아시아나항공",
-    "airline_code": "AAR",
-    "title": "아시아나항공 공식 이벤트 및 일본 노선 특가 프로모션",
-    "subtitle": "김포/인천 ↔ 도쿄·오사카·후쿠오카·오키나와·센다이 시즌 특가",
-    "badge_text": "공식이벤트",
-    "detail_url": "https://flyasiana.com/I/KR/KO/EventList.do",
-    "image_url": "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80",
-    "promo_start": "2026-09-29",
-    "promo_end": "2026-10-28",
-    "travel_period": "2026-10-03 ~ 2027-03-02",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿄, 오사카, 후쿠오카, 오키나와",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:25:29.108053",
-    "updated_at": "2026-10-03T11:42:47.226085"
-  },
-  {
-    "id": "kal_japan_app_special",
-    "airline": "대한항공",
-    "airline_code": "KAL",
-    "title": "대한항공 공식 이벤트 및 일본 노선 프로모션 안내",
-    "subtitle": "김포/인천 ↔ 도쿄(하네다)·오사카·후쿠오카·삿포로 공식 혜택",
-    "badge_text": "공식프로모션",
-    "detail_url": "https://www.koreanair.com/contents/promotion/event",
-    "image_url": "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80",
-    "promo_start": "2026-10-01",
-    "promo_end": "2026-11-02",
-    "travel_period": "2026-10-03 ~ 2027-01-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿄, 오사카, 후쿠오카, 삿포로",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:25:29.099450",
-    "updated_at": "2026-10-03T11:42:47.225212"
+    "updated_at": "2026-10-03T20:45:41.969209"
   },
   {
     "id": "airpremia_sapporo_inauguration",
@@ -144,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-03T11:42:47.224232"
+    "updated_at": "2026-10-03T20:45:41.954153"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -165,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-03T11:42:47.223337"
+    "updated_at": "2026-10-03T20:45:41.946136"
   },
   {
     "id": "airbusan_october_coupon",
@@ -186,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-03T11:42:47.222451"
+    "updated_at": "2026-10-03T20:45:41.937610"
   },
   {
     "id": "airseoul_takamatsu_10th",
@@ -207,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-03T11:42:47.221433"
+    "updated_at": "2026-10-03T20:45:41.929693"
   },
   {
     "id": "airseoul_october_hurry",
@@ -228,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.139189",
-    "updated_at": "2026-10-03T11:42:47.220343"
+    "updated_at": "2026-10-03T20:45:41.921604"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -249,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.146220",
-    "updated_at": "2026-10-03T11:42:47.216517"
+    "updated_at": "2026-10-03T20:45:41.906084"
   },
   {
     "id": "tway_2587",
@@ -270,7 +165,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:47.007649",
-    "updated_at": "2026-10-03T11:42:36.606504"
+    "updated_at": "2026-10-03T20:45:32.751194"
   },
   {
     "id": "jeju_0000004308",
@@ -291,7 +186,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-28T23:15:21.324118",
-    "updated_at": "2026-10-03T11:42:35.623246"
+    "updated_at": "2026-10-03T20:45:31.835620"
   },
   {
     "id": "eastar_2645",

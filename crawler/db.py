@@ -174,7 +174,8 @@ def init_db():
         WHERE id IN (
             'parata_japan_paranweek', 'peach_autumn_sale', 'airseoul_yonago_takamatsu',
             'airbusan_fukuoka_winter', 'jin_jinmarket_autumn', 'jin_japan_special',
-            'jin_sapporo_okinawa_sale'
+            'jin_sapporo_okinawa_sale', 'zipair_narita_special', 'kal_japan_app_special',
+            'asiana_japan_season_deal', 'jal_haneda_earlybird', 'ana_gimpo_sale'
         )
         OR airline LIKE '%파라타%'
         OR airline_code = 'PARATA'
