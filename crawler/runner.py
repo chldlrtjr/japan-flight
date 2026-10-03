@@ -25,7 +25,7 @@ def run_all_crawlers() -> dict:
         ("이스타항공", "EASTAR", crawl_eastarjet),
         ("진에어", "JIN", crawl_jinair),
         ("국내 전 항공사(대한항공/아시아나/에어서울/에어부산/에어프레미아/에어로케이/파라타)", "KOREA_ALL", crawl_korean_airlines),
-        ("일본 전 항공사(JAL/ANA/피치/집에어/제트스타/스카이마크/스타플라이어/에어도/솔라시드/FDA/IBEX/스프링/JTA/RAC/AMX/ORC/HAC/토키)", "JAPAN_ALL", crawl_japan_airlines),
+        ("일본 항공사(한일 노선: JAL/ANA/피치/집에어)", "JAPAN_ALL", crawl_japan_airlines),
     ]
 
     summary = {

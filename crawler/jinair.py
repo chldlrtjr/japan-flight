@@ -23,8 +23,8 @@ JINAIR_FALLBACK_PROMOS = [
         "promo_end": (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
         "travel_period": f"{datetime.now().strftime('%Y-%m-%d')} ~ {(datetime.now() + timedelta(days=120)).strftime('%Y-%m-%d')}",
         "is_international": 1,
-        "region_category": "전노선(국제선)",
-        "destinations": "도쿄, 오사카, 후쿠오카, 다낭, 괌, 나트랑",
+        "region_category": "일본",
+        "destinations": "도쿄, 오사카, 후쿠오카, 삿포로, 오키나와",
         "status": "ING",
         "is_featured": 1
     },
@@ -47,20 +47,20 @@ JINAIR_FALLBACK_PROMOS = [
         "is_featured": 1
     },
     {
-        "id": "jin_guam_superlow",
+        "id": "jin_sapporo_okinawa_sale",
         "airline": "진에어",
         "airline_code": "JIN",
-        "title": "인천/부산 ↔ 괌 패밀리 특가 & 위탁수하물 23kg 1+1 프로모션",
-        "subtitle": "아이 동반 가족여행 특화 혜택, 호텔/렌터카 제휴 할인 쿠폰",
-        "badge_text": "패밀리특가",
+        "title": "진에어 인천/부산 ↔ 삿포로·오키나와 설경 & 휴양 특가 프로모션",
+        "subtitle": "겨울 홋카이도 설경부터 따뜻한 오키나와까지 전 노선 특가 운임",
+        "badge_text": "일본특가",
         "detail_url": "https://www.jinair.com/promotion/eventList",
-        "image_url": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80",
+        "image_url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
         "promo_start": (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d"),
         "promo_end": (datetime.now() + timedelta(days=14)).strftime("%Y-%m-%d"),
         "travel_period": f"{(datetime.now() + timedelta(days=10)).strftime('%Y-%m-%d')} ~ {(datetime.now() + timedelta(days=90)).strftime('%Y-%m-%d')}",
         "is_international": 1,
-        "region_category": "대양주/미주",
-        "destinations": "괌",
+        "region_category": "일본",
+        "destinations": "삿포로, 오키나와",
         "status": "ING",
         "is_featured": 1
     }

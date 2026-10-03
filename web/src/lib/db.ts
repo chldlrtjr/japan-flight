@@ -63,8 +63,8 @@ export function queryPromotions(params: {
 
       if (params.airline && params.airline !== 'ALL') {
         if (params.airline === 'JAPAN_ALL') {
-          const jpCodes = ['JAL', 'ANA', 'PEACH', 'ZIPAIR', 'JETSTAR_JP', 'SKYMARK', 'STARFLYER', 'AIRDO', 'SOLASEED', 'FDA', 'IBEX', 'SPRING_JP', 'JTA', 'RAC', 'TOKI_AIR', 'AMX', 'ORC', 'HAC'];
-          query += ` AND (airline_code IN (${jpCodes.map(() => '?').join(',')}) OR airline LIKE '%일본항공%' OR airline LIKE '%전일본공수%' OR airline LIKE '%피치%' OR airline LIKE '%집에어%' OR airline LIKE '%제트스타%' OR airline LIKE '%스카이마크%' OR airline LIKE '%스타플라이어%' OR airline LIKE '%에어도%' OR airline LIKE '%솔라시드%' OR airline LIKE '%후지드림%' OR airline LIKE '%아이벡스%' OR airline LIKE '%스프링%' OR airline LIKE '%트랜스오션%' OR airline LIKE '%류큐%' OR airline LIKE '%토키%' OR airline LIKE '%아마쿠사%' OR airline LIKE '%오리엔탈%' OR airline LIKE '%홋카이도 에어%')`;
+          const jpCodes = ['JAL', 'ANA', 'PEACH', 'ZIPAIR'];
+          query += ` AND (airline_code IN (${jpCodes.map(() => '?').join(',')}) OR airline LIKE '%일본항공%' OR airline LIKE '%전일본공수%' OR airline LIKE '%피치%' OR airline LIKE '%집에어%')`;
           queryParams.push(...jpCodes);
         } else if (params.airline === 'KOREA_ALL') {
           const krCodes = ['KAL', 'AAR', 'JEJU', 'JIN', 'TWAY', 'EASTAR', 'AIR_SEOUL', 'AIR_BUSAN', 'AIR_PREMIA', 'AERO_K', 'PARATA'];
@@ -257,7 +257,7 @@ export function queryNews(params: {
 
       if (params.airline && params.airline !== 'ALL') {
         if (params.airline === 'JAPAN_ALL') {
-          query += ` AND (is_japan = 1 OR airline LIKE '%피치%' OR airline LIKE '%일본항공%' OR airline LIKE '%전일본공수%' OR airline LIKE '%집에어%' OR airline LIKE '%제트스타%' OR airline LIKE '%스카이마크%' OR airline LIKE '%스타플라이어%' OR airline LIKE '%에어도%' OR airline LIKE '%솔라시드%' OR airline LIKE '%후지드림%' OR airline LIKE '%아이벡스%' OR airline LIKE '%스프링%' OR title LIKE '%피치%' OR title LIKE '%JAL%' OR title LIKE '%ANA%' OR title LIKE '%일본항공%' OR title LIKE '%집에어%' OR title LIKE '%제트스타%')`;
+          query += ` AND (is_japan = 1 OR airline LIKE '%피치%' OR airline LIKE '%일본항공%' OR airline LIKE '%전일본공수%' OR airline LIKE '%집에어%' OR title LIKE '%피치%' OR title LIKE '%JAL%' OR title LIKE '%ANA%' OR title LIKE '%일본항공%' OR title LIKE '%집에어%')`;
         } else if (params.airline === 'KOREA_ALL') {
           query += ` AND (airline LIKE '%대한항공%' OR airline LIKE '%아시아나%' OR airline LIKE '%제주항공%' OR airline LIKE '%진에어%' OR airline LIKE '%티웨이%' OR airline LIKE '%이스타%' OR airline LIKE '%에어서울%' OR airline LIKE '%에어부산%' OR airline LIKE '%에어프레미아%' OR airline LIKE '%에어로케이%' OR airline LIKE '%파라타%' OR title LIKE '%대한항공%' OR title LIKE '%아시아나%' OR title LIKE '%제주항공%' OR title LIKE '%진에어%' OR title LIKE '%티웨이%' OR title LIKE '%이스타%' OR title LIKE '%에어서울%' OR title LIKE '%에어부산%' OR title LIKE '%에어프레미아%' OR title LIKE '%에어로케이%' OR title LIKE '%파라타%')`;
         } else {

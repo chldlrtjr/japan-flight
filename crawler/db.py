@@ -100,6 +100,67 @@ def init_db():
            OR (promo_end IS NULL AND published_at < '2026-09-19')
     """)
 
+    # Automatically clean non-Japan, irrelevant, or Japan domestic-only promotions
+    cursor.execute("""
+        DELETE FROM promotions
+        WHERE id = 'jin_guam_superlow'
+           OR title LIKE '%괌%'
+           OR destinations = '괌'
+           OR destinations LIKE '%괌,%'
+           OR destinations LIKE '%, 괌%'
+           OR destinations LIKE '%,괌%'
+           OR title LIKE '%홍콩%'
+           OR title LIKE '%싱가포르%'
+           OR title LIKE '%포인트 적립%'
+           OR title LIKE '%국립항공박물관%'
+           OR title LIKE '%신한카드%'
+           OR title LIKE '%시니어%'
+           OR title LIKE '%우리 동네%'
+           OR title LIKE '%체크인 혜택%'
+           OR airline_code IN (
+               'SKYMARK', 'STARFLYER', 'AIRDO', 'SOLASEED', 'FDA', 'IBEX', 
+               'SPRING_JP', 'JETSTAR_JP', 'JTA', 'RAC', 'TOKI_AIR', 'AMX', 'ORC', 'HAC'
+           )
+           OR id IN (
+               'skymark_imatoku_deal', 'starflyer_star_early', 'airdo_do_bargain',
+               'solaseed_bargain_series', 'fda_dream_early', 'ibex_tokuwari',
+               'jta_okinawa_island_special', 'rac_island_connect', 'tokiair_niigata_sapporo',
+               'amx_mizoka_deal', 'orc_nagasaki_tsushima', 'hac_hokkaido_okadama',
+               'spring_japan_tokyo_hiroshima', 'jetstar_super_star_sale'
+           )
+           OR airline LIKE '%스카이마크%'
+           OR airline LIKE '%스타플라이어%'
+           OR airline LIKE '%에어도%'
+           OR airline LIKE '%솔라시드%'
+           OR airline LIKE '%후지드림%'
+           OR airline LIKE '%아이벡스%'
+           OR airline LIKE '%제트스타%'
+           OR airline LIKE '%스프링%'
+           OR airline LIKE '%트랜스오션%'
+           OR airline LIKE '%류큐%'
+           OR airline LIKE '%토키%'
+           OR airline LIKE '%아마쿠사%'
+           OR airline LIKE '%오리엔탈%'
+           OR airline LIKE '%홋카이도 에어%'
+    """)
+
+    cursor.execute("""
+        DELETE FROM promotions
+        WHERE (destinations IS NULL OR destinations = '')
+          AND title NOT LIKE '%일본%'
+          AND title NOT LIKE '%도쿄%'
+          AND title NOT LIKE '%오사카%'
+          AND title NOT LIKE '%후쿠오카%'
+          AND title NOT LIKE '%삿포로%'
+          AND title NOT LIKE '%오키나와%'
+    """)
+
+    cursor.execute("""
+        UPDATE promotions
+        SET destinations = '도쿄, 오사카, 후쿠오카, 삿포로, 오키나와'
+        WHERE id = 'jin_jinmarket_autumn'
+    """)
+
     conn.commit()
     conn.close()
 
@@ -164,7 +225,29 @@ def upsert_news(news: Dict[str, Any]) -> bool:
 
 def upsert_promotion(promo: Dict[str, Any]) -> bool:
     # Strictly reject non-Japan promotions
-    full_text = f"{promo.get('title', '')} {promo.get('subtitle', '')} {promo.get('destinations', '')} {promo.get('region_category', '')} {promo.get('airline', '')}"
+    title = promo.get('title', '')
+    dests = promo.get('destinations', '')
+    promo_id = promo.get('id', '')
+    airline = promo.get('airline', '')
+    airline_code = promo.get('airline_code', '')
+
+    if promo_id == 'jin_guam_superlow' or '괌' in title or dests == '괌':
+        return False
+    if any(k in title for k in ['홍콩', '싱가포르', '국립항공박물관', '포인트 적립', '신한카드', '액티브 시니어', '우리 동네']):
+        return False
+
+    # Strictly reject Japan domestic-only airlines and pure domestic routes
+    domestic_airlines = [
+        '스카이마크', '스타플라이어', '에어도', '솔라시드', '후지드림',
+        '아이벡스', '토키에어', '아마쿠사', '오리엔탈', '홋카이도 에어',
+        '류큐', '트랜스오션', '제트스타 재팬', '스프링 재팬'
+    ]
+    if any(da in airline for da in domestic_airlines):
+        return False
+    if airline_code in ['SKYMARK', 'STARFLYER', 'AIRDO', 'SOLASEED', 'FDA', 'IBEX', 'SPRING_JP', 'JETSTAR_JP', 'JTA', 'RAC', 'TOKI_AIR', 'AMX', 'ORC', 'HAC']:
+        return False
+
+    full_text = f"{title} {promo.get('subtitle', '')} {dests} {promo.get('region_category', '')} {airline}"
     from .destinations import is_japan_promo
     if not is_japan_promo(full_text):
         return False

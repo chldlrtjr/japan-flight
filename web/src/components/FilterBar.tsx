@@ -17,15 +17,39 @@ interface FilterBarProps {
   totalFilteredCount: number;
 }
 
-const JAPAN_CITIES = [
+export const JAPAN_CITIES = [
   { id: 'ALL', label: '🇯🇵 전체 일본 노선' },
   { id: '도쿄', label: '🗼 도쿄 (나리타/하네다)' },
   { id: '오사카', label: '🏯 오사카 (간사이)' },
-  { id: '후쿠오카', label: '🍜 후쿠오카/규슈' },
+  { id: '후쿠오카', label: '🍜 후쿠오카' },
+  { id: '삿포로', label: '❄️ 삿포로 (신치토세)' },
   { id: '나고야', label: '🍤 나고야 (주부)' },
-  { id: '삿포로', label: '❄️ 삿포로/홋카이도' },
-  { id: '오키나와', label: '🌺 오키나와' },
-  { id: '소도시', label: '♨️ 온천/소도시 (마쓰야마/가고시마 등)' },
+  { id: '오키나와', label: '🌺 오키나와 (나하)' },
+  { id: '마쓰야마', label: '🍊 마쓰야마' },
+  { id: '다카마쓰', label: '🍲 다카마쓰' },
+  { id: '히로시마', label: '🍁 히로시마' },
+  { id: '시즈오카', label: '🗻 시즈오카' },
+  { id: '기타큐슈', label: '⚓ 기타큐슈' },
+  { id: '구마모토', label: '🐻 구마모토' },
+  { id: '가고시마', label: '🌋 가고시마' },
+  { id: '오이타', label: '♨️ 오이타' },
+  { id: '사가', label: '🏺 사가' },
+  { id: '나가사키', label: '⛪ 나가사키' },
+  { id: '미야자키', label: '🌴 미야자키' },
+  { id: '요나고', label: '🐫 요나고 (돗토리)' },
+  { id: '오카야마', label: '🍑 오카야마' },
+  { id: '고마쓰', label: '🍵 고마쓰 (가나자와)' },
+  { id: '센다이', label: '🎋 센다이' },
+  { id: '아오모리', label: '🍎 아오모리' },
+  { id: '니가타', label: '🌾 니가타' },
+  { id: '도쿠시마', label: '🌀 도쿠시마' },
+  { id: '아사히카와', label: '🐧 아사히카와' },
+  { id: '하코다테', label: '🌃 하코다테' },
+  { id: '도야마', label: '🏔️ 도야마' },
+  { id: '고베', label: '🥩 고베' },
+  { id: '미야코지마', label: '🏝️ 미야코지마 (시모지지마)' },
+  { id: '우베', label: '✈️ 우베 (야마구치)' },
+  { id: '이바라키', label: '🌸 이바라키' },
 ];
 
 const AIRLINES = [
@@ -111,24 +135,42 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       </div>
 
       {/* Japan City Tabs */}
-      <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-3">
-        <span className="text-xs font-bold text-slate-400 w-14 shrink-0">일본 도시:</span>
-        {JAPAN_CITIES.map((city) => {
-          const isSelected = selectedRegion === city.id;
-          return (
+      <div className="flex flex-col gap-2.5 border-t border-slate-100 pt-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-700">일본 취항 도시:</span>
+            <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200/60">
+              한국 직항 31개 도시
+            </span>
+          </div>
+          {selectedRegion !== 'ALL' && (
             <button
-              key={city.id}
-              onClick={() => onSelectRegion(city.id)}
-              className={`text-xs px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all ${
-                isSelected
-                  ? 'bg-rose-600 text-white font-bold shadow-sm shadow-rose-600/30'
-                  : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'
-              }`}
+              onClick={() => onSelectRegion('ALL')}
+              className="text-xs text-slate-500 hover:text-rose-600 flex items-center gap-1 font-medium transition-colors"
             >
-              {city.label}
+              <span>전체 일본 노선 보기</span>
+              <X className="w-3.5 h-3.5" />
             </button>
-          );
-        })}
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {JAPAN_CITIES.map((city) => {
+            const isSelected = selectedRegion === city.id;
+            return (
+              <button
+                key={city.id}
+                onClick={() => onSelectRegion(city.id)}
+                className={`text-xs px-2.5 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all ${
+                  isSelected
+                    ? 'bg-rose-600 text-white font-bold shadow-sm shadow-rose-600/30'
+                    : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300'
+                }`}
+              >
+                {city.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Airline Tabs */}
