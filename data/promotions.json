@@ -1,26 +1,5 @@
 [
   {
-    "id": "peach_int_shorttrip",
-    "airline": "피치항공 (Peach)",
-    "airline_code": "PEACH",
-    "title": "빛나는 추억을 만드는 반짝 왕복 티켓! 피치의 한일 당일치기 & 심야 특가",
-    "subtitle": "인천/부산 ↔ 오사카(간사이)·도쿄(하네다) 왕복 8만원대부터 알찬 일본 여행",
-    "badge_text": "한일특가",
-    "detail_url": "https://www.flypeach.com/kr/um/specials/int_shorttrip",
-    "image_url": "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80",
-    "promo_start": "2026-10-03",
-    "promo_end": "2026-10-26",
-    "travel_period": "2026-10-06 ~ 2027-02-03",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "오사카, 도쿄, 하네다, 간사이",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-03T21:08:58.647012",
-    "updated_at": "2026-10-06T03:04:38.130176"
-  },
-  {
     "id": "airpremia_sapporo_inauguration",
     "airline": "에어프레미아",
     "airline_code": "AIR_PREMIA",
@@ -39,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-06T03:04:38.128220"
+    "updated_at": "2026-10-06T04:05:21.138621"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -60,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-06T03:04:38.127364"
+    "updated_at": "2026-10-06T04:05:21.137563"
   },
   {
     "id": "airbusan_october_coupon",
@@ -81,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-06T03:04:38.126521"
+    "updated_at": "2026-10-06T04:05:21.136590"
   },
   {
     "id": "airseoul_takamatsu_10th",
@@ -102,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-06T03:04:38.125696"
+    "updated_at": "2026-10-06T04:05:21.135558"
   },
   {
     "id": "airseoul_october_hurry",
@@ -123,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.139189",
-    "updated_at": "2026-10-06T03:04:38.124876"
+    "updated_at": "2026-10-06T04:05:21.134653"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -144,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T12:11:01.649252",
-    "updated_at": "2026-10-06T03:04:38.106451"
+    "updated_at": "2026-10-06T04:05:21.132287"
   },
   {
     "id": "tway_2587",
@@ -165,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:47.007649",
-    "updated_at": "2026-10-06T03:04:27.738397"
+    "updated_at": "2026-10-06T04:05:12.814851"
   },
   {
     "id": "jeju_0000004308",
@@ -186,7 +165,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T21:08:58.630462",
-    "updated_at": "2026-10-06T03:04:26.629587"
+    "updated_at": "2026-10-06T04:05:11.048844"
   },
   {
     "id": "eastar_2645",
