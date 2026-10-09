@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-09T02:39:25.888601"
+    "updated_at": "2026-10-09T09:46:03.059046"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-09T02:39:25.887616"
+    "updated_at": "2026-10-09T09:46:03.057834"
   },
   {
     "id": "airbusan_october_coupon",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-09T02:39:25.886662"
+    "updated_at": "2026-10-09T09:46:03.056788"
   },
   {
     "id": "airseoul_takamatsu_10th",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-09T02:39:25.885419"
+    "updated_at": "2026-10-09T09:46:03.055487"
   },
   {
     "id": "airseoul_october_hurry",
@@ -102,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.139189",
-    "updated_at": "2026-10-09T02:39:25.884304"
+    "updated_at": "2026-10-09T09:46:03.053580"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -123,49 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T12:11:01.649252",
-    "updated_at": "2026-10-09T02:39:25.881619"
-  },
-  {
-    "id": "tway_2587",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "가까워서 더 좋은 여행, 구마모토",
-    "subtitle": "항공권 최대 15% 할인 + 2만원 중복쿠폰까지",
-    "badge_text": "쿠폰할인",
-    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/FGgszKGigc0ilcsI9frlEA==/being/n",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/0921/156f8130-bdb5-46a4-9582-38cbc38f62a4.png",
-    "promo_start": "2026-09-28",
-    "promo_end": "2026-10-11",
-    "travel_period": "2026-09-28 ~ 2026-10-11",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "구마모토",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-03T20:20:47.007649",
-    "updated_at": "2026-10-09T02:39:17.277267"
-  },
-  {
-    "id": "jeju_0000004308",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "가고시마 특가 따뜻한 겨울 여행",
-    "subtitle": "최대 20% 할인코드♨️",
-    "badge_text": "최대 20% 할인코드♨️",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004308",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260916133913712.jpg",
-    "promo_start": "2026-09-28",
-    "promo_end": "2026-10-11",
-    "travel_period": "2026.09.28 ~ 2026.10.11",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "가고시마",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-03T21:08:58.630462",
-    "updated_at": "2026-10-09T02:39:15.211523"
+    "updated_at": "2026-10-09T09:46:03.050632"
   },
   {
     "id": "eastar_2651",
@@ -186,7 +144,49 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-07T23:55:32.542040",
-    "updated_at": "2026-10-08T22:36:19.915559"
+    "updated_at": "2026-10-09T09:45:58.374464"
+  },
+  {
+    "id": "tway_2587",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "가까워서 더 좋은 여행, 구마모토",
+    "subtitle": "항공권 최대 15% 할인 + 2만원 중복쿠폰까지",
+    "badge_text": "쿠폰할인",
+    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/FGgszKGigc0ilcsI9frlEA==/being/n",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/0921/156f8130-bdb5-46a4-9582-38cbc38f62a4.png",
+    "promo_start": "2026-09-28",
+    "promo_end": "2026-10-11",
+    "travel_period": "2026-09-28 ~ 2026-10-11",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "구마모토",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-10-03T20:20:47.007649",
+    "updated_at": "2026-10-09T09:45:52.827635"
+  },
+  {
+    "id": "jeju_0000004308",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "가고시마 특가 따뜻한 겨울 여행",
+    "subtitle": "최대 20% 할인코드♨️",
+    "badge_text": "최대 20% 할인코드♨️",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004308",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20260916133913712.jpg",
+    "promo_start": "2026-09-28",
+    "promo_end": "2026-10-11",
+    "travel_period": "2026.09.28 ~ 2026.10.11",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "가고시마",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-10-03T21:08:58.630462",
+    "updated_at": "2026-10-09T09:45:51.504597"
   },
   {
     "id": "eastar_2505",
