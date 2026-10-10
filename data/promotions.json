@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-09T21:23:36.450444"
+    "updated_at": "2026-10-10T01:23:22.485568"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-09T21:23:36.352097"
+    "updated_at": "2026-10-10T01:23:22.484480"
   },
   {
     "id": "airbusan_october_coupon",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-09T21:23:36.261514"
+    "updated_at": "2026-10-10T01:23:22.483507"
   },
   {
     "id": "airseoul_takamatsu_10th",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-09T21:23:36.126824"
+    "updated_at": "2026-10-10T01:23:22.482463"
   },
   {
     "id": "airseoul_october_hurry",
@@ -102,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.139189",
-    "updated_at": "2026-10-09T21:23:35.981717"
+    "updated_at": "2026-10-10T01:23:22.481348"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -123,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T12:11:01.649252",
-    "updated_at": "2026-10-09T21:23:35.614232"
+    "updated_at": "2026-10-10T01:23:22.478566"
   },
   {
     "id": "eastar_2651",
@@ -144,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-07T23:55:32.542040",
-    "updated_at": "2026-10-09T21:23:31.073760"
+    "updated_at": "2026-10-10T01:23:17.814214"
   },
   {
     "id": "tway_2587",
@@ -165,7 +165,28 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:47.007649",
-    "updated_at": "2026-10-09T21:23:25.481477"
+    "updated_at": "2026-10-10T01:23:12.147400"
+  },
+  {
+    "id": "tway_2433",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "국제선 얼리버드 특가",
+    "subtitle": "유럽부터 일본까지 최대 24% 추가 할인",
+    "badge_text": "얼리버드",
+    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/lpJCX4P079MqpkYQZ_4Nuw==/being/n",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/1006/60af6156-769a-4b71-85f6-89cbfee4d46e.png",
+    "promo_start": "2026-10-10",
+    "promo_end": "2026-10-20",
+    "travel_period": "2026-10-10 ~ 2026-10-20",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "일본 전역",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-10-10T01:23:12.144984",
+    "updated_at": "2026-10-10T01:23:12.144984"
   },
   {
     "id": "jeju_0000004308",
@@ -186,7 +207,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T21:08:58.630462",
-    "updated_at": "2026-10-09T21:23:24.171385"
+    "updated_at": "2026-10-10T01:23:10.937519"
   },
   {
     "id": "eastar_2505",

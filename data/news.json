@@ -272,6 +272,22 @@
     "promo_end": null
   },
   {
+    "id": "news_5feba9400e3781bf0e3498d5806ac004",
+    "title": "에어프레미아, 삿포로 신규 취항 기념 프로모션",
+    "summary": "<a href=\"https://news.google.com/rss/articles/CBMiYEFVX3lxTFBFRzF1Vl8yV0g4Zlp0eW5aSlppU0RNZHc2Wmh2bmFiOUlvenBkNGEyeVNSSlBZQUNVaEF3aXFoazNkeWRrUWVCaGtoZDhWaDU2WWJlOERNS1lTQWpTSkFpMA?oc=5\" target=\"_blank\">에어프레미아, 삿포로 신규 취항 기념 프로모션</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">메트로신문</font>",
+    "source": "메트로신문",
+    "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFBFRzF1Vl8yV0g4Zlp0eW5aSlppU0RNZHc2Wmh2bmFiOUlvenBkNGEyeVNSSlBZQUNVaEF3aXFoazNkeWRrUWVCaGtoZDhWaDU2WWJlOERNS1lTQWpTSkFpMA?oc=5",
+    "published_at": "2026-09-21 07:00",
+    "airline": "에어프레미아",
+    "is_japan": 1,
+    "japan_cities": "삿포로",
+    "region_category": "일본",
+    "created_at": "2026-09-29T02:55:59.070341",
+    "promo_status": "UPCOMING",
+    "promo_period_desc": "실시간 진행중",
+    "promo_end": null
+  },
+  {
     "id": "news_6896f1dbe75823917becefe39d6bf499",
     "title": "에어프레미아, 인천~삿포로 취항 기념 할인 행사 진행 - 조선비즈",
     "summary": "<a href=\"https://news.google.com/rss/articles/CBMihAFBVV95cUxNeEVUX25tV2I5UHpQdl9QWHlaYVctN1pVbVVoNmhSRGJSY0JnOGpzZ2p3cjh3bXRXWnNuSU5tc1dzb2xOUGNPcHJmV0FtaFY1VzNUNDl1M3Q3Nkp5UFpWTU9JcjZYTE9vTDd6R0xjN1A5djVLaXhlU29xUnJRMU84WU9USVrSAZgBQVVfeXFMUFNhcmRrTVRLZWxfT1Q5TG9qU1pGb1UtS3dZdlNyMWhWUVlCWWRwM1N2RTM4U0FVMVN1X1Z1ZGlBbnBoZXA5YmVnU1d2QVZZa0RaMU85TDQweGc5ZGt1aW1iRlJ0Y3FwUkJiWGFJR2kyZ2laOGVENnR3ZlZ2S3RXZkY4d2t1Zzd0Q1dzWGdoQzVNS3dEWlNxb3M?oc=5\" target=\"_blank\">에어프레미아, 인천~삿포로 취항 기념 할인 행사 진행 - 조선비즈</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">Chosunbiz</font>",
@@ -365,22 +381,6 @@
     "created_at": "2026-09-29T02:55:59.062438",
     "promo_status": "UPCOMING",
     "promo_period_desc": "10~12월 출발 특가",
-    "promo_end": null
-  },
-  {
-    "id": "news_5feba9400e3781bf0e3498d5806ac004",
-    "title": "에어프레미아, 삿포로 신규 취항 기념 프로모션",
-    "summary": "<a href=\"https://news.google.com/rss/articles/CBMiYEFVX3lxTFBFRzF1Vl8yV0g4Zlp0eW5aSlppU0RNZHc2Wmh2bmFiOUlvenBkNGEyeVNSSlBZQUNVaEF3aXFoazNkeWRrUWVCaGtoZDhWaDU2WWJlOERNS1lTQWpTSkFpMA?oc=5\" target=\"_blank\">에어프레미아, 삿포로 신규 취항 기념 프로모션</a>&nbsp;&nbsp;<font color=\"#6f6f6f\">메트로신문</font>",
-    "source": "메트로신문",
-    "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFBFRzF1Vl8yV0g4Zlp0eW5aSlppU0RNZHc2Wmh2bmFiOUlvenBkNGEyeVNSSlBZQUNVaEF3aXFoazNkeWRrUWVCaGtoZDhWaDU2WWJlOERNS1lTQWpTSkFpMA?oc=5",
-    "published_at": "2026-09-21 02:17",
-    "airline": "에어프레미아",
-    "is_japan": 1,
-    "japan_cities": "삿포로",
-    "region_category": "일본",
-    "created_at": "2026-09-29T02:55:59.070341",
-    "promo_status": "UPCOMING",
-    "promo_period_desc": "실시간 진행중",
     "promo_end": null
   },
   {
