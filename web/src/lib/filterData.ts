@@ -241,6 +241,87 @@ export function filterPromotions(
   return list;
 }
 
+const NEWS_ROUNDUP_PREFIXES = [
+  '[산업소식]', '[산업 소식]', '[유통소식]', '[유통가]', '[기업소식]', '[기업브리프]',
+  '[주간 여행산업', '[TOP\'s Pick]', '[EBN 데이터센터]', '[여행한컷]', '[여행24시]',
+  '[뉴스브리핑]', '[브리핑]', '[종합]', '[포토]', '[기획]'
+];
+
+const NEWS_AIRLINE_OR_FLIGHT_KEYWORDS = [
+  '피치', 'peach', '집에어', 'zipair', '일본항공', 'jal', '전일본공수', 'ana',
+  '대한항공', '아시아나', '제주항공', '진에어', '티웨이', '트리니티', '이스타',
+  '에어부산', '에어서울', '에어프레미아', '에어로케이', '파라타',
+  '항공권', '비행기표', '비행기', '항공편', '탑승권', '하늘길', '노선', '취항', '운항',
+  '항공사', '항공업계', 'lcc', 'fsc', '국제선', '항공'
+];
+
+const NEWS_EXCLUDE_KEYWORDS = [
+  '삼성전자', '카드업계', '카드사', '신용카드', '체크카드', '마일리지 카드', '캐시백',
+  '항공정비', '인재 양성', '사회공헌', '봉사활동', '장학금', '기부',
+  '스카이트랙스', '고객만족도', '1위 선정', '수상', '인증',
+  '드론', '군집비행', '무인기', '방산',
+  'esim', '유심', '와이파이 도시락', '로밍', '렌터카', '카지노', '골프장',
+  '스키 시즌권', '숏트립', '카카오페이', '맛집', '숙소',
+  '항공주', '투자심리', '데이터센터', '과징금', '지연', '결항', '기체 결함', '고장'
+];
+
+const NEWS_NON_JAPAN_DESTINATIONS = [
+  '유럽', '미주', '미국', '하와이', '괌', '사이판', '동남아', '다낭', '나트랑', '푸꾸옥',
+  '방콕', '치앙마이', '발리', '대만', '타이베이', '가오슝', '홍콩', '마카오', '중국',
+  '칭다오', '상하이', '베이징', '세부', '보라카이', '필리핀'
+];
+
+const NEWS_JAPAN_DESTINATIONS = [
+  '일본', '한일', '한·일', '한-일', '도쿄', '오사카', '후쿠오카', '삿포로', '오키나와', '나고야',
+  '마쓰야마', '시즈오카', '히로시마', '가고시마', '다카마쓰', '타카마츠', '오이타',
+  '구마모토', '쿠마모토', '사가', '기타큐슈', '키타큐슈', '요나고', '간사이', '나리타', '하네다',
+  '고베', '센다이', '아오모리', '니가타'
+];
+
+export function isStrictJapanNewsArticle(n: NewsArticle): boolean {
+  const title = (n.title || '').trim();
+  const summary = (n.summary || '').trim();
+  const titleLower = title.toLowerCase();
+  const fullTextLower = `${title} ${summary}`.toLowerCase();
+
+  // 1. Minimum title length
+  if (title.length < 12) return false;
+
+  // 2. Dangling/truncated titles
+  if (title.endsWith(',') || title.endsWith(",'") || title.endsWith('최...') || title.endsWith("'인천") || title.endsWith('...外')) {
+    return false;
+  }
+
+  // 3. Reject roundup/digest prefix
+  if (NEWS_ROUNDUP_PREFIXES.some((pfx) => title.startsWith(pfx))) {
+    return false;
+  }
+
+  // 4. Must contain airline or flight keyword in TITLE
+  if (!NEWS_AIRLINE_OR_FLIGHT_KEYWORDS.some((kw) => titleLower.includes(kw))) {
+    return false;
+  }
+
+  // 5. Reject blacklisted keywords
+  if (NEWS_EXCLUDE_KEYWORDS.some((kw) => fullTextLower.includes(kw))) {
+    return false;
+  }
+
+  // 6. Strict Japan relevance
+  const hasNonJapan = NEWS_NON_JAPAN_DESTINATIONS.some((nj) => titleLower.includes(nj));
+  const hasJapanInTitle = NEWS_JAPAN_DESTINATIONS.some((jd) => titleLower.includes(jd));
+  if (hasNonJapan && !hasJapanInTitle) {
+    return false;
+  }
+
+  const hasJapanInFullText = NEWS_JAPAN_DESTINATIONS.some((jd) => fullTextLower.includes(jd));
+  if (!hasJapanInFullText) {
+    return false;
+  }
+
+  return true;
+}
+
 export function filterNewsArticles(
   allNews: NewsArticle[],
   params: {
@@ -250,7 +331,7 @@ export function filterNewsArticles(
   }
 ): NewsArticle[] {
   const todayStr = new Date().toISOString().slice(0, 10);
-  let list = allNews.filter((n) => !n.promo_end || n.promo_end >= todayStr);
+  let list = allNews.filter((n) => (!n.promo_end || n.promo_end >= todayStr) && isStrictJapanNewsArticle(n));
 
   if (params.isJapanOnly) {
     list = list.filter((n) => n.is_japan === 1);

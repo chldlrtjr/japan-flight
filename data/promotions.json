@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-11T09:25:36.444111"
+    "updated_at": "2026-10-11T21:55:35.147946"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-11T09:25:36.443220"
+    "updated_at": "2026-10-11T21:55:35.138788"
   },
   {
     "id": "airbusan_october_coupon",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-11T09:25:36.442402"
+    "updated_at": "2026-10-11T21:55:35.129900"
   },
   {
     "id": "airseoul_takamatsu_10th",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-11T09:25:36.441601"
+    "updated_at": "2026-10-11T21:55:35.119535"
   },
   {
     "id": "airseoul_october_hurry",
@@ -102,28 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.139189",
-    "updated_at": "2026-10-11T09:25:36.440733"
-  },
-  {
-    "id": "jin_october_newmember_baggage",
-    "airline": "진에어",
-    "airline_code": "JIN",
-    "title": "진에어 신규가입 혜택! 국제선 수하물팩 3만원 할인 쿠폰 및 왕복 항공권 추첨",
-    "subtitle": "한국·일본·대만 고객 대상 10월 한정 신규가입 프로모션 (기본 15kg + 추가 5kg 혜택)",
-    "badge_text": "수하물팩할인",
-    "detail_url": "https://www.jinair.com/promotion/eventList",
-    "image_url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
-    "promo_start": "2026-10-01",
-    "promo_end": "2026-10-31",
-    "travel_period": "2026-10-01 ~ 2027-01-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿄, 오사카, 후쿠오카, 삿포로, 오키나와",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-03T12:11:01.649252",
-    "updated_at": "2026-10-11T09:25:36.436157"
+    "updated_at": "2026-10-11T21:55:35.110820"
   },
   {
     "id": "eastar_2651",
@@ -143,8 +122,8 @@
     "status": "ING",
     "is_featured": 1,
     "view_count": 0,
-    "created_at": "2026-10-07T23:55:32.542040",
-    "updated_at": "2026-10-11T09:25:31.933359"
+    "created_at": "2026-10-11T21:55:30.314732",
+    "updated_at": "2026-10-11T21:55:30.314732"
   },
   {
     "id": "tway_2587",
@@ -165,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:47.007649",
-    "updated_at": "2026-10-11T09:25:26.187250"
+    "updated_at": "2026-10-11T21:55:22.101573"
   },
   {
     "id": "tway_2433",
@@ -185,8 +164,8 @@
     "status": "ING",
     "is_featured": 1,
     "view_count": 0,
-    "created_at": "2026-10-10T01:23:12.144984",
-    "updated_at": "2026-10-11T09:25:26.185733"
+    "created_at": "2026-10-11T21:55:22.091972",
+    "updated_at": "2026-10-11T21:55:22.091972"
   },
   {
     "id": "jeju_0000004308",
@@ -207,28 +186,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T21:08:58.630462",
-    "updated_at": "2026-10-11T09:25:23.762400"
-  },
-  {
-    "id": "eastar_2505",
-    "airline": "이스타항공",
-    "airline_code": "EASTAR",
-    "title": "도쿠시마 버스투어로 여행준비 끝!",
-    "subtitle": "이벤트기간 : 2026-05-18~2026-10-31",
-    "badge_text": "특가",
-    "detail_url": "https://www.eastarjet.com/newstar/PGWTA00002?eventNo=2505&gubun=I&searchIndex=1",
-    "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20260518024311_%EB%AA%A8%EB%B0%94%EC%9D%BC_%EB%A9%94%EC%9D%B8%EB%B0%B0%EB%84%88%EA%B0%80%EC%9D%B4%EB%93%9C.jpg",
-    "promo_start": "2026-05-18",
-    "promo_end": "2026-10-31",
-    "travel_period": "도쿠시마 버스투어로 여행준비 끝!\n\n이벤트기간 : 2026-05-18~2026-10-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿠시마",
-    "status": "ING",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T00:18:06.121932",
-    "updated_at": "2026-10-07T19:07:10.474654"
+    "updated_at": "2026-10-11T21:55:21.018243"
   },
   {
     "id": "eastar_2645",
@@ -250,5 +208,26 @@
     "view_count": 0,
     "created_at": "2026-10-03T18:00:44.137009",
     "updated_at": "2026-10-03T18:00:44.137009"
+  },
+  {
+    "id": "eastar_2505",
+    "airline": "이스타항공",
+    "airline_code": "EASTAR",
+    "title": "도쿠시마 버스투어로 여행준비 끝!",
+    "subtitle": "이벤트기간 : 2026-05-18~2026-10-31",
+    "badge_text": "특가",
+    "detail_url": "https://www.eastarjet.com/newstar/PGWTA00002?eventNo=2505&gubun=I&searchIndex=1",
+    "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20260518024311_%EB%AA%A8%EB%B0%94%EC%9D%BC_%EB%A9%94%EC%9D%B8%EB%B0%B0%EB%84%88%EA%B0%80%EC%9D%B4%EB%93%9C.jpg",
+    "promo_start": "2026-05-18",
+    "promo_end": "2026-10-31",
+    "travel_period": "도쿠시마 버스투어로 여행준비 끝!\n\n이벤트기간 : 2026-05-18~2026-10-31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "도쿠시마",
+    "status": "ING",
+    "is_featured": 0,
+    "view_count": 0,
+    "created_at": "2026-09-29T00:18:06.121932",
+    "updated_at": "2026-09-29T12:04:37.512390"
   }
 ]

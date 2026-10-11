@@ -184,15 +184,53 @@ def init_db():
     conn.commit()
     conn.close()
 
+    # Automatically purge any irrelevant, non-flight, or noisy news articles
+    clean_invalid_news()
+
+def clean_invalid_news() -> int:
+    """
+    Examines all news articles in the database and permanently deletes any that:
+    1. Lack airline or flight keywords in title (e.g. Samsung, generic card news, etc.)
+    2. Contain blacklist keywords (e.g. awards, stock, maintenance, drones, etc.)
+    3. Are press roundup/digest articles
+    4. Focus purely on non-Japan regions
+    5. Have truncated/dangling titles
+    """
+    from .news import is_valid_active_japan_promo
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, title, summary, published_at FROM news_articles")
+    rows = cursor.fetchall()
+
+    delete_ids = []
+    for r in rows:
+        title = r['title']
+        summary = r['summary'] or ''
+        pub_at = r['published_at'] or ''
+        if not is_valid_active_japan_promo(title, summary, pub_at):
+            delete_ids.append(r['id'])
+
+    if delete_ids:
+        cursor.executemany("DELETE FROM news_articles WHERE id = ?", [(did,) for did in delete_ids])
+        conn.commit()
+        print(f"[DB] Purged {len(delete_ids)} invalid/irrelevant news articles from database.")
+
+    conn.close()
+    return len(delete_ids)
+
 def upsert_news(news: Dict[str, Any]) -> bool:
+    # Strictly validate active Japan promo news: title, flight/airline relevance, keywords, dates
+    from .news import is_valid_active_japan_promo
+    if not is_valid_active_japan_promo(
+        news.get("title", ""),
+        news.get("summary", ""),
+        news.get("published_at", "") or ""
+    ):
+        return False
+
     # Strictly reject non-Japan news
     if news.get("is_japan", 0) != 1:
         return False
-
-    # Strictly reject expired or non-flight keywords
-    for kw in ['숏트립', '렌터카', '카카오페이', '맛집', '숙소']:
-        if kw in news.get('title', ''):
-            return False
 
     # Reject if expired
     today_str = datetime.now().strftime("%Y-%m-%d")

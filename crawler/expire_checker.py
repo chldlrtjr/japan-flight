@@ -85,9 +85,10 @@ def check_and_expire_promotions(today_str: Optional[str] = None, check_live: boo
     if delete_promo_ids:
         cursor.executemany("DELETE FROM promotions WHERE id = ?", [(pid,) for pid in delete_promo_ids])
 
-    # 2. Check and delete expired news articles
+    # 2. Check and delete expired or invalid/irrelevant news articles
+    from crawler.news import is_valid_active_japan_promo
     cursor.execute("""
-        SELECT id, title, promo_end, promo_status, published_at
+        SELECT id, title, summary, promo_end, promo_status, published_at
         FROM news_articles
     """)
     news_rows = cursor.fetchall()
@@ -98,8 +99,12 @@ def check_and_expire_promotions(today_str: Optional[str] = None, check_live: boo
         n_end = nrow['promo_end']
         n_status = nrow['promo_status']
         n_pub = nrow['published_at']
+        n_title = nrow['title']
+        n_summary = nrow['summary'] or ''
 
-        if n_status == 'END':
+        if not is_valid_active_japan_promo(n_title, n_summary, n_pub or ''):
+            delete_news_ids.append(n_id)
+        elif n_status == 'END':
             delete_news_ids.append(n_id)
         elif n_end and n_end < today_str:
             delete_news_ids.append(n_id)
