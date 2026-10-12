@@ -1,11 +1,9 @@
 import urllib.request
-import xml.etree.ElementTree as ET
 import urllib.parse
 import hashlib
 import re
 import time
 from datetime import datetime, timedelta
-from email.utils import parsedate_to_datetime
 from typing import List, Dict, Any
 from bs4 import BeautifulSoup
 
@@ -91,36 +89,23 @@ AIRLINE_KEYWORDS = {
     "파라타항공": ["파라타항공", "파라타", "PARATA"],
 }
 
-GOOGLE_QUERIES = [
-    "일본 항공권 특가",
-    "일본 항공권 프로모션",
-    "피치항공 일본 특가",
-    "피치항공 서울 오사카 당일치기 특가",
-    "일본항공 특가 프로모션",
-    "전일본공수 ANA 특가",
-    "집에어 ZIPAIR 나리타",
-    "에어프레미아 삿포로 취항 할인",
-    "진에어 일본 노선 할인 프로모션",
-    "에어서울 일본 전 노선 프로모션",
-    "이스타항공 일본 특가",
-    "제주항공 일본 노선 할인",
-    "티웨이항공 일본 특가",
-]
-
 NAVER_QUERIES = [
     "일본 항공권 특가",
     "일본 항공권 프로모션",
+    "일본 항공권 세일",
     "제주항공 일본 특가",
     "진에어 일본 특가",
     "티웨이항공 일본 특가",
+    "트리니티항공 일본 특가",
     "에어서울 일본 특가",
     "이스타항공 일본 특가",
     "에어부산 일본 특가",
     "에어프레미아 일본 특가",
+    "에어로케이 일본 특가",
     "피치항공 특가",
     "일본항공 특가",
     "전일본공수 ANA 특가",
-    "에어로케이 일본 특가",
+    "집에어 ZIPAIR 나리타",
 ]
 
 def clean_news_title(title: str) -> str:
@@ -270,7 +255,7 @@ def is_valid_active_japan_promo(title: str, summary: str, pub_date: str) -> bool
     return True
 
 def crawl_flight_news() -> List[Dict[str, Any]]:
-    print("[NewsCrawler] Starting Japan flight promotion crawl (Naver & Google News)...")
+    print("[NewsCrawler] Starting Japan flight promotion crawl (Naver News)...")
     seen_links = set()
     seen_title_keys = set()
     articles = []
@@ -282,10 +267,7 @@ def crawl_flight_news() -> List[Dict[str, Any]]:
         'Referer': 'https://www.naver.com/'
     }
 
-    # -------------------------------------------------------------
-    # 1. NAVER NEWS CRAWL (Direct Article Links, Priority 1)
-    # -------------------------------------------------------------
-    print(" -> [1/2] Fetching Naver News articles...")
+    print(" -> Fetching Naver News articles...")
     for query in NAVER_QUERIES:
         try:
             encoded_query = urllib.parse.quote(query)
@@ -375,105 +357,9 @@ def crawl_flight_news() -> List[Dict[str, Any]]:
         except Exception as e:
             print(f"[NewsCrawler-Naver] Error query '{query}': {e}")
 
-    naver_count = len(articles)
-    print(f" -> Naver News collected: {naver_count} valid promotions")
-
-    # -------------------------------------------------------------
-    # 2. GOOGLE NEWS RSS CRAWL (Supplementary Coverage)
-    # -------------------------------------------------------------
-    print(" -> [2/2] Fetching Google News RSS articles...")
-    for query in GOOGLE_QUERIES:
-        try:
-            encoded_query = urllib.parse.quote(query)
-            url = f"https://news.google.com/rss/search?q={encoded_query}&hl=ko&gl=KR&ceid=KR:ko"
-            req = urllib.request.Request(url, headers={
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            })
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                root = ET.fromstring(resp.read())
-                items = root.findall('.//item')
-
-                for item in items[:25]:
-                    title_elem = item.find('title')
-                    link_elem = item.find('link')
-                    pub_elem = item.find('pubDate')
-                    source_elem = item.find('source')
-                    desc_elem = item.find('description')
-
-                    title = title_elem.text.strip() if title_elem is not None and title_elem.text else ''
-                    link = link_elem.text.strip() if link_elem is not None and link_elem.text else ''
-                    pub_raw = pub_elem.text.strip() if pub_elem is not None and pub_elem.text else ''
-                    source = source_elem.text.strip() if source_elem is not None and source_elem.text else '언론사'
-                    summary = desc_elem.text.strip() if desc_elem is not None and desc_elem.text else ''
-
-                    if not title or not link or link in seen_links:
-                        continue
-
-                    clean_title = clean_news_title(title)
-                    clean_summary = re.sub(r'<[^>]+>', '', summary).strip()
-
-                    t_key = normalize_title_key(clean_title)
-                    if t_key and t_key in seen_title_keys:
-                        continue
-
-                    pub_date_formatted = None
-                    if pub_raw:
-                        try:
-                            dt = parsedate_to_datetime(pub_raw)
-                            if dt.hour == 0 and dt.minute == 0:
-                                pub_date_formatted = dt.strftime('%Y-%m-%d')
-                            else:
-                                pub_date_formatted = dt.strftime('%Y-%m-%d %H:%M')
-                        except Exception:
-                            m = re.search(r'(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})', pub_raw)
-                            month_map = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'}
-                            if m:
-                                pub_date_formatted = f"{m.group(3)}-{month_map.get(m.group(2), '01')}-{m.group(1).zfill(2)}"
-                            else:
-                                pub_date_formatted = datetime.now().strftime('%Y-%m-%d')
-
-                    # Strict active Japan promo filter
-                    if not is_valid_active_japan_promo(clean_title, clean_summary, pub_date_formatted or ''):
-                        continue
-
-                    seen_links.add(link)
-                    if t_key:
-                        seen_title_keys.add(t_key)
-
-                    detected_airline = "일본 노선 항공사"
-                    for air_name, syns in AIRLINE_KEYWORDS.items():
-                        if any(s in clean_title for s in syns):
-                            detected_airline = air_name
-                            break
-
-                    matched_japan_cities = []
-                    for city in JAPAN_CITIES:
-                        if city in clean_title and city != "일본" and city not in matched_japan_cities:
-                            matched_japan_cities.append(city)
-
-                    promo_status, period_desc = detect_promo_status(clean_title, clean_summary, pub_date_formatted or '')
-                    art_id = hashlib.md5(link.encode('utf-8')).hexdigest()
-
-                    articles.append({
-                        "id": f"news_{art_id}",
-                        "title": clean_title,
-                        "summary": clean_summary if clean_summary else clean_title,
-                        "source": source,
-                        "link": link,
-                        "published_at": pub_date_formatted,
-                        "airline": detected_airline,
-                        "is_japan": 1,
-                        "japan_cities": ", ".join(matched_japan_cities) if matched_japan_cities else "일본 전역",
-                        "region_category": "일본",
-                        "promo_status": promo_status,
-                        "promo_period_desc": period_desc
-                    })
-        except Exception as e:
-            print(f"[NewsCrawler-Google] Error query '{query}': {e}")
-
     # Sort: newest first
     articles.sort(key=lambda x: x['published_at'] or '', reverse=True)
-    print(f"[NewsCrawler] TOTAL collected: {len(articles)} ACTIVE/UPCOMING Japan promotion articles (Naver: {naver_count}, Google: {len(articles)-naver_count})")
+    print(f"[NewsCrawler] TOTAL collected: {len(articles)} ACTIVE/UPCOMING Japan promotion articles from Naver News")
     return articles
 
 if __name__ == '__main__':

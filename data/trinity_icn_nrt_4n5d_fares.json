@@ -1,0 +1,237 @@
+{
+  "title": "트리니티항공 (Trinity Airways / 티웨이) 인천 ↔ 도쿄(나리타) 4박 5일 실시간 최저가 분석",
+  "search_timestamp": "2026-10-12T02:47:33+09:00",
+  "airline": "트리니티항공 (Trinity Airways / T'way Air)",
+  "route": {
+    "departure": "ICN (서울/인천)",
+    "arrival": "NRT (도쿄/나리타)",
+    "trip_type": "왕복 (Round-trip)",
+    "pattern": "4박 5일 (D일 출발 ~ D+4일 귀국)"
+  },
+  "passengers": {
+    "adults": 6,
+    "children": 0,
+    "infants": 0,
+    "total": 6
+  },
+  "period_scanned": "2026-12-20 ~ 2027-03-31",
+  "total_combinations_checked": 0,
+  "price_unit": "KRW (유류할증료 및 공항세 포함 총액)",
+  "cheapest_overall_top10": [
+    {
+      "outbound_date": "2026-12-20 (일)",
+      "inbound_date": "2026-12-24 (목)",
+      "out_date_raw": "20261220",
+      "in_date_raw": "20261224",
+      "out_amt": 209900,
+      "in_amt": 258910,
+      "per_person_total": 468810,
+      "total_6pax": 2812860,
+      "out_type": "SmartFare",
+      "in_type": "SmartFare"
+    },
+    {
+      "outbound_date": "2027-01-16 (토)",
+      "inbound_date": "2027-01-20 (수)",
+      "out_date_raw": "20270116",
+      "in_date_raw": "20270120",
+      "out_amt": 254900,
+      "in_amt": 258910,
+      "per_person_total": 513810,
+      "total_6pax": 3082860,
+      "out_type": "SmartFare",
+      "in_type": "SmartFare"
+    },
+    {
+      "outbound_date": "2027-01-23 (토)",
+      "inbound_date": "2027-01-27 (수)",
+      "out_date_raw": "20270123",
+      "in_date_raw": "20270127",
+      "out_amt": 254900,
+      "in_amt": 258910,
+      "per_person_total": 513810,
+      "total_6pax": 3082860,
+      "out_type": "SmartFare",
+      "in_type": "SmartFare"
+    },
+    {
+      "outbound_date": "2027-01-30 (토)",
+      "inbound_date": "2027-02-03 (수)",
+      "out_date_raw": "20270130",
+      "in_date_raw": "20270203",
+      "out_amt": 254900,
+      "in_amt": 258910,
+      "per_person_total": 513810,
+      "total_6pax": 3082860,
+      "out_type": "SmartFare",
+      "in_type": "SmartFare"
+    },
+    {
+      "outbound_date": "2027-03-06 (토)",
+      "inbound_date": "2027-03-10 (수)",
+      "out_date_raw": "20270306",
+      "in_date_raw": "20270310",
+      "out_amt": 254900,
+      "in_amt": 258910,
+      "per_person_total": 513810,
+      "total_6pax": 3082860,
+      "out_type": "SmartFare",
+      "in_type": "SmartFare"
+    }
+  ],
+  "monthly_best": {
+    "202612": [
+      {
+        "outbound_date": "2026-12-20 (일)",
+        "inbound_date": "2026-12-24 (목)",
+        "out_date_raw": "20261220",
+        "in_date_raw": "20261224",
+        "out_amt": 209900,
+        "in_amt": 258910,
+        "per_person_total": 468810,
+        "total_6pax": 2812860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      },
+      {
+        "outbound_date": "2026-12-21 (월)",
+        "inbound_date": "2026-12-25 (금)",
+        "out_date_raw": "20261221",
+        "in_date_raw": "20261225",
+        "out_amt": 209900,
+        "in_amt": 368910,
+        "per_person_total": 578810,
+        "total_6pax": 3472860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      },
+      {
+        "outbound_date": "2026-12-22 (화)",
+        "inbound_date": "2026-12-26 (토)",
+        "out_date_raw": "20261222",
+        "in_date_raw": "20261226",
+        "out_amt": 149900,
+        "in_amt": 453810,
+        "per_person_total": 603710,
+        "total_6pax": 3622260,
+        "out_type": "EventFare",
+        "in_type": "NormalFare"
+      }
+    ],
+    "202701": [
+      {
+        "outbound_date": "2027-01-16 (토)",
+        "inbound_date": "2027-01-20 (수)",
+        "out_date_raw": "20270116",
+        "in_date_raw": "20270120",
+        "out_amt": 254900,
+        "in_amt": 258910,
+        "per_person_total": 513810,
+        "total_6pax": 3082860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      },
+      {
+        "outbound_date": "2027-01-23 (토)",
+        "inbound_date": "2027-01-27 (수)",
+        "out_date_raw": "20270123",
+        "in_date_raw": "20270127",
+        "out_amt": 254900,
+        "in_amt": 258910,
+        "per_person_total": 513810,
+        "total_6pax": 3082860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      },
+      {
+        "outbound_date": "2027-01-30 (토)",
+        "inbound_date": "2027-02-03 (수)",
+        "out_date_raw": "20270130",
+        "in_date_raw": "20270203",
+        "out_amt": 254900,
+        "in_amt": 258910,
+        "per_person_total": 513810,
+        "total_6pax": 3082860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      }
+    ],
+    "202703": [
+      {
+        "outbound_date": "2027-03-06 (토)",
+        "inbound_date": "2027-03-10 (수)",
+        "out_date_raw": "20270306",
+        "in_date_raw": "20270310",
+        "out_amt": 254900,
+        "in_amt": 258910,
+        "per_person_total": 513810,
+        "total_6pax": 3082860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      },
+      {
+        "outbound_date": "2027-03-13 (토)",
+        "inbound_date": "2027-03-17 (수)",
+        "out_date_raw": "20270313",
+        "in_date_raw": "20270317",
+        "out_amt": 254900,
+        "in_amt": 258910,
+        "per_person_total": 513810,
+        "total_6pax": 3082860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      },
+      {
+        "outbound_date": "2027-03-20 (토)",
+        "inbound_date": "2027-03-24 (수)",
+        "out_date_raw": "20270320",
+        "in_date_raw": "20270324",
+        "out_amt": 254900,
+        "in_amt": 258910,
+        "per_person_total": 513810,
+        "total_6pax": 3082860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      }
+    ],
+    "202702": [
+      {
+        "outbound_date": "2027-02-02 (화)",
+        "inbound_date": "2027-02-06 (토)",
+        "out_date_raw": "20270202",
+        "in_date_raw": "20270206",
+        "out_amt": 229900,
+        "in_amt": 303910,
+        "per_person_total": 533810,
+        "total_6pax": 3202860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      },
+      {
+        "outbound_date": "2027-02-09 (화)",
+        "inbound_date": "2027-02-13 (토)",
+        "out_date_raw": "20270209",
+        "in_date_raw": "20270213",
+        "out_amt": 229900,
+        "in_amt": 303910,
+        "per_person_total": 533810,
+        "total_6pax": 3202860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      },
+      {
+        "outbound_date": "2027-02-10 (수)",
+        "inbound_date": "2027-02-14 (일)",
+        "out_date_raw": "20270210",
+        "in_date_raw": "20270214",
+        "out_amt": 229900,
+        "in_amt": 303910,
+        "per_person_total": 533810,
+        "total_6pax": 3202860,
+        "out_type": "SmartFare",
+        "in_type": "SmartFare"
+      }
+    ]
+  },
+  "all_combinations": []
+}

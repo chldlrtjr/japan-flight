@@ -89,10 +89,12 @@ def init_db():
     except Exception:
         pass
 
-    # Automatically clean expired or irrelevant articles
+    # Automatically clean expired, irrelevant, or Google News articles
     cursor.execute("""
         DELETE FROM news_articles 
-        WHERE title LIKE '%숏트립%' 
+        WHERE link LIKE '%google.com%'
+           OR link LIKE '%news.google.com%'
+           OR title LIKE '%숏트립%' 
            OR title LIKE '%렌터카%' 
            OR title LIKE '%카카오페이%' 
            OR title LIKE '%맛집%'
