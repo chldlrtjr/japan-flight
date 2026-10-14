@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-13T23:29:17.495681"
+    "updated_at": "2026-10-14T02:29:23.221278"
   },
   {
     "id": "aerok_kumamoto_tokyo",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-13T23:29:17.494923"
+    "updated_at": "2026-10-14T02:29:23.220297"
   },
   {
     "id": "airbusan_october_coupon",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-13T23:29:17.494114"
+    "updated_at": "2026-10-14T02:29:23.219294"
   },
   {
     "id": "airseoul_takamatsu_10th",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-13T23:29:17.493214"
+    "updated_at": "2026-10-14T02:29:23.218301"
   },
   {
     "id": "airseoul_october_hurry",
@@ -102,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.139189",
-    "updated_at": "2026-10-13T23:29:17.492423"
+    "updated_at": "2026-10-14T02:29:23.217080"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -123,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-12T08:37:42.721671",
-    "updated_at": "2026-10-13T23:29:17.490220"
+    "updated_at": "2026-10-14T02:29:23.212304"
   },
   {
     "id": "eastar_2651",
@@ -144,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-11T21:55:30.314732",
-    "updated_at": "2026-10-13T23:29:12.379073"
+    "updated_at": "2026-10-14T02:29:18.551938"
   },
   {
     "id": "tway_2433",
@@ -165,7 +165,28 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-11T21:55:22.091972",
-    "updated_at": "2026-10-13T23:29:05.160853"
+    "updated_at": "2026-10-14T02:29:12.519375"
+  },
+  {
+    "id": "jeju_0000004361",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "환상 속 겨울 도시 하코다테 특가",
+    "subtitle": "낭만 일번지 하코다테",
+    "badge_text": "낭만 일번지 하코다테",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004361",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261007175720609.jpg",
+    "promo_start": "2026-10-14",
+    "promo_end": "2026-10-31",
+    "travel_period": "2026.10.14 ~ 2026.10.31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "하코다테",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-10-14T02:29:10.448829",
+    "updated_at": "2026-10-14T02:29:10.450349"
   },
   {
     "id": "eastar_2645",
