@@ -326,6 +326,10 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
     cursor = conn.cursor()
     now = datetime.now().isoformat()
     
+    # Check if this promotion already exists to prevent duplicate notifications
+    cursor.execute("SELECT id FROM promotions WHERE id = ?", (promo["id"],))
+    is_new = cursor.fetchone() is None
+    
     cursor.execute('''
         INSERT INTO promotions (
             id, airline, airline_code, title, subtitle, badge_text, detail_url, image_url,
@@ -373,6 +377,15 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
     
     conn.commit()
     conn.close()
+
+    # Send instant push alert if it is a brand new promotion
+    if is_new:
+        try:
+            from .notifier import send_promotion_alert
+            send_promotion_alert(promo)
+        except Exception as e:
+            print(f"[Notifier] Failed to send Telegram alert: {e}")
+
     return True
 
 def log_crawl(airline: str, status: str, items_found: int, items_saved: int, error_message: Optional[str], started_at: str, finished_at: str):
