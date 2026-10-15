@@ -22,8 +22,8 @@ def load_env_file():
 load_env_file()
 
 def get_telegram_config():
-    token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-    chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip().strip('"').strip("'").strip()
+    chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip().strip('"').strip("'").strip()
     return token, chat_id
 
 def send_telegram_message(message: str, parse_mode: str = "HTML") -> bool:
@@ -48,7 +48,7 @@ def send_telegram_message(message: str, parse_mode: str = "HTML") -> bool:
             print(f"[Notifier] Telegram message sent successfully to {chat_id}.")
             return True
         else:
-            print(f"[Notifier] Telegram send failed: {data.get('description')}")
+            print(f"[Notifier] Telegram send failed: {data.get('description')} (Error code: {data.get('error_code')})")
             return False
     except Exception as e:
         print(f"[Notifier] Telegram request error: {e}")

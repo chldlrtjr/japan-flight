@@ -50,6 +50,13 @@ jobs:
         run: |
           python crawler/runner.py
 
+      - name: 🔔 Send Cloud Verification Alert
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python crawler/notifier.py
+
       # 2. 업데이트된 최신 데이터를 Git에 커밋 & 푸시
       - name: 💾 Commit & Push updated flight data
         run: |
