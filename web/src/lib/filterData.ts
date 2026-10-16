@@ -221,21 +221,29 @@ export function filterPromotions(
     );
   }
 
-  // Sorting
+  // Sorting: 특가 시작일이 제일 늦은 것(최신 시작일)부터 순차적으로 정렬 (내림차순)
+  const compareByPromoStartDesc = (a: Promotion, b: Promotion): number => {
+    const startA = a.promo_start || '';
+    const startB = b.promo_start || '';
+    if (!startA && !startB) return (b.created_at || '').localeCompare(a.created_at || '');
+    if (!startA) return 1;
+    if (!startB) return -1;
+    const cmp = startB.localeCompare(startA);
+    if (cmp !== 0) return cmp;
+    return (b.created_at || '').localeCompare(a.created_at || '');
+  };
+
   if (params.sort === 'end_soon') {
     list.sort((a, b) => {
       const aExpired = isPromoExpired(a) ? 1 : 0;
       const bExpired = isPromoExpired(b) ? 1 : 0;
-      return aExpired - bExpired || (a.promo_end || '9999').localeCompare(b.promo_end || '9999');
+      return aExpired - bExpired || (a.promo_end || '9999').localeCompare(b.promo_end || '9999') || compareByPromoStartDesc(a, b);
     });
-  } else if (params.sort === 'start_recent') {
-    list.sort((a, b) => (b.promo_start || '').localeCompare(a.promo_start || ''));
+  } else if (params.sort === 'created_recent') {
+    list.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
   } else {
-    list.sort((a, b) => {
-      const aExpired = isPromoExpired(a) ? 1 : 0;
-      const bExpired = isPromoExpired(b) ? 1 : 0;
-      return (b.is_featured || 0) - (a.is_featured || 0) || aExpired - bExpired || b.created_at.localeCompare(a.created_at);
-    });
+    // default 및 start_recent: 특가 시작일이 제일 늦은 것부터 상단에 정렬
+    list.sort(compareByPromoStartDesc);
   }
 
   return list;

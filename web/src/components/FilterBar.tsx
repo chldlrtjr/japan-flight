@@ -98,9 +98,9 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             onChange={(e) => onSortChange(e.target.value)}
             className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer shadow-2xs"
           >
-            <option value="default">인기/추천순</option>
+            <option value="default">특가 시작일순 (최신순)</option>
             <option value="end_soon">마감임박순</option>
-            <option value="start_recent">최신등록순</option>
+            <option value="created_recent">최신등록순</option>
           </select>
         </div>
       </div>

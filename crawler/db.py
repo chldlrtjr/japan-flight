@@ -436,8 +436,8 @@ def export_data_to_json():
     conn = get_connection()
     cursor = conn.cursor()
 
-    # 1. Fetch promotions
-    cursor.execute("SELECT * FROM promotions ORDER BY is_featured DESC, updated_at DESC")
+    # 1. Fetch promotions: 특가 시작일이 제일 늦은 것부터 내림차순 정렬
+    cursor.execute("SELECT * FROM promotions ORDER BY promo_start DESC NULLS LAST, created_at DESC")
     promotions = [dict(row) for row in cursor.fetchall()]
 
     # 2. Fetch news articles

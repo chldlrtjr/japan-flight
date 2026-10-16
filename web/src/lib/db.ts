@@ -101,13 +101,13 @@ export function queryPromotions(params: {
         queryParams.push(term, term, term, term);
       }
 
-      // Sorting
+      // Sorting: 특가 시작일이 제일 늦은 것(최신)부터 내림차순 정렬
       if (params.sort === 'end_soon') {
-        query += ` ORDER BY CASE WHEN status = 'ING' AND (promo_end IS NULL OR promo_end >= '${todayStr}') THEN 0 ELSE 1 END, promo_end ASC NULLS LAST, created_at DESC`;
-      } else if (params.sort === 'start_recent') {
-        query += ' ORDER BY promo_start DESC NULLS LAST, created_at DESC';
+        query += ` ORDER BY CASE WHEN status = 'ING' AND (promo_end IS NULL OR promo_end >= '${todayStr}') THEN 0 ELSE 1 END, promo_end ASC NULLS LAST, promo_start DESC NULLS LAST, created_at DESC`;
+      } else if (params.sort === 'created_recent') {
+        query += ' ORDER BY created_at DESC';
       } else {
-        query += ` ORDER BY is_featured DESC, CASE WHEN status = 'ING' AND (promo_end IS NULL OR promo_end >= '${todayStr}') THEN 0 ELSE 1 END, created_at DESC`;
+        query += ' ORDER BY promo_start DESC NULLS LAST, created_at DESC';
       }
 
       const stmt = db.prepare(query);
@@ -200,13 +200,24 @@ export function queryPromotions(params: {
     );
   }
 
-  // Sort
+  // Sort: 특가 시작일이 제일 늦은 것(최신)부터 내림차순 정렬
+  const compareByPromoStartDesc = (a: Promotion, b: Promotion): number => {
+    const startA = a.promo_start || '';
+    const startB = b.promo_start || '';
+    if (!startA && !startB) return (b.created_at || '').localeCompare(a.created_at || '');
+    if (!startA) return 1;
+    if (!startB) return -1;
+    const cmp = startB.localeCompare(startA);
+    if (cmp !== 0) return cmp;
+    return (b.created_at || '').localeCompare(a.created_at || '');
+  };
+
   if (params.sort === 'end_soon') {
-    filtered.sort((a, b) => (a.status === 'ING' ? 0 : 1) - (b.status === 'ING' ? 0 : 1) || (a.promo_end || '9999').localeCompare(b.promo_end || '9999'));
-  } else if (params.sort === 'start_recent') {
-    filtered.sort((a, b) => (b.promo_start || '').localeCompare(a.promo_start || ''));
+    filtered.sort((a, b) => (a.status === 'ING' ? 0 : 1) - (b.status === 'ING' ? 0 : 1) || (a.promo_end || '9999').localeCompare(b.promo_end || '9999') || compareByPromoStartDesc(a, b));
+  } else if (params.sort === 'created_recent') {
+    filtered.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
   } else {
-    filtered.sort((a, b) => (b.is_featured || 0) - (a.is_featured || 0) || (a.status === 'ING' ? 0 : 1) - (b.status === 'ING' ? 0 : 1) || b.created_at.localeCompare(a.created_at));
+    filtered.sort(compareByPromoStartDesc);
   }
 
   let activeCount = 0;
