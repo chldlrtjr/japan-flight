@@ -59,7 +59,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No data changes to commit."
           else
-            git commit -m "chore(data): auto-update flight deals & news [$(date -u +'%Y-%m-%d %H:%M UTC')]"
+            git commit -m "chore(data): auto-update flight deals & news [$(TZ='Asia/Seoul' date +'%Y-%m-%d %H:%M KST')]"
             git push origin main || echo "Git push skipped or up to date"
           fi
 

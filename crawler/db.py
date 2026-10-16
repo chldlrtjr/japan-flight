@@ -1,8 +1,18 @@
 import os
 import json
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional
+
+KST = timezone(timedelta(hours=9))
+
+def now_kst_iso() -> str:
+    """Returns ISO format timestamp with KST (+09:00) timezone offset."""
+    return datetime.now(KST).isoformat()
+
+def today_kst_str() -> str:
+    """Returns today's date string in KST (YYYY-MM-DD)."""
+    return datetime.now(KST).strftime("%Y-%m-%d")
 
 DB_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
 DB_PATH = os.path.join(DB_DIR, "promotions.db")
@@ -181,7 +191,7 @@ def init_db():
     """)
 
     # Permanently delete any expired promotions or news
-    today_str = datetime.now().strftime("%Y-%m-%d")
+    today_str = today_kst_str()
     cursor.execute("""
         DELETE FROM promotions
         WHERE status = 'END'
@@ -258,7 +268,7 @@ def upsert_news(news: Dict[str, Any]) -> bool:
         return False
 
     # Reject if expired
-    today_str = datetime.now().strftime("%Y-%m-%d")
+    today_str = today_kst_str()
     if news.get("promo_status") == "END":
         return False
     if news.get("promo_end") and news["promo_end"] < today_str:
@@ -266,7 +276,7 @@ def upsert_news(news: Dict[str, Any]) -> bool:
 
     conn = get_connection()
     cursor = conn.cursor()
-    now = datetime.now().isoformat()
+    now = now_kst_iso()
     
     cursor.execute('''
         INSERT INTO news_articles (
@@ -311,7 +321,7 @@ def upsert_news(news: Dict[str, Any]) -> bool:
 
 def upsert_promotion(promo: Dict[str, Any]) -> bool:
     # Strictly reject expired promotions
-    today_str = datetime.now().strftime("%Y-%m-%d")
+    today_str = today_kst_str()
     if promo.get("status") == "END":
         return False
     if promo.get("promo_end") and promo["promo_end"] < today_str:
@@ -347,7 +357,7 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
 
     conn = get_connection()
     cursor = conn.cursor()
-    now = datetime.now().isoformat()
+    now = now_kst_iso()
     
     # Check if notification was EVER sent for this promo (permanent history check)
     cursor.execute("SELECT id FROM sent_notifications WHERE id = ?", (promo["id"],))

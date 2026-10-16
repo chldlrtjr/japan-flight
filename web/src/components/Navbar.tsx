@@ -20,8 +20,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleBookmarks,
   lastUpdated,
 }) => {
-  const formattedTime = lastUpdated
-    ? new Date(lastUpdated).toLocaleTimeString('ko-KR', {
+  let dateObj: Date | null = null;
+  if (lastUpdated) {
+    // 타임존 오프셋(Z 또는 +)이 없는 레거시 ISO 문자열은 GitHub 러너의 UTC 시간으로 보정
+    const normalized = (!lastUpdated.endsWith('Z') && !lastUpdated.includes('+'))
+      ? `${lastUpdated}Z`
+      : lastUpdated;
+    dateObj = new Date(normalized);
+  }
+
+  const formattedTime = dateObj
+    ? dateObj.toLocaleTimeString('ko-KR', {
+        timeZone: 'Asia/Seoul',
         hour: '2-digit',
         minute: '2-digit',
       })
