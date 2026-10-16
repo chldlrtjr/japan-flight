@@ -64,24 +64,6 @@ KOREAN_AIRLINES_VERIFIED = [
         "is_featured": 1
     },
     {
-        "id": "aerok_kumamoto_tokyo",
-        "airline": "에어로케이",
-        "airline_code": "AERO_K",
-        "title": "에어로케이 청주 ↔ 도쿄(나리타)·오사카(간사이)·구마모토 공식 특가",
-        "subtitle": "청주공항에서 떠나는 가장 편리한 일본 여행! 주 7회 데일리 운항 공식 프로모션",
-        "badge_text": "청주발직항특가",
-        "detail_url": "https://www.aerok.com/ko-KR/event-benefit/event/being",
-        "image_url": "https://images.unsplash.com/photo-1513407030348-c983a97b98d8?auto=format&fit=crop&w=800&q=80",
-        "promo_start": "2026-09-23",
-        "promo_end": "2026-10-15",
-        "travel_period": "2026-10-01 ~ 2027-03-25",
-        "is_international": 1,
-        "region_category": "일본",
-        "destinations": "도쿄, 오사카, 구마모토",
-        "status": "ING",
-        "is_featured": 1
-    },
-    {
         "id": "airpremia_sapporo_inauguration",
         "airline": "에어프레미아",
         "airline_code": "AIR_PREMIA",

@@ -75,6 +75,29 @@ def init_db():
         )
     ''')
 
+    # Create sent_notifications table to permanently prevent duplicate alerts across runs
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sent_notifications (
+            id TEXT PRIMARY KEY,
+            airline TEXT,
+            title TEXT,
+            detail_url TEXT,
+            sent_at TEXT NOT NULL
+        )
+    ''')
+
+    # Seed existing promotions into sent_notifications so existing deals never trigger alerts
+    cursor.execute('''
+        INSERT OR IGNORE INTO sent_notifications (id, airline, title, detail_url, sent_at)
+        SELECT id, airline, title, detail_url, created_at FROM promotions
+    ''')
+
+    # Permanently block alerts for dead dummy IDs
+    cursor.execute('''
+        INSERT OR IGNORE INTO sent_notifications (id, airline, title, detail_url, sent_at)
+        VALUES ('peach_int_shorttrip', '피치항공 (Peach)', '피치 특가', '', datetime('now'))
+    ''')
+
     # Migration: add columns if table already exists
     try:
         cursor.execute("ALTER TABLE news_articles ADD COLUMN promo_status TEXT DEFAULT 'ACTIVE'")
@@ -326,7 +349,11 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
     cursor = conn.cursor()
     now = datetime.now().isoformat()
     
-    # Check if this promotion already exists to prevent duplicate notifications
+    # Check if notification was EVER sent for this promo (permanent history check)
+    cursor.execute("SELECT id FROM sent_notifications WHERE id = ?", (promo["id"],))
+    already_notified = cursor.fetchone() is not None
+
+    # Check if this promotion currently exists in promotions table
     cursor.execute("SELECT id FROM promotions WHERE id = ?", (promo["id"],))
     is_new = cursor.fetchone() is None
     
@@ -376,16 +403,22 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
     })
     
     conn.commit()
-    conn.close()
 
-    # Send instant push alert if it is a brand new promotion
-    if is_new:
+    # Send instant push alert ONLY if it is truly new AND never sent before
+    if is_new and not already_notified:
         try:
             from .notifier import send_promotion_alert
-            send_promotion_alert(promo)
+            sent_ok = send_promotion_alert(promo)
+            if sent_ok:
+                cursor.execute(
+                    "INSERT OR REPLACE INTO sent_notifications (id, airline, title, detail_url, sent_at) VALUES (?, ?, ?, ?, ?)",
+                    (promo["id"], promo["airline"], promo["title"], promo["detail_url"], now)
+                )
+                conn.commit()
         except Exception as e:
             print(f"[Notifier] Failed to send Telegram alert: {e}")
 
+    conn.close()
     return True
 
 def log_crawl(airline: str, status: str, items_found: int, items_saved: int, error_message: Optional[str], started_at: str, finished_at: str):
