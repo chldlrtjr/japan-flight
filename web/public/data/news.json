@@ -590,53 +590,5 @@
     "promo_status": "ACTIVE",
     "promo_period_desc": "실시간 진행중",
     "promo_end": null
-  },
-  {
-    "id": "news_ba9fbfb42f0b9654aedd7802d6d70c53",
-    "title": "\"추석 여행객 잡아라\"…LCC, 항공권 할인부터 부가서비스까지 '총공세'",
-    "summary": "일본·대만·베트남 등 주요 여행지를 테마로, 각 지역별 필수 쇼핑 리스트를 소개하고 현지에서 바로 사용할 수 있는 할인 혜택을 마련했다. 프로모션 일환으로 초과 수하물 할인과 빠른 짐 찾기 등 부가서비스도 제공한다. 에어프레미아는 특가 운임에 초점을 맞췄다. 9월 유류할증료 인상에 따른 고객 부담을...",
-    "source": "뉴스웨이",
-    "link": "https://www.newsway.co.kr/news/view?ud=2026092214564238866",
-    "published_at": "2026-10-01",
-    "airline": "일본 노선 항공사",
-    "is_japan": 1,
-    "japan_cities": "일본 전역",
-    "region_category": "일본",
-    "created_at": "2026-10-15T01:03:51.432312",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "추석·가을 연휴 특가",
-    "promo_end": null
-  },
-  {
-    "id": "news_d5207d5676d0a519b42533210b7795e6",
-    "title": "트리니티항공, 구마모토 노선 할인전…연말 탑승까지 적용",
-    "summary": "왕복 항공권을 20만원 이상 결제하는 고객에게는 2만원 할인 쿠폰도 추가로 제공한다. 선착순 특가 운임도 함께 운영한다. 다만 좌석과 운임 상황에 따라 할인 적용 여부와 판매 기간은 달라질 수 있다. 인천에서 구마모토까지 비행시간은 약 1시간30분이다. 구마모토는 일본 규슈 중앙부에 위치해 있으며...",
-    "source": "헤럴드경제",
-    "link": "https://biz.heraldcorp.com/article/10887062?ref=naver",
-    "published_at": "2026-10-01",
-    "airline": "티웨이항공",
-    "is_japan": 1,
-    "japan_cities": "구마모토",
-    "region_category": "일본",
-    "created_at": "2026-10-15T01:03:51.431353",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "연말·연초 출발 특가",
-    "promo_end": null
-  },
-  {
-    "id": "news_e8ca603a9158cfff3b5955c4bbe9d7e7",
-    "title": "가을엔 마일리지 풀고 겨울엔 99% 깎고…항공사 전략 갈렸다",
-    "summary": "일본·대만 등 단거리 노선에 수요가 몰리면서 인기 국제선 예약률은 노선별로 80~99%까지 올라왔다. 청주국제공항 국제선 예약률은 80%에 육박했고... 제주항공도 10월부터 내년 3월까지 탑승하는 동계 특가를 선보였고 이달에는 1월 출발 항공권을 최대 79% 할인했다. LCC의 할인 전략은 겨울 좌석을 조기에...",
-    "source": "머니투데이",
-    "link": "https://www.mt.co.kr/industry/2026/09/26/2026092314471452760",
-    "published_at": "2026-10-01",
-    "airline": "일본 노선 항공사",
-    "is_japan": 1,
-    "japan_cities": "일본 전역",
-    "region_category": "일본",
-    "created_at": "2026-10-15T01:03:51.430378",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "가을·겨울 시즌 특가",
-    "promo_end": null
   }
 ]

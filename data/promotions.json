@@ -18,28 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-15T23:23:52.451992"
-  },
-  {
-    "id": "aerok_kumamoto_tokyo",
-    "airline": "에어로케이",
-    "airline_code": "AERO_K",
-    "title": "에어로케이 청주 ↔ 도쿄(나리타)·오사카(간사이)·구마모토 공식 특가",
-    "subtitle": "청주공항에서 떠나는 가장 편리한 일본 여행! 주 7회 데일리 운항 공식 프로모션",
-    "badge_text": "청주발직항특가",
-    "detail_url": "https://www.aerok.com/ko-KR/event-benefit/event/being",
-    "image_url": "https://images.unsplash.com/photo-1513407030348-c983a97b98d8?auto=format&fit=crop&w=800&q=80",
-    "promo_start": "2026-09-23",
-    "promo_end": "2026-10-15",
-    "travel_period": "2026-10-01 ~ 2027-03-25",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿄, 오사카, 구마모토",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-09-29T02:25:29.140058",
-    "updated_at": "2026-10-15T23:23:52.451010"
+    "updated_at": "2026-10-16T02:00:48.282481"
   },
   {
     "id": "airbusan_october_coupon",
@@ -60,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-15T23:23:52.449989"
+    "updated_at": "2026-10-16T02:00:48.281474"
   },
   {
     "id": "airseoul_takamatsu_10th",
@@ -81,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-15T23:23:52.449075"
+    "updated_at": "2026-10-16T02:00:48.280522"
   },
   {
     "id": "airseoul_october_hurry",
@@ -102,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.139189",
-    "updated_at": "2026-10-15T23:23:52.448096"
+    "updated_at": "2026-10-16T02:00:48.279573"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -123,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-12T08:37:42.721671",
-    "updated_at": "2026-10-15T23:23:52.381129"
+    "updated_at": "2026-10-16T02:00:48.277392"
   },
   {
     "id": "eastar_2651",
@@ -144,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-11T21:55:30.314732",
-    "updated_at": "2026-10-15T23:23:47.863391"
+    "updated_at": "2026-10-16T02:00:43.593557"
   },
   {
     "id": "tway_2433",
@@ -165,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-11T21:55:22.091972",
-    "updated_at": "2026-10-15T23:23:40.564191"
+    "updated_at": "2026-10-16T02:00:36.532019"
   },
   {
     "id": "jeju_0000004361",
@@ -186,7 +165,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-14T02:29:10.448829",
-    "updated_at": "2026-10-15T23:23:38.820474"
+    "updated_at": "2026-10-16T02:00:35.204399"
   },
   {
     "id": "eastar_2645",
