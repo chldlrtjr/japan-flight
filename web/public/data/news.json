@@ -638,53 +638,5 @@
     "promo_status": "ACTIVE",
     "promo_period_desc": "실시간 진행중",
     "promo_end": null
-  },
-  {
-    "id": "news_d5207d5676d0a519b42533210b7795e6",
-    "title": "트리니티항공, 구마모토 노선 할인전…연말 탑승까지 적용",
-    "summary": "왕복 항공권을 20만원 이상 결제하는 고객에게는 2만원 할인 쿠폰도 추가로 제공한다. 선착순 특가 운임도 함께 운영한다. 다만 좌석과 운임 상황에 따라 할인 적용 여부와 판매 기간은 달라질 수 있다. 인천에서 구마모토까지 비행시간은 약 1시간30분이다. 구마모토는 일본 규슈 중앙부에 위치해 있으며...",
-    "source": "헤럴드경제",
-    "link": "https://biz.heraldcorp.com/article/10887062?ref=naver",
-    "published_at": "2026-10-02",
-    "airline": "티웨이항공",
-    "is_japan": 1,
-    "japan_cities": "구마모토",
-    "region_category": "일본",
-    "created_at": "2026-10-16T06:50:12.569342",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "연말·연초 출발 특가",
-    "promo_end": null
-  },
-  {
-    "id": "news_e8ca603a9158cfff3b5955c4bbe9d7e7",
-    "title": "가을엔 마일리지 풀고 겨울엔 99% 깎고…항공사 전략 갈렸다",
-    "summary": "일본·대만 등 단거리 노선에 수요가 몰리면서 인기 국제선 예약률은 노선별로 80~99%까지 올라왔다. 청주국제공항 국제선 예약률은 80%에 육박했고... 제주항공도 10월부터 내년 3월까지 탑승하는 동계 특가를 선보였고 이달에는 1월 출발 항공권을 최대 79% 할인했다. LCC의 할인 전략은 겨울 좌석을 조기에...",
-    "source": "머니투데이",
-    "link": "https://www.mt.co.kr/industry/2026/09/26/2026092314471452760",
-    "published_at": "2026-10-02",
-    "airline": "일본 노선 항공사",
-    "is_japan": 1,
-    "japan_cities": "일본 전역",
-    "region_category": "일본",
-    "created_at": "2026-10-16T06:50:12.568299",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "가을·겨울 시즌 특가",
-    "promo_end": null
-  },
-  {
-    "id": "news_9299afcd0be3cae11c4a29778548364d",
-    "title": "진에어, 신규 회원 프로모션 진행…\"한·일·대만 동시 혜택 제공\"",
-    "summary": "이와 함께 회원 가입 후 마케팅 정보 수신에 동의하면 국제선 왕복 항공권 및 라운지팩 이용권, 모바일 커피 쿠폰 등을 증정합니다. 특히 이번 프로모션은 한국뿐만 아니라 일본과 대만 국적의 고객을 대상으로도 동시에 진행됩니다. 진에어 관계자는 \"해외 고객과의 접점을 넓히고 가입 즉시 사용 가능한...",
-    "source": "팍스경제TV",
-    "link": "http://www.paxetv.com/news/articleView.html?idxno=283293",
-    "published_at": "2026-10-02",
-    "airline": "진에어",
-    "is_japan": 1,
-    "japan_cities": "일본 전역",
-    "region_category": "일본",
-    "created_at": "2026-10-03T23:11:14.942866",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "실시간 진행중",
-    "promo_end": null
   }
 ]
