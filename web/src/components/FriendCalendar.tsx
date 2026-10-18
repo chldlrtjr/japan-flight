@@ -13,8 +13,8 @@ import {
   Trash2,
   Edit2,
   X,
-  Wifi,
-  Sparkles,
+  ArrowRight,
+  Clock,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
@@ -29,8 +29,9 @@ interface CalendarEvent {
   id: string;
   friendId: string;
   title: string;
-  date: string; // YYYY-MM-DD
-  time?: string; // HH:mm
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  time?: string;     // HH:mm (옵션)
   location?: string;
   memo?: string;
 }
@@ -47,20 +48,20 @@ const INITIAL_EVENTS: CalendarEvent[] = [
   {
     id: 'ev_init_1',
     friendId: 'f_1',
-    title: '민수와 오사카 특가 여행 계획 회의',
-    date: '2026-10-18',
-    time: '19:00',
-    location: '강남역 카페',
-    memo: '항공권 예매 및 숙소 리스트 공유',
+    title: '민수 오사카 여행',
+    startDate: '2026-10-20',
+    endDate: '2026-10-23',
+    location: '오사카 난바/우메다',
+    memo: '간사이 공항 입국, 호텔 체크인',
   },
   {
     id: 'ev_init_2',
     friendId: 'f_2',
-    title: '지은이 후쿠오카 주말 특가 출발',
-    date: '2026-10-24',
-    time: '08:30',
-    location: '인천공항 제1터미널',
-    memo: '인적사항, e티켓 출력물 확인',
+    title: '지은 후쿠오카 주말 특가 여행',
+    startDate: '2026-10-24',
+    endDate: '2026-10-26',
+    location: '후쿠오카 하카타/텐진',
+    memo: '맛집 투어 및 온천 방문',
   },
 ];
 
@@ -69,6 +70,20 @@ const getFormattedDate = (date: Date) => {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
+};
+
+// 두 날짜 사이의 일수 및 박수 계산 헬퍼
+const calculateDuration = (startStr: string, endStr: string) => {
+  if (!startStr || !endStr) return '';
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  const diffTime = end.getTime() - start.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+  if (diffDays <= 0) return '종료일이 시작일보다 빠릅니다';
+  if (diffDays === 1) return '당일 (1일)';
+  const nights = diffDays - 1;
+  return `총 ${diffDays}일간 (${nights}박 ${diffDays}일)`;
 };
 
 export const FriendCalendar: React.FC = () => {
@@ -84,11 +99,12 @@ export const FriendCalendar: React.FC = () => {
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
-  // Form states
+  // Form states (startDate & endDate)
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [formFriendId, setFormFriendId] = useState<string>('');
   const [formTitle, setFormTitle] = useState<string>('');
-  const [formDate, setFormDate] = useState<string>('');
+  const [formStartDate, setFormStartDate] = useState<string>('');
+  const [formEndDate, setFormEndDate] = useState<string>('');
   const [formTime, setFormTime] = useState<string>('');
   const [formLocation, setFormLocation] = useState<string>('');
   const [formMemo, setFormMemo] = useState<string>('');
@@ -100,11 +116,10 @@ export const FriendCalendar: React.FC = () => {
   // Selected event for view modal
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
-  // 🔥 1. Real-time Firebase Firestore synchronization
+  // 🔥 1. Firebase Firestore 실시간 동기화
   useEffect(() => {
     const docRef = doc(db, 'calendar_data', 'shared');
 
-    // Subscribe to real-time changes
     const unsubscribe = onSnapshot(
       docRef,
       (docSnap) => {
@@ -115,10 +130,21 @@ export const FriendCalendar: React.FC = () => {
             setFriends(data.friends);
           }
           if (data.events && Array.isArray(data.events)) {
-            setEvents(data.events);
+            // 과거 데이터(date 단일 필드) 호환성 보정
+            const normalizedEvents: CalendarEvent[] = data.events.map((ev: any) => ({
+              id: ev.id,
+              friendId: ev.friendId,
+              title: ev.title,
+              startDate: ev.startDate || ev.date || getFormattedDate(new Date()),
+              endDate: ev.endDate || ev.startDate || ev.date || getFormattedDate(new Date()),
+              time: ev.time || '',
+              location: ev.location || '',
+              memo: ev.memo || '',
+            }));
+            setEvents(normalizedEvents);
           }
         } else {
-          // Initialize Firebase if empty
+          // 최초 실행 시 기본 데이터 생성
           setDoc(docRef, {
             friends: DEFAULT_FRIENDS,
             events: INITIAL_EVENTS,
@@ -166,11 +192,13 @@ export const FriendCalendar: React.FC = () => {
   };
 
   // Open Event Modal
-  const openAddEventModal = (dateStr?: string) => {
+  const openAddEventModal = (defaultDate?: string) => {
+    const initialDate = defaultDate || getFormattedDate(new Date());
     setEditingEventId(null);
     setFormFriendId(friends[0]?.id || '');
     setFormTitle('');
-    setFormDate(dateStr || getFormattedDate(new Date()));
+    setFormStartDate(initialDate);
+    setFormEndDate(initialDate);
     setFormTime('');
     setFormLocation('');
     setFormMemo('');
@@ -181,7 +209,8 @@ export const FriendCalendar: React.FC = () => {
     setEditingEventId(ev.id);
     setFormFriendId(ev.friendId);
     setFormTitle(ev.title);
-    setFormDate(ev.date);
+    setFormStartDate(ev.startDate);
+    setFormEndDate(ev.endDate || ev.startDate);
     setFormTime(ev.time || '');
     setFormLocation(ev.location || '');
     setFormMemo(ev.memo || '');
@@ -191,9 +220,15 @@ export const FriendCalendar: React.FC = () => {
   // Save Event (Add or Edit) -> Direct real-time sync
   const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formFriendId || !formTitle || !formDate) {
-      alert('친구, 일정 제목, 날짜를 입력해주세요.');
+    if (!formFriendId || !formTitle || !formStartDate) {
+      alert('친구, 일정 제목, 시작 날짜를 입력해주세요.');
       return;
+    }
+
+    // 종료일이 시작일보다 앞서면 시작일과 동일하게 자동 보정
+    let validEndDate = formEndDate;
+    if (!validEndDate || validEndDate < formStartDate) {
+      validEndDate = formStartDate;
     }
 
     let updatedEvents: CalendarEvent[];
@@ -204,7 +239,8 @@ export const FriendCalendar: React.FC = () => {
               ...ev,
               friendId: formFriendId,
               title: formTitle,
-              date: formDate,
+              startDate: formStartDate,
+              endDate: validEndDate,
               time: formTime,
               location: formLocation,
               memo: formMemo,
@@ -216,7 +252,8 @@ export const FriendCalendar: React.FC = () => {
         id: 'ev_' + Date.now(),
         friendId: formFriendId,
         title: formTitle,
-        date: formDate,
+        startDate: formStartDate,
+        endDate: validEndDate,
         time: formTime,
         location: formLocation,
         memo: formMemo,
@@ -325,11 +362,18 @@ export const FriendCalendar: React.FC = () => {
     return days;
   }, [year, month]);
 
-  // Filtered Events
+  // 해당 날짜에 걸쳐 있는 일정 가져오기 (startDate <= dateStr <= endDate)
   const getEventsForDate = (dateStr: string) => {
     return events.filter((ev) => {
-      if (ev.date !== dateStr) return false;
+      const start = ev.startDate;
+      const end = ev.endDate || ev.startDate;
+      const isInRange = dateStr >= start && dateStr <= end;
+      if (!isInRange) return false;
+
+      // 친구 필터
       if (activeFilterFriendId !== 'ALL' && ev.friendId !== activeFilterFriendId) return false;
+
+      // 검색 키워드 필터
       if (searchKeyword) {
         const friend = getFriend(ev.friendId);
         const matchTitle = ev.title.toLowerCase().includes(searchKeyword.toLowerCase());
@@ -343,7 +387,7 @@ export const FriendCalendar: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Top Banner: Real-time Sync Status */}
+      {/* Top Banner: Real-time Sync Status & Controls */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Navigation & Title */}
         <div className="flex items-center gap-3">
@@ -389,7 +433,7 @@ export const FriendCalendar: React.FC = () => {
               type="text"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
-              placeholder="일정 검색..."
+              placeholder="일정/장소 검색..."
               className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -507,9 +551,13 @@ export const FriendCalendar: React.FC = () => {
                 <div className="flex-1 space-y-1 overflow-y-auto max-h-24">
                   {dayEvents.map((ev) => {
                     const friend = getFriend(ev.friendId);
+                    const isMultiDay = ev.startDate !== ev.endDate;
+                    const isStart = ev.startDate === cDay.dateStr;
+                    const isEnd = ev.endDate === cDay.dateStr;
+
                     return (
                       <div
-                        key={ev.id}
+                        key={ev.id + '_' + cDay.dateStr}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedEvent(ev);
@@ -525,7 +573,16 @@ export const FriendCalendar: React.FC = () => {
                         <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: friend.color }} />
                         <span className="font-bold text-slate-700 shrink-0">{friend.name}:</span>
                         <span className="truncate flex-1">{ev.title}</span>
-                        {ev.time && <span className="text-[10px] text-slate-400 shrink-0">{ev.time}</span>}
+                        {isMultiDay && isStart && (
+                          <span className="text-[9px] px-1 rounded bg-slate-200/60 text-slate-600 shrink-0 font-bold">
+                            시작
+                          </span>
+                        )}
+                        {isMultiDay && isEnd && (
+                          <span className="text-[9px] px-1 rounded bg-slate-200/60 text-slate-600 shrink-0 font-bold">
+                            종료
+                          </span>
+                        )}
                       </div>
                     );
                   })}
@@ -538,7 +595,7 @@ export const FriendCalendar: React.FC = () => {
 
       {/* --- Modals --- */}
 
-      {/* 1. Add / Edit Event Modal */}
+      {/* 1. Add / Edit Event Modal (기간: 몇일부터 몇일까지) */}
       {isEventModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
@@ -581,32 +638,52 @@ export const FriendCalendar: React.FC = () => {
                   type="text"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="예: 후쿠오카 특가 여행, 주말 모임"
+                  placeholder="예: 오사카 3박 4일 여행, 주말 힐링 캠핑"
                   required
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1">날짜 *</label>
-                  <input
-                    type="date"
-                    value={formDate}
-                    onChange={(e) => setFormDate(e.target.value)}
-                    required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+              {/* 기간 설정: 몇일부터 ~ 몇일까지 */}
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                <label className="block text-xs font-bold text-slate-700">
+                  일정 기간 (몇일부터 몇일까지) *
+                </label>
+                <div className="grid grid-cols-2 gap-2 items-center">
+                  <div>
+                    <span className="text-[11px] text-slate-500 font-medium block mb-1">시작일</span>
+                    <input
+                      type="date"
+                      value={formStartDate}
+                      onChange={(e) => {
+                        const newStart = e.target.value;
+                        setFormStartDate(newStart);
+                        // 시작일이 변경되었을 때 종료일이 더 이전이면 자동으로 맞춤
+                        if (formEndDate < newStart) {
+                          setFormEndDate(newStart);
+                        }
+                      }}
+                      required
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-slate-500 font-medium block mb-1">종료일</span>
+                    <input
+                      type="date"
+                      value={formEndDate}
+                      min={formStartDate}
+                      onChange={(e) => setFormEndDate(e.target.value)}
+                      required
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1">시간</label>
-                  <input
-                    type="time"
-                    value={formTime}
-                    onChange={(e) => setFormTime(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
+                {formStartDate && formEndDate && (
+                  <div className="text-right text-[11px] font-bold text-indigo-600 pt-0.5">
+                    {calculateDuration(formStartDate, formEndDate)}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -617,7 +694,7 @@ export const FriendCalendar: React.FC = () => {
                     type="text"
                     value={formLocation}
                     onChange={(e) => setFormLocation(e.target.value)}
-                    placeholder="예: 인천국제공항 제1여객터미널"
+                    placeholder="예: 일본 오사카/교토"
                     className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -629,7 +706,7 @@ export const FriendCalendar: React.FC = () => {
                   rows={2}
                   value={formMemo}
                   onChange={(e) => setFormMemo(e.target.value)}
-                  placeholder="항공권 예약번호, 챙길 것 등"
+                  placeholder="항공권 예약번호, 챙길 것, 여행 코스 등"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                 />
               </div>
@@ -769,9 +846,16 @@ export const FriendCalendar: React.FC = () => {
               <div className="mt-4 space-y-2.5 text-xs text-slate-600">
                 <div className="flex items-center gap-2">
                   <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
-                  <span className="font-semibold text-slate-800">
-                    {selectedEvent.date} {selectedEvent.time || ''}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-slate-800">
+                      {selectedEvent.startDate === selectedEvent.endDate
+                        ? selectedEvent.startDate
+                        : `${selectedEvent.startDate} ~ ${selectedEvent.endDate}`}
+                    </span>
+                    <span className="text-[11px] text-indigo-600 font-bold">
+                      {calculateDuration(selectedEvent.startDate, selectedEvent.endDate)}
+                    </span>
+                  </div>
                 </div>
                 {selectedEvent.location && (
                   <div className="flex items-center gap-2">
