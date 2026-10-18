@@ -43,7 +43,8 @@ interface Friend {
 
 interface CalendarEvent {
   id: string;
-  friendId: string;
+  friendId?: string;   // 기존 단일 친구 ID (하위 호환)
+  friendIds?: string[]; // 참여 친구 ID 목록 (없거나 비어있으면 참여자 미정 약속)
   title: string;
   startDate: string; // YYYY-MM-DD
   endDate: string;   // YYYY-MM-DD
@@ -296,6 +297,7 @@ export const FriendCalendar: React.FC = () => {
   // Form states (startDate & endDate)
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [formFriendId, setFormFriendId] = useState<string>('');
+  const [formFriendIds, setFormFriendIds] = useState<string[]>([]); // 다중 참여 인원 (빈 배열 가능)
   const [formTitle, setFormTitle] = useState<string>('');
   const [formStartDate, setFormStartDate] = useState<string>('');
   const [formEndDate, setFormEndDate] = useState<string>('');
@@ -563,8 +565,46 @@ export const FriendCalendar: React.FC = () => {
     e.target.value = '';
   };
 
-  const getFriend = (friendId: string): Friend => {
+  const getFriend = (friendId?: string): Friend => {
+    if (!friendId) return { id: 'unassigned', name: '참여자 미정', color: '#6366f1' };
     return friends.find((f) => f.id === friendId) || { id: 'unknown', name: '알 수 없음', color: '#94a3b8' };
+  };
+
+  // 이벤트의 참여 친구 ID 목록 반환 (단일 friendId와 복수 friendIds 완벽 하위 호환)
+  const getEventFriendIds = (ev: CalendarEvent): string[] => {
+    if (Array.isArray(ev.friendIds)) {
+      return ev.friendIds;
+    }
+    return ev.friendId ? [ev.friendId] : [];
+  };
+
+  // 이벤트의 참여 Friend 객체 목록 반환
+  const getEventFriends = (ev: CalendarEvent): Friend[] => {
+    const ids = getEventFriendIds(ev);
+    return ids.map((id) => getFriend(id)).filter((f) => f && f.id !== 'unknown' && f.id !== 'unassigned');
+  };
+
+  // 이벤트 표시 정보 반환 (대표 색상, 라벨 문구 등)
+  const getEventDisplayInfo = (ev: CalendarEvent) => {
+    const pFriends = getEventFriends(ev);
+    if (pFriends.length === 0) {
+      return {
+        name: '참여자 미정 (오픈 약속)',
+        shortLabel: '오픈 약속',
+        color: '#6366f1',
+        isUnassigned: true,
+        friends: [],
+      };
+    }
+    const primaryFriend = pFriends[0];
+    const nameLabel = pFriends.map((f) => f.name).join(', ');
+    return {
+      name: nameLabel,
+      shortLabel: pFriends.length > 1 ? `${primaryFriend.name} 외 ${pFriends.length - 1}명` : primaryFriend.name,
+      color: primaryFriend.color,
+      isUnassigned: false,
+      friends: pFriends,
+    };
   };
 
   // Month navigation
@@ -582,7 +622,8 @@ export const FriendCalendar: React.FC = () => {
   const openAddEventModal = (defaultDate?: string) => {
     const initialDate = defaultDate || getFormattedDate(new Date());
     setEditingEventId(null);
-    setFormFriendId(friends[0]?.id || '');
+    setFormFriendIds([]); // 참여 인원 없이도 바로 등록 가능
+    setFormFriendId('');
     setFormTitle('');
     setFormStartDate(initialDate);
     setFormEndDate(initialDate);
@@ -594,7 +635,9 @@ export const FriendCalendar: React.FC = () => {
 
   const openEditEventModal = (ev: CalendarEvent) => {
     setEditingEventId(ev.id);
-    setFormFriendId(ev.friendId);
+    const existingIds = getEventFriendIds(ev);
+    setFormFriendIds(existingIds);
+    setFormFriendId(existingIds[0] || '');
     setFormTitle(ev.title);
     setFormStartDate(ev.startDate);
     setFormEndDate(ev.endDate || ev.startDate);
@@ -604,11 +647,51 @@ export const FriendCalendar: React.FC = () => {
     setIsEventModalOpen(true);
   };
 
-  // Save Event (Add or Edit) -> Direct real-time sync
+  // 🤝 약속 참여하기 / 참여 취소 토글 (자기가 원하면 즉시 참여/제외 가능)
+  const handleToggleEventParticipant = async (eventId: string, friendId: string) => {
+    const targetEvent = events.find((e) => e.id === eventId);
+    if (!targetEvent) return;
+
+    const currentIds = getEventFriendIds(targetEvent);
+    const isAlreadyParticipating = currentIds.includes(friendId);
+    const newIds = isAlreadyParticipating
+      ? currentIds.filter((id) => id !== friendId)
+      : [...currentIds, friendId];
+
+    const targetFriend = getFriend(friendId);
+    const actionDesc = isAlreadyParticipating
+      ? `'${targetFriend.name}'님이 약속에서 참여 취소`
+      : `'${targetFriend.name}'님이 약속 참여 등록!`;
+
+    const updatedEvents = events.map((ev) =>
+      ev.id === eventId
+        ? {
+            ...ev,
+            friendId: newIds[0] || '',
+            friendIds: newIds,
+          }
+        : ev
+    );
+
+    setEvents(updatedEvents);
+
+    // 열려 있는 상세 모달 데이터도 실시간 동기화
+    if (selectedEvent && selectedEvent.id === eventId) {
+      setSelectedEvent({
+        ...selectedEvent,
+        friendId: newIds[0] || '',
+        friendIds: newIds,
+      });
+    }
+
+    await syncToFirestore(friends, updatedEvents, actionDesc);
+  };
+
+  // Save Event (Add or Edit) -> Direct real-time sync (인원 없어도 등록 가능)
   const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formFriendId || !formTitle || !formStartDate) {
-      alert('친구, 일정 제목, 시작 날짜를 입력해주세요.');
+    if (!formTitle.trim() || !formStartDate) {
+      alert('일정 제목과 시작 날짜를 입력해주세요.');
       return;
     }
 
@@ -618,14 +701,17 @@ export const FriendCalendar: React.FC = () => {
       validEndDate = formStartDate;
     }
 
+    const primaryFriendId = formFriendIds[0] || '';
+
     let updatedEvents: CalendarEvent[];
     if (editingEventId) {
       updatedEvents = events.map((ev) =>
         ev.id === editingEventId
           ? {
               ...ev,
-              friendId: formFriendId,
-              title: formTitle,
+              friendId: primaryFriendId,
+              friendIds: formFriendIds,
+              title: formTitle.trim(),
               startDate: formStartDate,
               endDate: validEndDate,
               time: formTime,
@@ -637,8 +723,9 @@ export const FriendCalendar: React.FC = () => {
     } else {
       const newEv: CalendarEvent = {
         id: 'ev_' + Date.now(),
-        friendId: formFriendId,
-        title: formTitle,
+        friendId: primaryFriendId,
+        friendIds: formFriendIds,
+        title: formTitle.trim(),
         startDate: formStartDate,
         endDate: validEndDate,
         time: formTime,
@@ -652,8 +739,13 @@ export const FriendCalendar: React.FC = () => {
     setEvents(updatedEvents);
     setIsEventModalOpen(false);
 
+    const actionText =
+      formFriendIds.length === 0
+        ? `오픈 약속 등록 (${formTitle.trim()})`
+        : `일정 등록 (${formTitle.trim()}, ${formFriendIds.length}명)`;
+
     // Push to Firestore (auto-reflected to all users)
-    await syncToFirestore(friends, updatedEvents);
+    await syncToFirestore(friends, updatedEvents, actionText);
   };
 
   // Delete Event -> Direct real-time sync
@@ -865,6 +957,9 @@ export const FriendCalendar: React.FC = () => {
   interface WeekEventSegment {
     event: CalendarEvent;
     friend: Friend;
+    friends: Friend[];
+    isUnassigned: boolean;
+    displayTitle: string;
     startCol: number;      // 0 ~ 6
     endCol: number;        // 0 ~ 6
     span: number;          // 1 ~ 7
@@ -897,22 +992,36 @@ export const FriendCalendar: React.FC = () => {
       const isOverlapping = evStart <= weekEndStr && evEnd >= weekStartStr;
       if (!isOverlapping) return false;
 
+      const evFriendIds = getEventFriendIds(ev);
+
       // 친구 필터
-      if (activeFilterFriendId !== 'ALL' && ev.friendId !== activeFilterFriendId) return false;
+      if (activeFilterFriendId === 'UNASSIGNED') {
+        if (evFriendIds.length > 0) return false;
+      } else if (activeFilterFriendId !== 'ALL') {
+        if (!evFriendIds.includes(activeFilterFriendId) && ev.friendId !== activeFilterFriendId) {
+          return false;
+        }
+      }
 
       // 검색 필터
       if (searchKeyword) {
-        const friend = getFriend(ev.friendId);
+        const pFriends = getEventFriends(ev);
         const matchTitle = ev.title.toLowerCase().includes(searchKeyword.toLowerCase());
-        const matchFriend = friend.name.toLowerCase().includes(searchKeyword.toLowerCase());
+        const matchFriends = pFriends.some((f) => f.name.toLowerCase().includes(searchKeyword.toLowerCase()));
         const matchLoc = (ev.location || '').toLowerCase().includes(searchKeyword.toLowerCase());
-        if (!matchTitle && !matchFriend && !matchLoc) return false;
+        const matchMemo = (ev.memo || '').toLowerCase().includes(searchKeyword.toLowerCase());
+        if (!matchTitle && !matchFriends && !matchLoc && !matchMemo) return false;
       }
       return true;
     });
 
     const segments: WeekEventSegment[] = matchingEvents.map((ev) => {
-      const friend = getFriend(ev.friendId);
+      const displayInfo = getEventDisplayInfo(ev);
+      const friend: Friend = displayInfo.friends[0] || {
+        id: 'unassigned',
+        name: '약속',
+        color: '#6366f1',
+      };
       const evStart = ev.startDate;
       const evEnd = ev.endDate || ev.startDate;
 
@@ -944,6 +1053,9 @@ export const FriendCalendar: React.FC = () => {
       return {
         event: ev,
         friend,
+        friends: displayInfo.friends,
+        isUnassigned: displayInfo.isUnassigned,
+        displayTitle: displayInfo.name,
         startCol,
         endCol,
         span,
@@ -1175,6 +1287,27 @@ export const FriendCalendar: React.FC = () => {
         >
           전체 보기
         </button>
+
+        {/* 🤝 참여자 미정 (오픈 약속) 전용 필터 */}
+        <button
+          onClick={() => setActiveFilterFriendId(activeFilterFriendId === 'UNASSIGNED' ? 'ALL' : 'UNASSIGNED')}
+          className={`px-3 py-1 text-xs font-bold rounded-full transition shrink-0 flex items-center gap-1.5 ${
+            activeFilterFriendId === 'UNASSIGNED'
+              ? 'bg-indigo-600 text-white shadow-xs'
+              : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200/80'
+          }`}
+        >
+          <span>🤝</span>
+          <span>약속/미정</span>
+          <span
+            className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+              activeFilterFriendId === 'UNASSIGNED' ? 'bg-indigo-700 text-white' : 'bg-indigo-200 text-indigo-900'
+            }`}
+          >
+            {events.filter((e) => getEventFriendIds(e).length === 0).length}
+          </span>
+        </button>
+
         {friends.map((f) => {
           const isActive = activeFilterFriendId === f.id;
           return (
@@ -1292,6 +1425,8 @@ export const FriendCalendar: React.FC = () => {
                     <div key={slotIdx} className="grid grid-cols-7 h-6 sm:h-7 items-center">
                       {slotEvents.map((seg) => {
                         const isMultiDay = seg.event.startDate !== (seg.event.endDate || seg.event.startDate);
+                        const isUnassigned = seg.isUnassigned;
+                        const barColor = isUnassigned ? '#6366f1' : seg.friend.color;
 
                         return (
                           <div
@@ -1304,10 +1439,10 @@ export const FriendCalendar: React.FC = () => {
                             style={{
                               gridColumnStart: seg.startCol + 1,
                               gridColumnEnd: `span ${seg.span}`,
-                              backgroundColor: `${seg.friend.color}18`,
-                              borderColor: `${seg.friend.color}55`,
+                              backgroundColor: isUnassigned ? '#eef2ff' : `${barColor}18`,
+                              borderColor: isUnassigned ? '#818cf8' : `${barColor}55`,
                             }}
-                            title={`${seg.friend.name} - ${seg.event.title} (${seg.event.startDate} ~ ${seg.event.endDate || seg.event.startDate}${seg.durationText ? ', ' + seg.durationText : ''})`}
+                            title={`${seg.displayTitle} - ${seg.event.title} (${seg.event.startDate} ~ ${seg.event.endDate || seg.event.startDate}${seg.durationText ? ', ' + seg.durationText : ''})`}
                             className={`h-full my-0.5 border text-[11px] sm:text-xs font-medium cursor-pointer transition flex items-center gap-1.5 shadow-2xs pointer-events-auto hover:brightness-95 hover:shadow-xs overflow-hidden ${
                               seg.isRealStart ? 'ml-1 rounded-l-md' : 'ml-0 rounded-l-none border-l-0 pl-1'
                             } ${
@@ -1319,19 +1454,26 @@ export const FriendCalendar: React.FC = () => {
                               <span className="text-[10px] text-slate-400 font-bold shrink-0">◀</span>
                             )}
 
-                            {/* 친구 고유 컬러 도트 */}
-                            <span
-                              className="w-2 h-2 rounded-full shrink-0"
-                              style={{ backgroundColor: seg.friend.color }}
-                            />
-
-                            {/* 친구 이름 */}
-                            <span
-                              className="font-bold shrink-0 text-slate-800"
-                              style={{ color: seg.friend.color }}
-                            >
-                              {seg.friend.name}:
-                            </span>
+                            {/* 인원 미정 약속인 경우와 친구 일정인 경우 구분 */}
+                            {isUnassigned ? (
+                              <span className="text-[11px] shrink-0 font-bold text-indigo-600 flex items-center gap-0.5">
+                                <span>🤝</span>
+                                <span className="text-[10px] px-1 py-0.2 rounded bg-indigo-100 text-indigo-700">약속</span>
+                              </span>
+                            ) : (
+                              <>
+                                <span
+                                  className="w-2 h-2 rounded-full shrink-0"
+                                  style={{ backgroundColor: barColor }}
+                                />
+                                <span
+                                  className="font-bold shrink-0 text-slate-800 truncate max-w-[85px] sm:max-w-[120px]"
+                                  style={{ color: barColor }}
+                                >
+                                  {seg.displayTitle}:
+                                </span>
+                              </>
+                            )}
 
                             {/* 일정 제목 */}
                             <span className="truncate text-slate-800 font-semibold flex-1">
@@ -1368,7 +1510,7 @@ export const FriendCalendar: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800">{editingEventId ? '일정 수정' : '새 친구 일정 추가'}</h3>
+              <h3 className="font-bold text-slate-800">{editingEventId ? '일정 수정' : '새 일정 / 약속 등록'}</h3>
               <button onClick={() => setIsEventModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
@@ -1376,28 +1518,82 @@ export const FriendCalendar: React.FC = () => {
 
             <form onSubmit={handleSaveEvent} className="p-6 space-y-4 text-sm">
               <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1">친구 선택 *</label>
-                <div className="flex gap-2">
-                  <select
-                    value={formFriendId}
-                    onChange={(e) => setFormFriendId(e.target.value)}
-                    required
-                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    {friends.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => setIsFriendModalOpen(true)}
-                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition"
-                  >
-                    + 친구추가
-                  </button>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700">
+                    참여 인원 <span className="text-slate-400 font-normal">(선택 사항)</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {friends.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (formFriendIds.length === friends.length) {
+                            setFormFriendIds([]);
+                          } else {
+                            setFormFriendIds(friends.map((f) => f.id));
+                          }
+                        }}
+                        className="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold transition"
+                      >
+                        {formFriendIds.length === friends.length ? '모두 해제' : '전체 선택'}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setIsFriendModalOpen(true)}
+                      className="text-[11px] text-slate-500 hover:text-slate-800 font-semibold transition"
+                    >
+                      + 친구 관리
+                    </button>
+                  </div>
                 </div>
+
+                {friends.length === 0 ? (
+                  <div className="p-3 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-500">
+                    <span>등록된 친구가 없습니다. 인원 없이 약속을 먼저 등록할 수 있습니다!</span>
+                  </div>
+                ) : (
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {friends.map((f) => {
+                        const isSelected = formFriendIds.includes(f.id);
+                        return (
+                          <button
+                            key={f.id}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setFormFriendIds(formFriendIds.filter((id) => id !== f.id));
+                              } else {
+                                setFormFriendIds([...formFriendIds, f.id]);
+                              }
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                              isSelected
+                                ? 'bg-slate-800 text-white border border-slate-800 shadow-xs'
+                                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                            }`}
+                          >
+                            <span>{f.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="pt-1.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+                      {formFriendIds.length === 0 ? (
+                        <span className="text-indigo-600 font-semibold flex items-center gap-1">
+                          <span>🤝</span>
+                          <span>참여 인원 없이 오픈 약속으로 등록됩니다 (등록 후 누구나 참가 가능)</span>
+                        </span>
+                      ) : (
+                        <span className="text-slate-600 font-medium">
+                          총 <strong className="text-indigo-600 font-bold">{formFriendIds.length}명</strong>이 참여자로 등록됩니다.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -1588,80 +1784,189 @@ export const FriendCalendar: React.FC = () => {
       )}
 
       {/* 3. View Event Detail Modal */}
-      {isViewModalOpen && selectedEvent && (
-        <div className="fixed inset-0 z-50 bg-slate-900/30 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-            <div
-              className="h-3.5"
-              style={{ backgroundColor: getFriend(selectedEvent.friendId).color }}
-            />
-            <div className="p-5">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <span
-                    className="inline-block text-xs px-2.5 py-0.5 rounded-full font-bold text-white mb-1.5"
-                    style={{ backgroundColor: getFriend(selectedEvent.friendId).color }}
-                  >
-                    {getFriend(selectedEvent.friendId).name}
-                  </span>
-                  <h4 className="text-base font-bold text-slate-900">{selectedEvent.title}</h4>
-                </div>
-                <button onClick={() => setIsViewModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+      {isViewModalOpen && selectedEvent && (() => {
+        const pFriends = getEventFriends(selectedEvent);
+        const pFriendIds = getEventFriendIds(selectedEvent);
+        const isUnassigned = pFriends.length === 0;
+        const displayInfo = getEventDisplayInfo(selectedEvent);
+        // 아직 참여하지 않은 친구들
+        const unjoinedFriends = friends.filter((f) => !pFriendIds.includes(f.id));
 
-              <div className="mt-4 space-y-2.5 text-xs text-slate-600">
-                <div className="flex items-center gap-2">
-                  <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-slate-800">
-                      {selectedEvent.startDate === selectedEvent.endDate
-                        ? selectedEvent.startDate
-                        : `${selectedEvent.startDate} ~ ${selectedEvent.endDate}`}
-                    </span>
-                    <span className="text-[11px] text-indigo-600 font-bold">
-                      {calculateDuration(selectedEvent.startDate, selectedEvent.endDate)}
-                    </span>
+        return (
+          <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+              <div
+                className="h-3.5"
+                style={{ backgroundColor: displayInfo.color }}
+              />
+              <div className="p-5 space-y-4">
+                {/* Header */}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    {isUnassigned ? (
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-700 mb-1.5">
+                        <span>🤝</span>
+                        <span>오픈 약속 (인원 모집 중)</span>
+                      </span>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                        <span
+                          className="inline-block text-xs px-2.5 py-0.5 rounded-full font-bold text-white shadow-2xs"
+                          style={{ backgroundColor: displayInfo.color }}
+                        >
+                          👥 {pFriends.length}명 참여 중
+                        </span>
+                      </div>
+                    )}
+                    <h4 className="text-base sm:text-lg font-bold text-slate-900">{selectedEvent.title}</h4>
                   </div>
+                  <button onClick={() => setIsViewModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-                {selectedEvent.location && (
+
+                {/* Event Metadata (일정 기간, 장소, 메모) */}
+                <div className="space-y-2.5 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
-                    <span>{selectedEvent.location}</span>
+                    <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-slate-800">
+                        {selectedEvent.startDate === selectedEvent.endDate
+                          ? selectedEvent.startDate
+                          : `${selectedEvent.startDate} ~ ${selectedEvent.endDate}`}
+                      </span>
+                      <span className="text-[11px] text-indigo-600 font-bold">
+                        {calculateDuration(selectedEvent.startDate, selectedEvent.endDate)}
+                      </span>
+                    </div>
                   </div>
-                )}
-                {selectedEvent.memo && (
-                  <div className="flex items-start gap-2 pt-2 border-t border-slate-100">
-                    <FileText className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                    <p className="text-slate-700 whitespace-pre-wrap leading-relaxed">{selectedEvent.memo}</p>
-                  </div>
-                )}
-              </div>
+                  {selectedEvent.location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span className="font-medium text-slate-700">{selectedEvent.location}</span>
+                    </div>
+                  )}
+                  {selectedEvent.memo && (
+                    <div className="flex items-start gap-2 pt-2 border-t border-slate-200/60">
+                      <FileText className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                      <p className="text-slate-700 whitespace-pre-wrap leading-relaxed">{selectedEvent.memo}</p>
+                    </div>
+                  )}
+                </div>
 
-              <div className="mt-6 flex items-center justify-end gap-2">
-                <button
-                  onClick={() => {
-                    setIsViewModalOpen(false);
-                    openEditEventModal(selectedEvent);
-                  }}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center gap-1"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                  <span>수정</span>
-                </button>
-                <button
-                  onClick={() => handleDeleteEvent(selectedEvent.id)}
-                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-lg transition flex items-center gap-1"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>삭제</span>
-                </button>
+                {/* 🤝 참여자 현황 & 약속 참여 관리 섹션 (약속 잡듯이 참여/등록) */}
+                <div className="p-3.5 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-4 h-4 text-indigo-600" />
+                      <span className="text-xs font-bold text-slate-800">
+                        약속 참여 현황 ({pFriends.length}명)
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-indigo-600 font-semibold">
+                      클릭하여 참여/취소
+                    </span>
+                  </div>
+
+                  {/* 1. 현재 참여 중인 친구 목록 */}
+                  {pFriends.length === 0 ? (
+                    <div className="py-2.5 px-3 bg-white rounded-lg border border-dashed border-indigo-200 text-center text-xs text-slate-500">
+                      아직 참여 인원이 없습니다. 아래 버튼으로 바로 약속에 참여해보세요!
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5">
+                      {pFriends.map((f) => (
+                        <div
+                          key={f.id}
+                          className="group inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs"
+                        >
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: f.color }} />
+                          <span className="text-slate-800">{f.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleEventParticipant(selectedEvent.id, f.id)}
+                            className="text-slate-400 hover:text-rose-600 transition p-0.5 ml-0.5"
+                            title={`${f.name} 참여 취소`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 2. 약속 참여하기 / 인원 추가 버튼들 */}
+                  <div>
+                    <span className="block text-[11px] font-bold text-slate-600 mb-1.5">
+                      🙋‍♂️ 나/친구 참여 등록하기:
+                    </span>
+                    {unjoinedFriends.length === 0 && friends.length > 0 ? (
+                      <div className="text-[11px] text-emerald-700 font-medium bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200/60 flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>등록된 모든 친구({friends.length}명)가 이 약속에 참여 중입니다!</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5">
+                        {unjoinedFriends.map((f) => (
+                          <button
+                            key={f.id}
+                            type="button"
+                            onClick={() => handleToggleEventParticipant(selectedEvent.id, f.id)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-indigo-600 text-slate-700 hover:text-white border border-indigo-200 rounded-lg text-xs font-semibold transition group shadow-2xs active:scale-95"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: f.color }} />
+                            <span>+ {f.name} 참여</span>
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsViewModalOpen(false);
+                            setIsFriendModalOpen(true);
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-medium transition"
+                        >
+                          <span>+ 새 친구 등록</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer Buttons */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                  <button
+                    onClick={() => handleDeleteEvent(selectedEvent.id)}
+                    className="px-3 py-1.5 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-lg transition flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>삭제</span>
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setIsViewModalOpen(false);
+                        openEditEventModal(selectedEvent);
+                      }}
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center gap-1"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      <span>수정</span>
+                    </button>
+                    <button
+                      onClick={() => setIsViewModalOpen(false)}
+                      className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition"
+                    >
+                      닫기
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 4. Friend Travel Profile (profile English Name & Birth Date) Modal */}
       {isFriendProfileModalOpen && (
