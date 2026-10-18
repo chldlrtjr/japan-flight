@@ -2797,89 +2797,7 @@ export const FriendCalendar: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsFriendScheduleModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body: Scrollable */}
-            <div className="p-6 overflow-y-auto space-y-5 flex-1">
-              {/* Profile Card */}
-              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2 flex-1">
-                  {selectedFriendForSchedule.englishName && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        copyToClipboard(
-                          selectedFriendForSchedule.englishName!,
-                          `modal_eng_${selectedFriendForSchedule.id}`,
-                          `${selectedFriendForSchedule.name}의 인적사항 영문명이`
-                        )
-                      }
-                      className="group flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-mono font-bold transition shadow-2xs"
-                      title="클릭하여 영문명 복사"
-                    >
-                      <span>인적사항명: {selectedFriendForSchedule.englishName}</span>
-                      {copiedId === `modal_eng_${selectedFriendForSchedule.id}` ? (
-                        <Check className="w-3 h-3 text-emerald-600" />
-                      ) : (
-                        <Copy className="w-3 h-3 text-indigo-400" />
-                      )}
-                    </button>
-                  )}
-
-                  {selectedFriendForSchedule.profileNumber && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        copyToClipboard(
-                          selectedFriendForSchedule.profileNumber!,
-                          `modal_pass_${selectedFriendForSchedule.id}`,
-                          `${selectedFriendForSchedule.name}의 인적사항번호가`
-                        )
-                      }
-                      className="group flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-xs font-mono font-bold transition shadow-2xs"
-                      title="클릭하여 인적사항번호 복사"
-                    >
-                      <span>인적사항: {selectedFriendForSchedule.profileNumber}</span>
-                      {copiedId === `modal_pass_${selectedFriendForSchedule.id}` ? (
-                        <Check className="w-3 h-3 text-emerald-600" />
-                      ) : (
-                        <Copy className="w-3 h-3 text-amber-400" />
-                      )}
-                    </button>
-                  )}
-
-                  {selectedFriendForSchedule.profileExpiry && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-700 shadow-2xs">
-                      <span>만료일: {selectedFriendForSchedule.profileExpiry}</span>
-                      {(() => {
-                        const pInfo = getprofileExpiryInfo(selectedFriendForSchedule.profileExpiry);
-                        if (!pInfo) return null;
-                        if (pInfo.isExpired) {
-                          return <span className="text-[10px] bg-rose-100 text-rose-700 font-bold px-1.5 py-0.2 rounded">만료됨</span>;
-                        }
-                        if (pInfo.isImminent) {
-                          return <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded">만료 임박 ({pInfo.diffDays}일)</span>;
-                        }
-                        return <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">안전 ({pInfo.yearsRemaining}년 남음)</span>;
-                      })()}
-                    </div>
-                  )}
-
-                  {selectedFriendForSchedule.memo && (
-                    <div className="w-full text-xs text-slate-600 bg-white p-2.5 rounded-xl border border-slate-200 mt-1">
-                      <span className="font-bold text-slate-500 mr-1.5">메모:</span>
-                      {selectedFriendForSchedule.memo}
-                    </div>
-                  )}
-                </div>
-
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -2887,13 +2805,24 @@ export const FriendCalendar: React.FC = () => {
                     startEditProfile(selectedFriendForSchedule);
                     setIsFriendProfileModalOpen(true);
                   }}
-                  className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl transition shrink-0 flex items-center gap-1 self-start sm:self-center shadow-2xs"
+                  className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium rounded-xl transition flex items-center gap-1 shadow-2xs"
+                  title="친구 정보 수정"
                 >
                   <Edit2 className="w-3 h-3" />
                   <span>정보 수정</span>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setIsFriendScheduleModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
+            </div>
 
+            {/* Modal Body: Scrollable */}
+            <div className="p-6 overflow-y-auto space-y-5 flex-1">
               {/* Schedules Section Header */}
               <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-2">
