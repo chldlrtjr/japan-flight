@@ -15,6 +15,11 @@ import {
   X,
   ArrowRight,
   Clock,
+  UserCheck,
+  Copy,
+  Check,
+  Sparkles,
+  Plane,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
@@ -23,6 +28,11 @@ interface Friend {
   id: string;
   name: string;
   color: string;
+  englishName?: string;    // 인적사항상 영문 이름 (예: KIM MINSU)
+  birthDate?: string;      // 생년월일 (YYYY-MM-DD)
+  gender?: 'M' | 'F' | ''; // 성별 (M: 남성, F: 여성)
+  profileNumber?: string; // 인적사항번호 (선택)
+  memo?: string;           // 메모
 }
 
 interface CalendarEvent {
@@ -37,11 +47,11 @@ interface CalendarEvent {
 }
 
 const DEFAULT_FRIENDS: Friend[] = [
-  { id: 'f_1', name: '민수', color: '#3b82f6' },
-  { id: 'f_2', name: '지은', color: '#ec4899' },
-  { id: 'f_3', name: '태호', color: '#10b981' },
-  { id: 'f_4', name: '수빈', color: '#f59e0b' },
-  { id: 'f_5', name: '동현', color: '#8b5cf6' },
+  { id: 'f_1', name: '민수', color: '#3b82f6', englishName: 'KIM MINSU', birthDate: '1996-05-12', gender: 'M' },
+  { id: 'f_2', name: '지은', color: '#ec4899', englishName: 'LEE JIEUN', birthDate: '1998-09-24', gender: 'F' },
+  { id: 'f_3', name: '태호', color: '#10b981', englishName: 'PARK TAEHO', birthDate: '1995-11-03', gender: 'M' },
+  { id: 'f_4', name: '수빈', color: '#f59e0b', englishName: 'CHOI SUBIN', birthDate: '1997-03-18', gender: 'F' },
+  { id: 'f_5', name: '동현', color: '#8b5cf6', englishName: 'JUNG DONGHYUN', birthDate: '1996-08-30', gender: 'M' },
 ];
 
 const INITIAL_EVENTS: CalendarEvent[] = [
@@ -208,6 +218,20 @@ const getHolidayName = (dateStr: string): string | null => {
   return fixedHolidays[mmdd] || null;
 };
 
+// 생년월일 기준 만 나이 계산 헬퍼
+const calculateAge = (birthDateStr?: string) => {
+  if (!birthDateStr) return '';
+  const birth = new Date(birthDateStr);
+  if (isNaN(birth.getTime())) return '';
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return `만 ${age}세`;
+};
+
 export const FriendCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [friends, setFriends] = useState<Friend[]>(DEFAULT_FRIENDS);
@@ -220,6 +244,20 @@ export const FriendCalendar: React.FC = () => {
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isFriendProfileModalOpen, setIsFriendProfileModalOpen] = useState(false);
+
+  // 친구 인적사항 및 생년월일 프로필 폼 상태
+  const [editingFriendId, setEditingFriendId] = useState<string | null>(null);
+  const [profileName, setProfileName] = useState('');
+  const [profileEnglishName, setProfileEnglishName] = useState('');
+  const [profileBirthDate, setProfileBirthDate] = useState('');
+  const [profileGender, setProfileGender] = useState<'M' | 'F' | ''>('');
+  const [profileprofileNumber, setProfileprofileNumber] = useState('');
+  const [profileColor, setProfileColor] = useState('#3b82f6');
+
+  // 클립보드 복사 알림 상태
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copyToastMessage, setCopyToastMessage] = useState<string | null>(null);
 
   // Form states (startDate & endDate)
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
@@ -231,7 +269,7 @@ export const FriendCalendar: React.FC = () => {
   const [formLocation, setFormLocation] = useState<string>('');
   const [formMemo, setFormMemo] = useState<string>('');
 
-  // Friend form states
+  // Friend form states (기존 간이 관리용)
   const [newFriendName, setNewFriendName] = useState<string>('');
   const [newFriendColor, setNewFriendColor] = useState<string>('#6366f1');
 
@@ -249,7 +287,17 @@ export const FriendCalendar: React.FC = () => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.friends && Array.isArray(data.friends)) {
-            setFriends(data.friends);
+            const normalizedFriends: Friend[] = data.friends.map((f: any) => ({
+              id: f.id,
+              name: f.name,
+              color: f.color || '#3b82f6',
+              englishName: f.englishName || '',
+              birthDate: f.birthDate || '',
+              gender: f.gender || '',
+              profileNumber: f.profileNumber || '',
+              memo: f.memo || '',
+            }));
+            setFriends(normalizedFriends);
           }
           if (data.events && Array.isArray(data.events)) {
             // 과거 데이터(date 단일 필드) 호환성 보정
@@ -416,6 +464,99 @@ export const FriendCalendar: React.FC = () => {
     setFriends(updatedFriends);
     setNewFriendName('');
     await syncToFirestore(updatedFriends, events);
+  };
+
+  // 친구 프로필 (인적사항 영문명, 생년월일 등) 폼 리셋
+  const resetProfileForm = () => {
+    setEditingFriendId(null);
+    setProfileName('');
+    setProfileEnglishName('');
+    setProfileBirthDate('');
+    setProfileGender('');
+    setProfileprofileNumber('');
+    setProfileColor('#3b82f6');
+  };
+
+  // 친구 프로필 수정 모드로 폼에 채우기
+  const startEditProfile = (friend: Friend) => {
+    setEditingFriendId(friend.id);
+    setProfileName(friend.name);
+    setProfileEnglishName(friend.englishName || '');
+    setProfileBirthDate(friend.birthDate || '');
+    setProfileGender(friend.gender || '');
+    setProfileprofileNumber(friend.profileNumber || '');
+    setProfileColor(friend.color || '#3b82f6');
+  };
+
+  // 친구 프로필 저장 (추가 또는 수정) -> Firestore 실시간 동기화
+  const handleSaveFriendProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedName = profileName.trim();
+    if (!trimmedName) {
+      alert('친구 이름을 입력해주세요.');
+      return;
+    }
+
+    let updatedFriends: Friend[];
+    if (editingFriendId) {
+      updatedFriends = friends.map((f) =>
+        f.id === editingFriendId
+          ? {
+              ...f,
+              name: trimmedName,
+              englishName: profileEnglishName.trim().toUpperCase(),
+              birthDate: profileBirthDate,
+              gender: profileGender,
+              profileNumber: profileprofileNumber.trim().toUpperCase(),
+              color: profileColor,
+            }
+          : f
+      );
+    } else {
+      const newFriend: Friend = {
+        id: 'f_' + Date.now(),
+        name: trimmedName,
+        englishName: profileEnglishName.trim().toUpperCase(),
+        birthDate: profileBirthDate,
+        gender: profileGender,
+        profileNumber: profileprofileNumber.trim().toUpperCase(),
+        color: profileColor,
+      };
+      updatedFriends = [...friends, newFriend];
+    }
+
+    setFriends(updatedFriends);
+    resetProfileForm();
+    await syncToFirestore(updatedFriends, events);
+  };
+
+  // 클립보드 복사 헬퍼
+  const copyToClipboard = (text: string, id: string, label: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(id);
+      setCopyToastMessage(`${label} 복사되었습니다!`);
+      setTimeout(() => {
+        setCopiedId(null);
+        setCopyToastMessage(null);
+      }, 2000);
+    });
+  };
+
+  // 전체 친구 정보 한 번에 복사
+  const copyAllFriendsInfo = () => {
+    if (friends.length === 0) return;
+    const lines = friends.map((f) => {
+      const parts = [`${f.name}`];
+      if (f.englishName) parts.push(`인적사항명: ${f.englishName}`);
+      if (f.birthDate) {
+        const age = calculateAge(f.birthDate);
+        parts.push(`생년월일: ${f.birthDate}${age ? ` (${age})` : ''}`);
+      }
+      if (f.profileNumber) parts.push(`인적사항번호: ${f.profileNumber}`);
+      return parts.join(' / ');
+    });
+    copyToClipboard(lines.join('\n'), 'ALL', '전체 친구 정보가');
   };
 
   // Delete Friend -> Direct real-time sync
@@ -656,6 +797,20 @@ export const FriendCalendar: React.FC = () => {
           <h2 className="text-xl font-bold text-slate-900 tracking-tight min-w-[140px]">
             {year}년 {month + 1}월
           </h2>
+
+          {/* 친구 인적사항 정보 / 생년월일 관리 버튼 */}
+          <button
+            onClick={() => {
+              resetProfileForm();
+              setIsFriendProfileModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 text-indigo-700 border border-indigo-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+            title="친구 영문 이름(인적사항명) 및 생년월일 관리"
+          >
+            <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="hidden sm:inline">친구 정보 (인적사항명·생년월일)</span>
+            <span className="sm:hidden">인적사항·생년월일</span>
+          </button>
 
           {/* Real-time Indicator Pill */}
           <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-semibold">
@@ -1194,6 +1349,327 @@ export const FriendCalendar: React.FC = () => {
                   <span>삭제</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Friend Travel Profile (profile English Name & Birth Date) Modal */}
+      {isFriendProfileModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-100 flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                  <UserCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                    친구 정보 & 인적사항 영문명
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                      항공권 예약용
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    인적사항상 영문 이름과 생년월일을 관리하고 한 번에 복사할 수 있습니다.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsFriendProfileModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Action Bar & Toast */}
+            <div className="px-6 py-2.5 bg-indigo-50/50 border-b border-indigo-100/60 flex flex-wrap items-center justify-between gap-2 shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-600 font-medium">
+                  총 <span className="font-bold text-indigo-600">{friends.length}명</span>의 친구가 등록되어 있습니다.
+                </span>
+                {copyToastMessage && (
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full animate-in fade-in">
+                    ✓ {copyToastMessage}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={copyAllFriendsInfo}
+                className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                title="항공권 예매창에 붙여넣을 수 있도록 전체 친구 정보를 복사합니다"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>전체 친구 정보 텍스트 복사</span>
+              </button>
+            </div>
+
+            {/* Modal Body: Scrollable */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              {/* Profile Edit / Add Form */}
+              <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wide">
+                    <span>{editingFriendId ? '✏️ 친구 정보 수정' : '➕ 새 친구 정보 등록'}</span>
+                  </h4>
+                  {editingFriendId && (
+                    <button
+                      type="button"
+                      onClick={resetProfileForm}
+                      className="text-xs text-slate-500 hover:text-slate-700 underline"
+                    >
+                      새 등록으로 전환
+                    </button>
+                  )}
+                </div>
+
+                <form onSubmit={handleSaveFriendProfile} className="space-y-3.5 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* 한글 이름 */}
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">
+                        한글 이름 <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        placeholder="예: 민수"
+                        required
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+                      />
+                    </div>
+
+                    {/* 인적사항 영문명 */}
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                        <span>인적사항 영문명 (profile Name)</span>
+                        <span className="text-[10px] text-indigo-600 font-normal">자동 대문자 변환</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={profileEnglishName}
+                        onChange={(e) => setProfileEnglishName(e.target.value.toUpperCase())}
+                        placeholder="예: KIM MINSU"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800"
+                      />
+                    </div>
+
+                    {/* 생년월일 */}
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">생년월일</label>
+                      <input
+                        type="date"
+                        value={profileBirthDate}
+                        onChange={(e) => setProfileBirthDate(e.target.value)}
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+                      />
+                    </div>
+
+                    {/* 성별 & 라벨 색상 */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">성별</label>
+                        <select
+                          value={profileGender}
+                          onChange={(e) => setProfileGender(e.target.value as any)}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+                        >
+                          <option value="">선택안함</option>
+                          <option value="M">남성 (M)</option>
+                          <option value="F">여성 (F)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">라벨 색상</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={profileColor}
+                            onChange={(e) => setProfileColor(e.target.value)}
+                            className="w-full h-9 p-0.5 border border-slate-200 rounded-xl cursor-pointer bg-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 인적사항번호 (선택) */}
+                    <div className="sm:col-span-2">
+                      <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                        <span>인적사항번호 (선택사항)</span>
+                        <span className="text-[10px] text-slate-400">발권 시 빠른 복사 지원</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={profileprofileNumber}
+                        onChange={(e) => setProfileprofileNumber(e.target.value.toUpperCase())}
+                        placeholder="예: M12345678"
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    {editingFriendId && (
+                      <button
+                        type="button"
+                        onClick={resetProfileForm}
+                        className="px-3.5 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-white transition text-xs"
+                      >
+                        수정 취소
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="px-5 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-sm transition text-xs flex items-center gap-1.5"
+                    >
+                      <span>{editingFriendId ? '수정 완료' : '친구 등록'}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Friends List with Quick Copy */}
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5">
+                  등록된 친구 정보 ({friends.length}명)
+                </label>
+
+                {friends.length === 0 ? (
+                  <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
+                    등록된 친구가 없습니다. 위 폼에서 친구를 추가해보세요!
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {friends.map((f) => {
+                      const ageText = calculateAge(f.birthDate);
+                      const isEditing = editingFriendId === f.id;
+
+                      return (
+                        <div
+                          key={f.id}
+                          className={`p-3.5 bg-white rounded-xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                            isEditing
+                              ? 'border-indigo-400 ring-2 ring-indigo-100 bg-indigo-50/20'
+                              : 'border-slate-200 hover:border-slate-300 shadow-2xs'
+                          }`}
+                        >
+                          {/* Friend Info */}
+                          <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                            {/* Color Dot & Korean Name */}
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span
+                                className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs"
+                                style={{ backgroundColor: f.color }}
+                              />
+                              <span className="font-bold text-slate-900 text-sm min-w-[45px]">
+                                {f.name}
+                              </span>
+                            </div>
+
+                            {/* Info Badges */}
+                            <div className="flex flex-wrap items-center gap-2 flex-1">
+                              {/* English Name Badge */}
+                              {f.englishName ? (
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(f.englishName!, `eng_${f.id}`, `${f.name}의 인적사항 영문명이`)}
+                                  className="group flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200/80 rounded-lg text-xs font-mono font-bold transition"
+                                  title="클릭하여 영문명 복사"
+                                >
+                                  <span>{f.englishName}</span>
+                                  {copiedId === `eng_${f.id}` ? (
+                                    <Check className="w-3 h-3 text-emerald-600" />
+                                  ) : (
+                                    <Copy className="w-3 h-3 text-indigo-400 group-hover:text-indigo-600 transition" />
+                                  )}
+                                </button>
+                              ) : (
+                                <span className="text-[11px] text-slate-400 italic">영문명 미입력</span>
+                              )}
+
+                              {/* Birth Date Badge */}
+                              {f.birthDate ? (
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(f.birthDate!, `birth_${f.id}`, `${f.name}의 생년월일이`)}
+                                  className="group flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition"
+                                  title="클릭하여 생년월일 복사"
+                                >
+                                  <span>{f.birthDate}</span>
+                                  {ageText && <span className="text-indigo-600 font-bold">({ageText})</span>}
+                                  {copiedId === `birth_${f.id}` ? (
+                                    <Check className="w-3 h-3 text-emerald-600" />
+                                  ) : (
+                                    <Copy className="w-3 h-3 text-slate-400 group-hover:text-slate-600 transition" />
+                                  )}
+                                </button>
+                              ) : (
+                                <span className="text-[11px] text-slate-400 italic">생년월일 미입력</span>
+                              )}
+
+                              {/* profile Number (if exists) */}
+                              {f.profileNumber && (
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(f.profileNumber!, `pass_${f.id}`, `${f.name}의 인적사항번호가`)}
+                                  className="group flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-lg text-xs font-mono font-semibold transition"
+                                  title="클릭하여 인적사항번호 복사"
+                                >
+                                  <span>인적사항: {f.profileNumber}</span>
+                                  {copiedId === `pass_${f.id}` ? (
+                                    <Check className="w-3 h-3 text-emerald-600" />
+                                  ) : (
+                                    <Copy className="w-3 h-3 text-amber-500 group-hover:text-amber-700 transition" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-1 self-end sm:self-center shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
+                            <button
+                              type="button"
+                              onClick={() => startEditProfile(f)}
+                              className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                              title="정보 수정"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteFriend(f.id)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                              title="삭제"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-between shrink-0">
+              <span className="text-[11px] text-slate-400">
+                입력하신 정보는 Firebase 클라우드에 안전하게 실시간 동기화됩니다.
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsFriendProfileModalOpen(false)}
+                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition"
+              >
+                닫기
+              </button>
             </div>
           </div>
         </div>
