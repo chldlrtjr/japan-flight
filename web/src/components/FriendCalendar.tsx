@@ -86,6 +86,128 @@ const calculateDuration = (startStr: string, endStr: string) => {
   return `총 ${diffDays}일간 (${nights}박 ${diffDays}일)`;
 };
 
+// 🇰🇷 대한민국 법정 공휴일 및 대체공휴일 매핑 데이터 (2024~2028년)
+const KOREAN_HOLIDAYS: Record<string, string> = {
+  // 2024년
+  '2024-01-01': '신정',
+  '2024-02-09': '설날 연휴',
+  '2024-02-10': '설날',
+  '2024-02-11': '설날 연휴',
+  '2024-02-12': '대체공휴일',
+  '2024-03-01': '3·1절',
+  '2024-04-10': '총선',
+  '2024-05-05': '어린이날',
+  '2024-05-06': '대체공휴일',
+  '2024-05-15': '부처님오신날',
+  '2024-06-06': '현충일',
+  '2024-08-15': '광복절',
+  '2024-09-16': '추석 연휴',
+  '2024-09-17': '추석',
+  '2024-09-18': '추석 연휴',
+  '2024-10-01': '국군의날',
+  '2024-10-03': '개천절',
+  '2024-10-09': '한글날',
+  '2024-12-25': '크리스마스',
+
+  // 2025년
+  '2025-01-01': '신정',
+  '2025-01-28': '설날 연휴',
+  '2025-01-29': '설날',
+  '2025-01-30': '설날 연휴',
+  '2025-03-01': '3·1절',
+  '2025-03-03': '대체공휴일',
+  '2025-05-05': '어린이날',
+  '2025-05-06': '대체공휴일',
+  '2025-06-06': '현충일',
+  '2025-08-15': '광복절',
+  '2025-10-03': '개천절',
+  '2025-10-05': '추석 연휴',
+  '2025-10-06': '추석',
+  '2025-10-07': '추석 연휴',
+  '2025-10-08': '대체공휴일',
+  '2025-10-09': '한글날',
+  '2025-12-25': '크리스마스',
+
+  // 2026년
+  '2026-01-01': '신정',
+  '2026-02-16': '설날 연휴',
+  '2026-02-17': '설날',
+  '2026-02-18': '설날 연휴',
+  '2026-03-01': '3·1절',
+  '2026-03-02': '대체공휴일',
+  '2026-05-05': '어린이날',
+  '2026-05-24': '부처님오신날',
+  '2026-05-25': '대체공휴일',
+  '2026-06-06': '현충일',
+  '2026-08-15': '광복절',
+  '2026-08-17': '대체공휴일',
+  '2026-09-24': '추석 연휴',
+  '2026-09-25': '추석',
+  '2026-09-26': '추석 연휴',
+  '2026-09-28': '대체공휴일',
+  '2026-10-03': '개천절',
+  '2026-10-05': '대체공휴일',
+  '2026-10-09': '한글날',
+  '2026-12-25': '크리스마스',
+
+  // 2027년
+  '2027-01-01': '신정',
+  '2027-02-06': '설날 연휴',
+  '2027-02-07': '설날',
+  '2027-02-08': '설날 연휴',
+  '2027-02-09': '대체공휴일',
+  '2027-03-01': '3·1절',
+  '2027-05-05': '어린이날',
+  '2027-05-13': '부처님오신날',
+  '2027-06-06': '현충일',
+  '2027-08-15': '광복절',
+  '2027-08-16': '대체공휴일',
+  '2027-09-14': '추석 연휴',
+  '2027-09-15': '추석',
+  '2027-09-16': '추석 연휴',
+  '2027-10-03': '개천절',
+  '2027-10-04': '대체공휴일',
+  '2027-10-09': '한글날',
+  '2027-10-11': '대체공휴일',
+  '2027-12-25': '크리스마스',
+
+  // 2028년
+  '2028-01-01': '신정',
+  '2028-01-26': '설날 연휴',
+  '2028-01-27': '설날',
+  '2028-01-28': '설날 연휴',
+  '2028-03-01': '3·1절',
+  '2028-05-02': '부처님오신날',
+  '2028-05-05': '어린이날',
+  '2028-06-06': '현충일',
+  '2028-08-15': '광복절',
+  '2028-10-02': '추석 연휴',
+  '2028-10-03': '추석/개천절',
+  '2028-10-04': '추석 연휴',
+  '2028-10-05': '대체공휴일',
+  '2028-10-09': '한글날',
+  '2028-12-25': '크리스마스',
+};
+
+// 양력 고정 공휴일 헬퍼
+const getHolidayName = (dateStr: string): string | null => {
+  if (KOREAN_HOLIDAYS[dateStr]) {
+    return KOREAN_HOLIDAYS[dateStr];
+  }
+  const mmdd = dateStr.slice(5);
+  const fixedHolidays: Record<string, string> = {
+    '01-01': '신정',
+    '03-01': '3·1절',
+    '05-05': '어린이날',
+    '06-06': '현충일',
+    '08-15': '광복절',
+    '10-03': '개천절',
+    '10-09': '한글날',
+    '12-25': '크리스마스',
+  };
+  return fixedHolidays[mmdd] || null;
+};
+
 export const FriendCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [friends, setFriends] = useState<Friend[]>(DEFAULT_FRIENDS);
@@ -635,11 +757,14 @@ export const FriendCalendar: React.FC = () => {
                 {/* 1. 배경 날짜 셀 그리드 (7열) */}
                 <div className="absolute inset-0 grid grid-cols-7 divide-x divide-slate-100 pointer-events-none">
                   {week.map((cDay, colIdx) => {
+                    const holidayName = getHolidayName(cDay.dateStr);
+                    const isHoliday = !!holidayName;
+
                     let dayColorClass = 'text-slate-800';
                     if (cDay.isOtherMonth) {
-                      dayColorClass = 'text-slate-300';
-                    } else if (cDay.dayOfWeek === 0) {
-                      dayColorClass = 'text-rose-500';
+                      dayColorClass = cDay.dayOfWeek === 0 || isHoliday ? 'text-rose-300' : 'text-slate-300';
+                    } else if (cDay.dayOfWeek === 0 || isHoliday) {
+                      dayColorClass = 'text-rose-500 font-bold';
                     } else if (cDay.dayOfWeek === 6) {
                       dayColorClass = 'text-sky-600';
                     }
@@ -649,24 +774,44 @@ export const FriendCalendar: React.FC = () => {
                         key={colIdx}
                         onClick={() => openAddEventModal(cDay.dateStr)}
                         className={`h-full p-2 flex flex-col justify-between transition hover:bg-slate-50/70 cursor-pointer pointer-events-auto group ${
-                          cDay.isOtherMonth ? 'bg-slate-50/40' : 'bg-white'
+                          cDay.isOtherMonth
+                            ? 'bg-slate-50/40'
+                            : isHoliday && cDay.dayOfWeek !== 0
+                            ? 'bg-rose-50/30'
+                            : 'bg-white'
                         }`}
                       >
-                        {/* 상단 날짜 숫자 및 + 버튼 */}
-                        <div className="flex items-center justify-between">
-                          <span
-                            className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full transition ${
-                              cDay.isToday ? 'bg-indigo-600 text-white font-bold shadow-xs' : dayColorClass
-                            }`}
-                          >
-                            {cDay.day}
-                          </span>
+                        {/* 상단 날짜 숫자, 공휴일 이름 및 + 버튼 */}
+                        <div className="flex items-center justify-between gap-1">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span
+                              className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full transition ${
+                                cDay.isToday
+                                  ? isHoliday || cDay.dayOfWeek === 0
+                                    ? 'bg-rose-500 text-white font-bold shadow-xs'
+                                    : 'bg-indigo-600 text-white font-bold shadow-xs'
+                                  : dayColorClass
+                              }`}
+                            >
+                              {cDay.day}
+                            </span>
+                            {holidayName && (
+                              <span
+                                className={`text-[10px] sm:text-[11px] font-bold truncate max-w-[50px] sm:max-w-[75px] ${
+                                  cDay.isOtherMonth ? 'text-rose-300' : 'text-rose-500'
+                                }`}
+                                title={holidayName}
+                              >
+                                {holidayName}
+                              </span>
+                            )}
+                          </div>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               openAddEventModal(cDay.dateStr);
                             }}
-                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-indigo-600 text-xs transition p-0.5 rounded"
+                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-indigo-600 text-xs transition p-0.5 rounded shrink-0"
                             title="일정 추가"
                           >
                             <Plus className="w-3.5 h-3.5" />
