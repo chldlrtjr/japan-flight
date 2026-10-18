@@ -25,6 +25,56 @@ export default function Home() {
   // Tab: 'promotions' (공식 특가) | 'news' (특가 기사) | 'calendar' (친구 일정 달력)
   const [activeTab, setActiveTab] = useState<'promotions' | 'news' | 'calendar'>('promotions');
 
+  // 탭 변경 시 URL Hash 및 LocalStorage에 저장
+  const handleTabChange = useCallback((tab: 'promotions' | 'news' | 'calendar') => {
+    setActiveTab(tab);
+    try {
+      localStorage.setItem('flypromo_active_tab', tab);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', `#${tab}`);
+      }
+    } catch (e) {
+      console.error('Failed to save active tab:', e);
+    }
+  }, []);
+
+  // 새로고침 시 탭 복원 (URL Hash 우선 -> LocalStorage 순)
+  useEffect(() => {
+    const getTabFromHash = () => {
+      if (typeof window === 'undefined') return null;
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'calendar' || hash === 'news' || hash === 'promotions') {
+        return hash as 'promotions' | 'news' | 'calendar';
+      }
+      return null;
+    };
+
+    const initialTab = getTabFromHash();
+    if (initialTab) {
+      setActiveTab(initialTab);
+    } else {
+      try {
+        const savedTab = localStorage.getItem('flypromo_active_tab');
+        if (savedTab === 'calendar' || savedTab === 'news' || savedTab === 'promotions') {
+          setActiveTab(savedTab as 'promotions' | 'news' | 'calendar');
+          window.history.replaceState(null, '', `#${savedTab}`);
+        }
+      } catch (e) {
+        console.error('Failed to get saved tab:', e);
+      }
+    }
+
+    const handleHashChange = () => {
+      const tab = getTabFromHash();
+      if (tab) {
+        setActiveTab(tab);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('ALL');
@@ -194,7 +244,7 @@ export default function Home() {
         {/* Tab Switcher: Airline Website Events vs Flight News */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 mb-6 border-b border-slate-200 pb-3">
           <button
-            onClick={() => setActiveTab('promotions')}
+            onClick={() => handleTabChange('promotions')}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
               activeTab === 'promotions'
                 ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20'
@@ -213,7 +263,7 @@ export default function Home() {
           </button>
 
           <button
-            onClick={() => setActiveTab('news')}
+            onClick={() => handleTabChange('news')}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
               activeTab === 'news'
                 ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20'
@@ -232,7 +282,7 @@ export default function Home() {
           </button>
 
           <button
-            onClick={() => setActiveTab('calendar')}
+            onClick={() => handleTabChange('calendar')}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
               activeTab === 'calendar'
                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
