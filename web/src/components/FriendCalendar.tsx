@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,18 +8,16 @@ import {
   Users,
   Search,
   Calendar as CalendarIcon,
-  Clock,
   MapPin,
   FileText,
   Trash2,
   Edit2,
   X,
-  Download,
-  Upload,
-  RefreshCw,
-  Globe,
-  CheckCircle2,
+  Wifi,
+  Sparkles,
 } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 
 interface Friend {
   id: string;
@@ -45,6 +43,27 @@ const DEFAULT_FRIENDS: Friend[] = [
   { id: 'f_5', name: '동현', color: '#8b5cf6' },
 ];
 
+const INITIAL_EVENTS: CalendarEvent[] = [
+  {
+    id: 'ev_init_1',
+    friendId: 'f_1',
+    title: '민수와 오사카 특가 여행 계획 회의',
+    date: '2026-10-18',
+    time: '19:00',
+    location: '강남역 카페',
+    memo: '항공권 예매 및 숙소 리스트 공유',
+  },
+  {
+    id: 'ev_init_2',
+    friendId: 'f_2',
+    title: '지은이 후쿠오카 주말 특가 출발',
+    date: '2026-10-24',
+    time: '08:30',
+    location: '인천공항 제1터미널',
+    memo: '인적사항, e티켓 출력물 확인',
+  },
+];
+
 const getFormattedDate = (date: Date) => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -56,10 +75,7 @@ export const FriendCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [friends, setFriends] = useState<Friend[]>(DEFAULT_FRIENDS);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [isLoadingSharedData, setIsLoadingSharedData] = useState<boolean>(true);
-  const [sharedUpdatedAt, setSharedUpdatedAt] = useState<string | null>(null);
-  const [syncNotice, setSyncNotice] = useState<string | null>(null);
-
+  const [isConnected, setIsConnected] = useState<boolean>(false);
   const [activeFilterFriendId, setActiveFilterFriendId] = useState<string>('ALL');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
 
@@ -67,8 +83,6 @@ export const FriendCalendar: React.FC = () => {
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
-  const [isDeployGuideOpen, setIsDeployGuideOpen] = useState(false);
 
   // Form states
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
@@ -86,62 +100,54 @@ export const FriendCalendar: React.FC = () => {
   // Selected event for view modal
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
-  // 1. Fetch Shared Calendar Data from GitHub Hosting (/data/calendar.json)
-  const fetchSharedData = useCallback(async (isManualRefresh = false) => {
-    setIsLoadingSharedData(true);
-    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-    try {
-      const cacheBust = `?t=${Date.now()}`;
-      const res = await fetch(`${basePath}/data/calendar.json${cacheBust}`);
-      if (res.ok) {
-        const json = await res.json();
-        if (json.friends && Array.isArray(json.friends)) {
-          setFriends(json.friends);
-          localStorage.setItem('flypromo_calendar_friends', JSON.stringify(json.friends));
+  // 🔥 1. Real-time Firebase Firestore synchronization
+  useEffect(() => {
+    const docRef = doc(db, 'calendar_data', 'shared');
+
+    // Subscribe to real-time changes
+    const unsubscribe = onSnapshot(
+      docRef,
+      (docSnap) => {
+        setIsConnected(true);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.friends && Array.isArray(data.friends)) {
+            setFriends(data.friends);
+          }
+          if (data.events && Array.isArray(data.events)) {
+            setEvents(data.events);
+          }
+        } else {
+          // Initialize Firebase if empty
+          setDoc(docRef, {
+            friends: DEFAULT_FRIENDS,
+            events: INITIAL_EVENTS,
+            updatedAt: new Date().toISOString(),
+          }).catch((err) => console.error('Failed to init Firestore document:', err));
         }
-        if (json.events && Array.isArray(json.events)) {
-          setEvents(json.events);
-          localStorage.setItem('flypromo_calendar_events', JSON.stringify(json.events));
-        }
-        if (json.updatedAt) {
-          setSharedUpdatedAt(json.updatedAt);
-        }
-        if (isManualRefresh) {
-          setSyncNotice('깃허브 공통 달력 데이터를 최신으로 동기화했습니다!');
-          setTimeout(() => setSyncNotice(null), 3000);
-        }
-      } else {
-        // Fallback to local storage if json fetch fails
-        loadFromLocalStorage();
+      },
+      (error) => {
+        console.error('Firestore real-time subscription error:', error);
+        setIsConnected(false);
       }
-    } catch (e) {
-      console.warn('Failed to fetch shared calendar.json, falling back to local storage:', e);
-      loadFromLocalStorage();
-    } finally {
-      setIsLoadingSharedData(false);
-    }
+    );
+
+    return () => unsubscribe();
   }, []);
 
-  const loadFromLocalStorage = () => {
+  // Update Firestore helper
+  const syncToFirestore = async (newFriends: Friend[], newEvents: CalendarEvent[]) => {
     try {
-      const savedFriends = localStorage.getItem('flypromo_calendar_friends');
-      if (savedFriends) setFriends(JSON.parse(savedFriends));
-
-      const savedEvents = localStorage.getItem('flypromo_calendar_events');
-      if (savedEvents) setEvents(JSON.parse(savedEvents));
-    } catch (e) {
-      console.error(e);
+      const docRef = doc(db, 'calendar_data', 'shared');
+      await setDoc(docRef, {
+        friends: newFriends,
+        events: newEvents,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error('Failed to sync to Firestore:', err);
+      alert('일정 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
-  };
-
-  useEffect(() => {
-    fetchSharedData();
-  }, [fetchSharedData]);
-
-  // Save to local storage whenever user edits
-  const saveLocalState = (newFriends: Friend[], newEvents: CalendarEvent[]) => {
-    localStorage.setItem('flypromo_calendar_friends', JSON.stringify(newFriends));
-    localStorage.setItem('flypromo_calendar_events', JSON.stringify(newEvents));
   };
 
   const getFriend = (friendId: string): Friend => {
@@ -182,7 +188,8 @@ export const FriendCalendar: React.FC = () => {
     setIsEventModalOpen(true);
   };
 
-  const handleSaveEvent = (e: React.FormEvent) => {
+  // Save Event (Add or Edit) -> Direct real-time sync
+  const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formFriendId || !formTitle || !formDate) {
       alert('친구, 일정 제목, 날짜를 입력해주세요.');
@@ -217,23 +224,27 @@ export const FriendCalendar: React.FC = () => {
       updatedEvents = [...events, newEv];
     }
 
+    // Local optimistic update
     setEvents(updatedEvents);
-    saveLocalState(friends, updatedEvents);
     setIsEventModalOpen(false);
+
+    // Push to Firestore (auto-reflected to all users)
+    await syncToFirestore(friends, updatedEvents);
   };
 
-  const handleDeleteEvent = (id: string) => {
+  // Delete Event -> Direct real-time sync
+  const handleDeleteEvent = async (id: string) => {
     if (confirm('이 일정을 삭제하시겠습니까?')) {
       const updatedEvents = events.filter((ev) => ev.id !== id);
       setEvents(updatedEvents);
-      saveLocalState(friends, updatedEvents);
       setIsEventModalOpen(false);
       setIsViewModalOpen(false);
+      await syncToFirestore(friends, updatedEvents);
     }
   };
 
-  // Add friend
-  const handleAddFriend = (e: React.FormEvent) => {
+  // Add Friend -> Direct real-time sync
+  const handleAddFriend = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newFriendName.trim();
     if (!trimmed) return;
@@ -242,35 +253,19 @@ export const FriendCalendar: React.FC = () => {
       name: trimmed,
       color: newFriendColor,
     };
-    const updated = [...friends, newFriend];
-    setFriends(updated);
-    saveLocalState(updated, events);
+    const updatedFriends = [...friends, newFriend];
+    setFriends(updatedFriends);
     setNewFriendName('');
+    await syncToFirestore(updatedFriends, events);
   };
 
-  const handleDeleteFriend = (id: string) => {
+  // Delete Friend -> Direct real-time sync
+  const handleDeleteFriend = async (id: string) => {
     if (confirm('이 친구를 삭제하시겠습니까?')) {
-      const updated = friends.filter((f) => f.id !== id);
-      setFriends(updated);
-      saveLocalState(updated, events);
+      const updatedFriends = friends.filter((f) => f.id !== id);
+      setFriends(updatedFriends);
+      await syncToFirestore(updatedFriends, events);
     }
-  };
-
-  // Export JSON (for GitHub repository data/calendar.json)
-  const handleDownloadCalendarJson = () => {
-    const data = {
-      updatedAt: new Date().toISOString(),
-      friends,
-      events,
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `calendar.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setIsDeployGuideOpen(true);
   };
 
   // Calendar cells computation
@@ -348,58 +343,7 @@ export const FriendCalendar: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Toast Notification */}
-      {syncNotice && (
-        <div className="fixed top-4 right-4 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>{syncNotice}</span>
-        </div>
-      )}
-
-      {/* Top Banner: GitHub Shared Info & Action Buttons */}
-      <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
-            <Globe className="w-5 h-5 text-indigo-300" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-sm sm:text-base tracking-tight">공통 친구 일정 (GitHub 동기화)</h3>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
-                전원 공유
-              </span>
-            </div>
-            <p className="text-xs text-slate-300 mt-0.5">
-              접속한 모든 친구들이 깃허브에 저장된 동일한 달력 일정을 실시간으로 공유받습니다.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-          {/* Refresh Shared Data */}
-          <button
-            onClick={() => fetchSharedData(true)}
-            disabled={isLoadingSharedData}
-            className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition border border-white/15"
-            title="깃허브의 최신 공통 일정 불러오기"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingSharedData ? 'animate-spin' : ''}`} />
-            <span>깃허브 동기화</span>
-          </button>
-
-          {/* Download calendar.json for GitHub commit */}
-          <button
-            onClick={handleDownloadCalendarJson}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold transition shadow-sm active:scale-95"
-            title="현재 일정을 calendar.json으로 내려받아 깃허브에 반영"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>일정 깃허브 반영 (JSON)</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Calendar Card */}
+      {/* Top Banner: Real-time Sync Status */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Navigation & Title */}
         <div className="flex items-center gap-3">
@@ -428,6 +372,12 @@ export const FriendCalendar: React.FC = () => {
           <h2 className="text-xl font-bold text-slate-900 tracking-tight min-w-[140px]">
             {year}년 {month + 1}월
           </h2>
+
+          {/* Real-time Indicator Pill */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-semibold">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>실시간 자동 동기화</span>
+          </div>
         </div>
 
         {/* Action Controls */}
@@ -440,7 +390,7 @@ export const FriendCalendar: React.FC = () => {
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               placeholder="일정 검색..."
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -766,11 +716,11 @@ export const FriendCalendar: React.FC = () => {
                         <input
                           type="color"
                           value={f.color}
-                          onChange={(e) => {
+                          onChange={async (e) => {
                             const newColor = e.target.value;
                             const updated = friends.map((item) => (item.id === f.id ? { ...item, color: newColor } : item));
                             setFriends(updated);
-                            saveLocalState(updated, events);
+                            await syncToFirestore(updated, events);
                           }}
                           className="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent"
                         />
@@ -856,42 +806,6 @@ export const FriendCalendar: React.FC = () => {
                   <span>삭제</span>
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 4. GitHub Deploy Guide Modal */}
-      {isDeployGuideOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                <span>calendar.json 다운로드 완료!</span>
-              </h3>
-              <button onClick={() => setIsDeployGuideOpen(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 text-xs text-slate-600 leading-relaxed">
-              <p className="font-medium text-slate-800">
-                다운로드받은 <code>calendar.json</code> 파일을 프로젝트의 <code>data/</code> 폴더와 <code>web/public/data/</code> 폴더에 덮어씌운 뒤, Git 커밋 & 푸시하시면 모든 친구들에게 똑같이 반영됩니다.
-              </p>
-
-              <div className="p-3 bg-slate-900 text-slate-100 rounded-xl font-mono text-[11px] space-y-1">
-                <p>git add data/ web/public/data/</p>
-                <p>git commit -m &quot;chore: 캘린더 공통 일정 업데이트&quot;</p>
-                <p>git push origin main</p>
-              </div>
-
-              <button
-                onClick={() => setIsDeployGuideOpen(false)}
-                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition text-sm"
-              >
-                확인했습니다
-              </button>
             </div>
           </div>
         </div>
