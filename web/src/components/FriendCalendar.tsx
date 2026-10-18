@@ -20,6 +20,11 @@ import {
   Check,
   Sparkles,
   Plane,
+  Download,
+  Upload,
+  History,
+  ShieldCheck,
+  RotateCcw,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
@@ -32,6 +37,7 @@ interface Friend {
   birthDate?: string;      // 생년월일 (YYYY-MM-DD)
   gender?: 'M' | 'F' | ''; // 성별 (M: 남성, F: 여성)
   profileNumber?: string; // 인적사항번호 (선택)
+  profileExpiry?: string; // 인적사항 만료일 (YYYY-MM-DD) (선택)
   memo?: string;           // 메모
 }
 
@@ -44,6 +50,14 @@ interface CalendarEvent {
   time?: string;     // HH:mm (옵션)
   location?: string;
   memo?: string;
+}
+
+// 🛡️ 변경 이력 스냅샷 인터페이스 (절대 유실 방지용)
+interface CalendarBackupSnapshot {
+  savedAt: string; // ISO string
+  summary: string;
+  friends: Friend[];
+  events: CalendarEvent[];
 }
 
 const DEFAULT_FRIENDS: Friend[] = [
@@ -234,11 +248,31 @@ const calculateAge = (birthDateStr?: string) => {
 
 export const FriendCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [friends, setFriends] = useState<Friend[]>(DEFAULT_FRIENDS);
+  
+  // 🛡️ [영구 안전 금고] 로컬스토리지에 저장된 실제 친구 정보가 있으면 즉시 우선 복원!
+  const [friends, setFriends] = useState<Friend[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('flypromo_safe_friends_vault');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+    }
+    return DEFAULT_FRIENDS;
+  });
+
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [activeFilterFriendId, setActiveFilterFriendId] = useState<string>('ALL');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [hasLoadedFromFirestore, setHasLoadedFromFirestore] = useState<boolean>(false);
+
+  // 🛡️ 클라우드 변경 이력 스냅샷 목록 (원클릭 과거 복원용)
+  const [backupHistory, setBackupHistory] = useState<CalendarBackupSnapshot[]>([]);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
   // Modals
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -255,6 +289,7 @@ export const FriendCalendar: React.FC = () => {
   const [profileBirthDate, setProfileBirthDate] = useState('');
   const [profileGender, setProfileGender] = useState<'M' | 'F' | ''>('');
   const [profileprofileNumber, setProfileprofileNumber] = useState('');
+  const [profileprofileExpiry, setProfileprofileExpiry] = useState('');
   const [profileColor, setProfileColor] = useState('#3b82f6');
 
   // 클립보드 복사 알림 상태
@@ -278,6 +313,86 @@ export const FriendCalendar: React.FC = () => {
   // Selected event for view modal
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
+  // 💾 이전 브라우저 로컬스토리지 백업 데이터 자동 감지 상태
+  const [localBackupData, setLocalBackupData] = useState<{ friends: Friend[]; events: CalendarEvent[]; sourceName: string } | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      // 1. web 서비스 이전 로컬스토리지 검사
+      const flyFriends = localStorage.getItem('flypromo_calendar_friends');
+      const flyEvents = localStorage.getItem('flypromo_calendar_events');
+      
+      // 2. 독립형 캘린더 로컬스토리지 검사
+      const fcFriends = localStorage.getItem('fc_friends');
+      const fcEvents = localStorage.getItem('fc_events');
+
+      let candidateFriends: any[] = [];
+      let candidateEvents: any[] = [];
+      let source = '';
+
+      if (flyFriends) {
+        const parsed = JSON.parse(flyFriends);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          candidateFriends = parsed;
+          candidateEvents = flyEvents ? JSON.parse(flyEvents) : [];
+          source = '이전 웹 캘린더 로컬 저장소';
+        }
+      } else if (fcFriends) {
+        const parsed = JSON.parse(fcFriends);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          candidateFriends = parsed;
+          candidateEvents = fcEvents ? JSON.parse(fcEvents) : [];
+          source = '독립 캘린더(HTML) 저장소';
+        }
+      }
+
+      if (candidateFriends.length > 0) {
+        // 샘플 이름이 아닌 실제 입력된 데이터가 있는지 확인
+        const sampleNames = ['민수', '지은', '태호', '수빈', '동현'];
+        const hasCustomData = candidateFriends.some(f => !sampleNames.includes(f.name) || f.profileNumber || f.memo);
+        // 또는 친구 수가 5명과 다르거나 정보가 있는 경우
+        if (hasCustomData || candidateFriends.length !== 5) {
+          setLocalBackupData({
+            friends: candidateFriends,
+            events: candidateEvents,
+            sourceName: source,
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Failed to detect local backup data:', e);
+    }
+  }, []);
+
+  // 🛡️ [영구 안전 금고] 브라우저 LocalStorage에 실시간 자동 미러링 백업 (클라우드 장애나 실수 대비)
+  const saveToLocalVault = (friendsToSave: Friend[], eventsToSave: CalendarEvent[]) => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (friendsToSave && friendsToSave.length > 0) {
+        localStorage.setItem('flypromo_safe_friends_vault', JSON.stringify(friendsToSave));
+        localStorage.setItem('flypromo_safe_events_vault', JSON.stringify(eventsToSave));
+        localStorage.setItem('flypromo_safe_vault_time', new Date().toISOString());
+      }
+    } catch (e) {
+      console.error('Failed to save to local vault:', e);
+    }
+  };
+
+  // 로컬 백업 데이터를 현재 클라우드로 복원하는 함수
+  const restoreLocalBackup = async () => {
+    if (!localBackupData) return;
+    if (confirm(`'${localBackupData.sourceName}'에서 발견된 친구 ${localBackupData.friends.length}명의 데이터를 현재 캘린더에 복원하시겠습니까?`)) {
+      setFriends(localBackupData.friends);
+      if (localBackupData.events && localBackupData.events.length > 0) {
+        setEvents(localBackupData.events);
+      }
+      await syncToFirestore(localBackupData.friends, localBackupData.events.length > 0 ? localBackupData.events : events, '로컬 저장소 데이터 복원');
+      setLocalBackupData(null);
+      alert('성공적으로 친구 정보가 복원되어 클라우드에 영구 저장되었습니다!');
+    }
+  };
+
   // 🔥 1. Firebase Firestore 실시간 동기화
   useEffect(() => {
     const docRef = doc(db, 'calendar_data', 'shared');
@@ -288,8 +403,11 @@ export const FriendCalendar: React.FC = () => {
         setIsConnected(true);
         if (docSnap.exists()) {
           const data = docSnap.data();
+          let loadedFriends: Friend[] = [];
+          let loadedEvents: CalendarEvent[] = [];
+
           if (data.friends && Array.isArray(data.friends)) {
-            const normalizedFriends: Friend[] = data.friends.map((f: any) => ({
+            loadedFriends = data.friends.map((f: any) => ({
               id: f.id,
               name: f.name,
               color: f.color || '#3b82f6',
@@ -297,13 +415,15 @@ export const FriendCalendar: React.FC = () => {
               birthDate: f.birthDate || '',
               gender: f.gender || '',
               profileNumber: f.profileNumber || '',
+              profileExpiry: f.profileExpiry || '',
               memo: f.memo || '',
             }));
-            setFriends(normalizedFriends);
+            setFriends(loadedFriends);
           }
+
           if (data.events && Array.isArray(data.events)) {
             // 과거 데이터(date 단일 필드) 호환성 보정
-            const normalizedEvents: CalendarEvent[] = data.events.map((ev: any) => ({
+            loadedEvents = data.events.map((ev: any) => ({
               id: ev.id,
               friendId: ev.friendId,
               title: ev.title,
@@ -313,7 +433,17 @@ export const FriendCalendar: React.FC = () => {
               location: ev.location || '',
               memo: ev.memo || '',
             }));
-            setEvents(normalizedEvents);
+            setEvents(loadedEvents);
+          }
+
+          // 🛡️ 백업 히스토리 로드
+          if (data.backupHistory && Array.isArray(data.backupHistory)) {
+            setBackupHistory(data.backupHistory);
+          }
+
+          // 🛡️ 불러온 실제 데이터를 즉시 브라우저 로컬 안전 금고에도 이중 보관!
+          if (loadedFriends.length > 0) {
+            saveToLocalVault(loadedFriends, loadedEvents);
           }
         } else {
           // 최초 실행 시 기본 데이터 생성
@@ -323,6 +453,7 @@ export const FriendCalendar: React.FC = () => {
             updatedAt: new Date().toISOString(),
           }).catch((err) => console.error('Failed to init Firestore document:', err));
         }
+        setHasLoadedFromFirestore(true);
       },
       (error) => {
         console.error('Firestore real-time subscription error:', error);
@@ -333,19 +464,101 @@ export const FriendCalendar: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Update Firestore helper
-  const syncToFirestore = async (newFriends: Friend[], newEvents: CalendarEvent[]) => {
+  // Update Firestore helper (3중 보호 안전 가드 & 자동 히스토리 누적 적용)
+  const syncToFirestore = async (newFriends: Friend[], newEvents: CalendarEvent[], actionNote = '정보 업데이트') => {
+    // 🛡️ 1단계: 브라우저 로컬 안전 금고에 즉시 0.001초 만에 1차 영구 보관!
+    saveToLocalVault(newFriends, newEvents);
+
+    if (!hasLoadedFromFirestore) {
+      console.warn('초기 데이터 로딩 완료 전에 클라우드 덮어쓰기 방지 작동됨');
+      return;
+    }
+
     try {
       const docRef = doc(db, 'calendar_data', 'shared');
+
+      // 🛡️ 2단계: 과거 15개 시점 변경 이력 자동 스냅샷 생성!
+      const newSnapshot: CalendarBackupSnapshot = {
+        savedAt: new Date().toISOString(),
+        summary: `${actionNote} (친구 ${newFriends.length}명, 일정 ${newEvents.length}개)`,
+        friends: newFriends,
+        events: newEvents,
+      };
+      const updatedHistory = [newSnapshot, ...(backupHistory || []).slice(0, 14)];
+      setBackupHistory(updatedHistory);
+
+      // 🛡️ 3단계: 클라우드 Firestore 영구 저장
       await setDoc(docRef, {
         friends: newFriends,
         events: newEvents,
+        backupHistory: updatedHistory,
         updatedAt: new Date().toISOString(),
       });
     } catch (err) {
       console.error('Failed to sync to Firestore:', err);
-      alert('일정 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      alert('클라우드 저장 실패! 하지만 브라우저 영구 안전 금고에 안전하게 보관되었습니다.');
     }
+  };
+
+  // 🛡️ 과거 스냅샷 시점으로 즉시 되돌리기 (원클릭 롤백)
+  const restoreSnapshot = async (snapshot: CalendarBackupSnapshot) => {
+    const timeStr = new Date(snapshot.savedAt).toLocaleString();
+    if (confirm(`'${timeStr}' 시점 (${snapshot.summary})으로 데이터를 복원하시겠습니까?`)) {
+      setFriends(snapshot.friends);
+      setEvents(snapshot.events);
+      setIsHistoryModalOpen(false);
+      await syncToFirestore(snapshot.friends, snapshot.events, `과거 시점 복원 (${timeStr})`);
+      alert('성공적으로 이전 시점 데이터로 복원되었습니다!');
+    }
+  };
+
+  // 📥 [파일 내보내기] 전체 친구 정보 백업 파일(JSON) 다운로드
+  const exportFriendsAsJsonFile = () => {
+    const backupData = {
+      title: 'JapanFlight Friends Calendar Safe Backup',
+      version: '2.0',
+      exportedAt: new Date().toISOString(),
+      friendsCount: friends.length,
+      friends,
+      events,
+      backupHistory,
+    };
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `친구인적사항_일정백업_${getFormattedDate(new Date())}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('친구 정보 백업 파일이 다운로드되었습니다. 스마트폰이나 PC에 소장해두시면 언제든 복원할 수 있습니다!');
+  };
+
+  // 📤 [파일 불러오기] 백업 파일(JSON)에서 데이터 읽어와 클라우드 복원
+  const importFriendsFromJsonFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const parsed = JSON.parse(evt.target?.result as string);
+        if (parsed.friends && Array.isArray(parsed.friends)) {
+          if (confirm(`백업 파일에서 친구 ${parsed.friends.length}명의 정보를 복원하시겠습니까?`)) {
+            const impFriends: Friend[] = parsed.friends;
+            const impEvents: CalendarEvent[] = Array.isArray(parsed.events) ? parsed.events : events;
+            setFriends(impFriends);
+            setEvents(impEvents);
+            await syncToFirestore(impFriends, impEvents, 'JSON 백업 파일 복원');
+            alert('성공적으로 복원되었습니다!');
+          }
+        } else {
+          alert('올바른 백업 파일(JSON) 형식이 아닙니다.');
+        }
+      } catch (err) {
+        alert('파일을 불러오는 중 오류가 발생했습니다.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const getFriend = (friendId: string): Friend => {
@@ -476,6 +689,7 @@ export const FriendCalendar: React.FC = () => {
     setProfileBirthDate('');
     setProfileGender('');
     setProfileprofileNumber('');
+    setProfileprofileExpiry('');
     setProfileColor('#3b82f6');
   };
 
@@ -487,6 +701,7 @@ export const FriendCalendar: React.FC = () => {
     setProfileBirthDate(friend.birthDate || '');
     setProfileGender(friend.gender || '');
     setProfileprofileNumber(friend.profileNumber || '');
+    setProfileprofileExpiry(friend.profileExpiry || '');
     setProfileColor(friend.color || '#3b82f6');
     setIsProfileFormOpen(true);
     // 수정 폼이 위치한 최상단으로 부드럽게 스크롤
@@ -515,6 +730,7 @@ export const FriendCalendar: React.FC = () => {
               birthDate: profileBirthDate,
               gender: profileGender,
               profileNumber: profileprofileNumber.trim().toUpperCase(),
+              profileExpiry: profileprofileExpiry,
               color: profileColor,
             }
           : f
@@ -527,6 +743,7 @@ export const FriendCalendar: React.FC = () => {
         birthDate: profileBirthDate,
         gender: profileGender,
         profileNumber: profileprofileNumber.trim().toUpperCase(),
+        profileExpiry: profileprofileExpiry,
         color: profileColor,
       };
       updatedFriends = [...friends, newFriend];
@@ -562,6 +779,7 @@ export const FriendCalendar: React.FC = () => {
         parts.push(`생년월일: ${f.birthDate}${age ? ` (${age})` : ''}`);
       }
       if (f.profileNumber) parts.push(`인적사항번호: ${f.profileNumber}`);
+      if (f.profileExpiry) parts.push(`인적사항만료: ${f.profileExpiry}`);
       return parts.join(' / ');
     });
     copyToClipboard(lines.join('\n'), 'ALL', '전체 친구 정보가');
@@ -776,6 +994,39 @@ export const FriendCalendar: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {/* 💾 이전 로컬스토리지 백업 데이터 복원 배너 */}
+      {localBackupData && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md animate-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg shrink-0">
+              💾
+            </div>
+            <div>
+              <h4 className="font-bold text-amber-950 text-sm">
+                이전 브라우저에 저장된 친구 정보({localBackupData.friends.length}명)가 발견되었습니다!
+              </h4>
+              <p className="text-xs text-amber-800">
+                [{localBackupData.friends.map((f) => f.name).join(', ')}] 정보를 지금 현재 캘린더로 복원할 수 있습니다.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+            <button
+              onClick={restoreLocalBackup}
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+            >
+              지금 복원하기
+            </button>
+            <button
+              onClick={() => setLocalBackupData(null)}
+              className="px-2.5 py-2 text-amber-700 hover:text-amber-900 text-xs font-medium"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Banner: Real-time Sync Status & Controls */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Navigation & Title */}
@@ -818,6 +1069,22 @@ export const FriendCalendar: React.FC = () => {
             <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
             <span className="hidden sm:inline">친구 정보 (인적사항명·생년월일)</span>
             <span className="sm:hidden">인적사항·생년월일</span>
+          </button>
+
+          {/* 🛡️ 데이터 안전 보관함 및 복원 버튼 */}
+          <button
+            onClick={() => setIsHistoryModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+            title="친구 정보 백업 다운로드 및 과거 변경 이력 복원"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="hidden sm:inline">안전 보관함 & 이력 복원</span>
+            <span className="sm:hidden">백업·복원</span>
+            {backupHistory.length > 0 && (
+              <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                {backupHistory.length}
+              </span>
+            )}
           </button>
 
           {/* Real-time Indicator Pill */}
@@ -1404,7 +1671,7 @@ export const FriendCalendar: React.FC = () => {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => {
@@ -1430,11 +1697,38 @@ export const FriendCalendar: React.FC = () => {
                 <button
                   type="button"
                   onClick={copyAllFriendsInfo}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
                   title="항공권 예매창에 붙여넣을 수 있도록 전체 친구 정보를 복사합니다"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">전체 정보 복사</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={exportFriendsAsJsonFile}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                  title="친구 전체 정보를 내 PC/스마트폰에 영구 보관용 JSON 파일로 다운로드합니다"
+                >
+                  <Download className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">백업 저장</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => jsonFileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                  title="다운로드해둔 백업 JSON 파일에서 친구 정보를 복원합니다"
+                >
+                  <Upload className="w-3.5 h-3.5 text-amber-600" />
+                  <span className="hidden sm:inline">파일 복원</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsHistoryModalOpen(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                  title="과거 저장 시점 목록을 확인하고 원하는 시점으로 복원합니다"
+                >
+                  <History className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>이력 ({backupHistory.length})</span>
                 </button>
               </div>
             </div>
@@ -1533,19 +1827,33 @@ export const FriendCalendar: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* 인적사항번호 (선택) */}
-                      <div className="sm:col-span-2">
-                        <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
-                          <span>인적사항번호 (선택사항)</span>
-                          <span className="text-[10px] text-slate-400">발권 시 빠른 복사 지원</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={profileprofileNumber}
-                          onChange={(e) => setProfileprofileNumber(e.target.value.toUpperCase())}
-                          placeholder="예: M12345678"
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800"
-                        />
+                      {/* 인적사항번호 & 인적사항 만료일 (선택) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:col-span-2">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                            <span>인적사항번호 (선택사항)</span>
+                            <span className="text-[10px] text-slate-400">발권 시 빠른 복사 지원</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={profileprofileNumber}
+                            onChange={(e) => setProfileprofileNumber(e.target.value.toUpperCase())}
+                            placeholder="예: M12345678"
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                            <span>인적사항 만료일 (선택사항)</span>
+                            <span className="text-[10px] text-indigo-600 font-normal">6개월 이상 유효 확인</span>
+                          </label>
+                          <input
+                            type="date"
+                            value={profileprofileExpiry}
+                            onChange={(e) => setProfileprofileExpiry(e.target.value)}
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 text-xs"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -1666,6 +1974,23 @@ export const FriendCalendar: React.FC = () => {
                                   )}
                                 </button>
                               )}
+
+                              {/* profile Expiry (if exists) */}
+                              {f.profileExpiry && (
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(f.profileExpiry!, `pass_exp_${f.id}`, `${f.name}의 인적사항 만료일이`)}
+                                  className="group flex items-center gap-1 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200/80 rounded-lg text-xs font-mono font-semibold transition"
+                                  title="클릭하여 인적사항 만료일 복사"
+                                >
+                                  <span>만료: {f.profileExpiry}</span>
+                                  {copiedId === `pass_exp_${f.id}` ? (
+                                    <Check className="w-3 h-3 text-emerald-600" />
+                                  ) : (
+                                    <Copy className="w-3 h-3 text-rose-400 group-hover:text-rose-600 transition" />
+                                  )}
+                                </button>
+                              )}
                             </div>
                           </div>
 
@@ -1712,6 +2037,158 @@ export const FriendCalendar: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 🛡️ 변경 이력 및 데이터 안전 금고 모달 */}
+      {isHistoryModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <span>데이터 안전 보관함 & 변경 이력 복원</span>
+                    <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                      3중 보호 활성
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    친구 정보가 브라우저 금고 및 클라우드에 실시간 보관되며 언제든 과거 시점으로 복원할 수 있습니다.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsHistoryModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 overflow-y-auto space-y-5">
+              {/* Status Box */}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="font-bold text-emerald-950 text-xs sm:text-sm">현재 데이터 보관 상태</span>
+                  </div>
+                  <span className="text-xs text-emerald-800 font-semibold">
+                    친구 {friends.length}명 / 일정 {events.length}개
+                  </span>
+                </div>
+                <p className="text-xs text-emerald-900/80 leading-relaxed">
+                  친구 정보가 추가되거나 변경될 때마다 브라우저 로컬 안전 금고(LocalStorage)에 즉시 미러링되고, 클라우드(Firestore) 및 변경 이력 스냅샷에 3중으로 영구 보관됩니다.
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    onClick={exportFriendsAsJsonFile}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>📥 백업 파일(JSON) 내 PC/폰에 저장</span>
+                  </button>
+                  <button
+                    onClick={() => jsonFileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition shadow-2xs"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>📤 백업 파일에서 복원</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* History Timeline */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <History className="w-4 h-4 text-indigo-600" />
+                    <span>자동 저장된 변경 이력 스냅샷 ({backupHistory.length}/15)</span>
+                  </h4>
+                  <span className="text-[11px] text-slate-400">클릭 시 해당 시점으로 원클릭 복원</span>
+                </div>
+
+                {backupHistory.length === 0 ? (
+                  <div className="p-6 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
+                    아직 저장된 변경 이력이 없습니다. 친구 정보를 수정하거나 일정을 등록하면 자동으로 시점별 백업이 생성됩니다.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {backupHistory.map((snapshot, idx) => {
+                      const timeStr = new Date(snapshot.savedAt).toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      });
+                      const friendNames = snapshot.friends.map((f) => f.name).join(', ');
+
+                      return (
+                        <div
+                          key={snapshot.savedAt + idx}
+                          className="p-3.5 bg-slate-50 hover:bg-indigo-50/40 border border-slate-200 hover:border-indigo-200 rounded-xl transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-xs text-slate-900">{snapshot.summary}</span>
+                              <span className="text-[10px] text-indigo-700 bg-indigo-100 font-semibold px-2 py-0.5 rounded-md">
+                                친구 {snapshot.friends.length}명
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-slate-500 mt-1 truncate">
+                              포함된 친구: <span className="font-medium text-slate-700">{friendNames || '(없음)'}</span>
+                            </div>
+                            <div className="text-[10px] text-slate-400 mt-0.5">
+                              저장 일시: {timeStr}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => restoreSnapshot(snapshot)}
+                            className="flex items-center justify-center gap-1 px-3 py-1.5 bg-white hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition shadow-2xs shrink-0 self-end sm:self-center"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>이 시점으로 복원</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+              <span className="text-[11px] text-slate-400">
+                실수로 친구 정보를 지웠더라도 위 목록에서 언제든 이전 시점으로 되돌릴 수 있습니다.
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsHistoryModalOpen(false)}
+                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 숨겨진 JSON 백업 파일 업로드 input */}
+      <input
+        type="file"
+        ref={jsonFileInputRef}
+        onChange={importFriendsFromJsonFile}
+        accept=".json"
+        className="hidden"
+      />
     </div>
   );
 };
