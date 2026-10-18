@@ -22,28 +22,9 @@ export default function Home() {
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
   const [selectedPromo, setSelectedPromo] = useState<Promotion | null>(null);
 
-  // 탭 감지 헬퍼 (URL Hash 우선 -> LocalStorage 순)
-  const getInitialTab = (): 'promotions' | 'news' | 'calendar' => {
-    if (typeof window !== 'undefined') {
-      const hash = window.location.hash.replace('#', '');
-      if (hash === 'calendar' || hash === 'news' || hash === 'promotions') {
-        return hash as 'promotions' | 'news' | 'calendar';
-      }
-      try {
-        const savedTab = localStorage.getItem('flypromo_active_tab');
-        if (savedTab === 'calendar' || savedTab === 'news' || savedTab === 'promotions') {
-          return savedTab as 'promotions' | 'news' | 'calendar';
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-    return 'promotions';
-  };
-
   // Tab: 'promotions' (공식 특가) | 'news' (특가 기사) | 'calendar' (친구 일정 달력)
-  // ⚡ 브라우저 초기 로딩 첫 프레임부터 해당 탭으로 즉시 시작하여 깜빡임(0.1초 번쩍임) 원천 차단
-  const [activeTab, setActiveTab] = useState<'promotions' | 'news' | 'calendar'>(getInitialTab);
+  const [activeTab, setActiveTab] = useState<'promotions' | 'news' | 'calendar'>('promotions');
+  const [isMounted, setIsMounted] = useState<boolean>(false);
 
   // 탭 변경 시 URL Hash 및 LocalStorage에 저장
   const handleTabChange = useCallback((tab: 'promotions' | 'news' | 'calendar') => {
@@ -58,17 +39,26 @@ export default function Home() {
     }
   }, []);
 
-  // 새로고침 및 브라우저 뒤로가기/앞으로가기 시 동기화
+  // 새로고침 시 탭 복원 및 클라이언트 마운트 완료 처리 (Hydration 에러 방지)
   useEffect(() => {
-    const syncTab = () => {
-      const tab = getInitialTab();
-      setActiveTab(tab);
-      if (typeof window !== 'undefined' && !window.location.hash && tab !== 'promotions') {
-        window.history.replaceState(null, '', `#${tab}`);
+    let initialTab: 'promotions' | 'news' | 'calendar' = 'promotions';
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'calendar' || hash === 'news' || hash === 'promotions') {
+        initialTab = hash as 'promotions' | 'news' | 'calendar';
+      } else {
+        try {
+          const savedTab = localStorage.getItem('flypromo_active_tab');
+          if (savedTab === 'calendar' || savedTab === 'news' || savedTab === 'promotions') {
+            initialTab = savedTab as 'promotions' | 'news' | 'calendar';
+            window.history.replaceState(null, '', `#${savedTab}`);
+          }
+        } catch (e) {}
       }
-    };
+    }
 
-    syncTab();
+    setActiveTab(initialTab);
+    setIsMounted(true);
 
     const handleHashChange = () => {
       if (typeof window === 'undefined') return;
@@ -253,7 +243,7 @@ export default function Home() {
           <button
             onClick={() => handleTabChange('promotions')}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
-              activeTab === 'promotions'
+              isMounted && activeTab === 'promotions'
                 ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20'
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
@@ -262,7 +252,7 @@ export default function Home() {
             <span className="truncate">✈️ 항공사 공식 특가</span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                activeTab === 'promotions' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                isMounted && activeTab === 'promotions' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
               }`}
             >
               {stats.total}
@@ -272,7 +262,7 @@ export default function Home() {
           <button
             onClick={() => handleTabChange('news')}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
-              activeTab === 'news'
+              isMounted && activeTab === 'news'
                 ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20'
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
@@ -281,7 +271,7 @@ export default function Home() {
             <span className="truncate">📰 실시간 특가 보도자료</span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                activeTab === 'news' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                isMounted && activeTab === 'news' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
               }`}
             >
               {totalNewsCount}
@@ -291,7 +281,7 @@ export default function Home() {
           <button
             onClick={() => handleTabChange('calendar')}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
-              activeTab === 'calendar'
+              isMounted && activeTab === 'calendar'
                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
@@ -301,8 +291,13 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Main Content View by Active Tab */}
-        {activeTab === 'calendar' ? (
+        {/* Main Content View by Active Tab (하이드레이션 불일치 및 0.1초 탭 깜빡임 방지) */}
+        {!isMounted ? (
+          <div className="min-h-[420px] bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center justify-center gap-3">
+            <div className="w-7 h-7 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs font-semibold text-slate-400">화면을 불러오는 중입니다...</p>
+          </div>
+        ) : activeTab === 'calendar' ? (
           <FriendCalendar />
         ) : activeTab === 'promotions' ? (
           <>
