@@ -10,7 +10,8 @@ import { NewsCard } from '@/components/NewsCard';
 import { clusterNewsArticles } from '@/lib/clusterNews';
 import { filterPromotions, filterNewsArticles, calculatePromoStats, isPromoExpired } from '@/lib/filterData';
 import { Promotion, CrawlStats, NewsArticle, GroupedNews } from '@/types';
-import { BookmarkX, PlaneTakeoff, Newspaper, RefreshCw, Search, X } from 'lucide-react';
+import { BookmarkX, PlaneTakeoff, Newspaper, RefreshCw, Search, X, Calendar } from 'lucide-react';
+import { FriendCalendar } from '@/components/FriendCalendar';
 
 export default function Home() {
   const [rawPromotions, setRawPromotions] = useState<Promotion[]>([]);
@@ -21,8 +22,8 @@ export default function Home() {
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
   const [selectedPromo, setSelectedPromo] = useState<Promotion | null>(null);
 
-  // Tab: 'promotions' (공식 특가) | 'news' (특가 기사)
-  const [activeTab, setActiveTab] = useState<'promotions' | 'news'>('promotions');
+  // Tab: 'promotions' (공식 특가) | 'news' (특가 기사) | 'calendar' (친구 일정 달력)
+  const [activeTab, setActiveTab] = useState<'promotions' | 'news' | 'calendar'>('promotions');
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -229,10 +230,24 @@ export default function Home() {
               {totalNewsCount}
             </span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('calendar')}
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+              activeTab === 'calendar'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Calendar className="w-4 h-4 shrink-0" />
+            <span className="truncate">📅 친구 일정 캘린더</span>
+          </button>
         </div>
 
         {/* Main Content View by Active Tab */}
-        {activeTab === 'promotions' ? (
+        {activeTab === 'calendar' ? (
+          <FriendCalendar />
+        ) : activeTab === 'promotions' ? (
           <>
             {/* Filter Bar */}
             <FilterBar

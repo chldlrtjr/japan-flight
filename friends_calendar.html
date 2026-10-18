@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>친구 일정 캘린더 (Friends Calendar)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+    .day-cell {
+      min-height: 110px;
+    }
+    /* 커스텀 스크롤바 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- 헤더 영역 -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-100">
+          <i class="fa-solid fa-calendar-days text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            친구 캘린더
+            <span class="text-xs px-2 py-0.5 font-medium rounded-full bg-indigo-50 text-indigo-600 border border-indigo-150">Local Storage</span>
+          </h1>
+          <p class="text-xs text-slate-500">친구들의 약속과 중요한 일정을 한곳에서 정리하세요</p>
+        </div>
+      </div>
+
+      <!-- 상단 액션 버튼들 -->
+      <div class="flex items-center gap-2">
+        <button id="addEventQuickBtn" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition flex items-center gap-1.5">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>새 일정 등록</span>
+        </button>
+        <button id="manageFriendsBtn" class="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-sm font-medium rounded-lg transition flex items-center gap-1.5">
+          <i class="fa-solid fa-user-group text-slate-500 text-xs"></i>
+          <span>친구 관리</span>
+        </button>
+        <button id="backupBtn" class="px-2.5 py-2 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-sm rounded-lg transition" title="데이터 백업 및 복원">
+          <i class="fa-solid fa-database text-xs"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 메인 컨테이너 -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col gap-6">
+
+    <!-- 상단 컨트롤 바 (월 이동 / 친구 필터 / 검색) -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- 네비게이션: 년/월 컨트롤 -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center bg-slate-100 rounded-lg p-1">
+          <button id="prevMonthBtn" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white hover:shadow-xs text-slate-600 transition" title="이전달">
+            <i class="fa-solid fa-chevron-left text-xs"></i>
+          </button>
+          <button id="todayBtn" class="px-3 h-8 text-xs font-semibold rounded-md hover:bg-white hover:shadow-xs text-slate-700 transition">
+            오늘
+          </button>
+          <button id="nextMonthBtn" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white hover:shadow-xs text-slate-600 transition" title="다음달">
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+        </div>
+        <h2 id="currentMonthYearText" class="text-xl font-bold text-slate-800 tracking-tight min-w-[140px]">
+          2026년 10월
+        </h2>
+      </div>
+
+      <!-- 친구 필터 바 -->
+      <div class="flex items-center gap-2 overflow-x-auto max-w-full pb-1 md:pb-0 scrollbar-none w-full md:w-auto">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+          <i class="fa-solid fa-filter text-[10px] mr-1"></i>필터:
+        </span>
+        <div id="friendFilterContainer" class="flex items-center gap-1.5 flex-wrap">
+          <!-- JS로 동적 생성 -->
+        </div>
+      </div>
+
+      <!-- 일정 검색창 -->
+      <div class="relative w-full md:w-56 shrink-0">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+        <input type="text" id="searchInput" placeholder="친구 또는 일정 검색..." 
+               class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+      </div>
+    </div>
+
+    <!-- 캘린더 컨테이너 -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col">
+      <!-- 요일 헤더 -->
+      <div class="calendar-grid bg-slate-50 border-b border-slate-200 text-center text-xs font-semibold text-slate-500 py-2.5">
+        <div class="text-red-500">일</div>
+        <div>월</div>
+        <div>화</div>
+        <div>수</div>
+        <div>목</div>
+        <div>금</div>
+        <div class="text-blue-500">토</div>
+      </div>
+
+      <!-- 달력 날짜 그리드 -->
+      <div id="calendarDaysGrid" class="calendar-grid flex-1 divide-x divide-y divide-slate-100">
+        <!-- JS로 채워짐 -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 일정 추가 / 편집 모달 -->
+  <div id="eventModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 id="modalTitle" class="text-base font-bold text-slate-800">새 일정 추가</h3>
+        <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      
+      <form id="eventForm" class="p-6 space-y-4">
+        <input type="hidden" id="eventId">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">어떤 친구의 일정인가요? *</label>
+          <div class="flex gap-2">
+            <select id="eventFriend" required class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <!-- 친구 목록 옵션 -->
+            </select>
+            <button type="button" id="quickAddFriendBtn" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition" title="새 친구 등록">
+              + 친구추가
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">일정 제목 *</label>
+          <input type="text" id="eventTitle" required placeholder="예: 철수 생일 파티, 민수와 점심 약속" 
+                 class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">날짜 *</label>
+            <input type="date" id="eventDate" required 
+                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">시간</label>
+            <input type="time" id="eventTime" 
+                   class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">장소</label>
+          <div class="relative">
+            <i class="fa-solid fa-location-dot absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" id="eventLocation" placeholder="예: 강남역 11번 출구 스타벅스" 
+                   class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">메모</label>
+          <textarea id="eventMemo" rows="2" placeholder="준비물, 약속 상세 내용 등" 
+                    class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+          <button type="button" id="deleteEventBtn" class="px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-lg text-sm font-medium transition hidden">
+            <i class="fa-regular fa-trash-can mr-1"></i>삭제
+          </button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" id="cancelModalBtn" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+              취소
+            </button>
+            <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 shadow-sm transition">
+              저장
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 친구 관리 모달 -->
+  <div id="friendModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-800">친구 및 색상 관리</h3>
+        <button id="closeFriendModalBtn" class="text-slate-400 hover:text-slate-600 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <!-- 친구 추가 폼 -->
+        <form id="newFriendForm" class="flex items-center gap-2">
+          <input type="text" id="newFriendName" required placeholder="친구 이름 (예: 민수, 지은)" 
+                 class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <input type="color" id="newFriendColor" value="#6366f1" class="w-10 h-9 p-0.5 border border-slate-200 rounded-lg cursor-pointer bg-white" title="친구 색상 선택">
+          <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition shrink-0">
+            추가
+          </button>
+        </form>
+
+        <!-- 현재 등록된 친구 목록 -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">등록된 친구 목록</label>
+          <div id="friendListContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+            <!-- JS로 친구 리스트 렌더링 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 데이터 백업/복원 모달 -->
+  <div id="backupModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-800">데이터 백업 & 복원</h3>
+        <button id="closeBackupModalBtn" class="text-slate-400 hover:text-slate-600 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <p class="text-xs text-slate-500 leading-relaxed">
+          일정과 친구 목록은 현재 사용 중인 브라우저에 안전하게 보관됩니다. 다른 컴퓨터로 옮기거나 보관하고 싶을 때 파일로 내보내거나 가져올 수 있습니다.
+        </p>
+
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+          <button id="exportDataBtn" class="w-full py-2.5 px-4 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 shadow-xs">
+            <i class="fa-solid fa-download text-indigo-600"></i>
+            <span>일정 데이터 파일로 내보내기 (JSON)</span>
+          </button>
+          
+          <div class="relative">
+            <input type="file" id="importFileInput" accept=".json" class="hidden">
+            <button id="importDataBtn" class="w-full py-2.5 px-4 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 shadow-xs">
+              <i class="fa-solid fa-upload text-emerald-600"></i>
+              <span>파일에서 데이터 불러오기</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-2 text-center">
+          <button id="resetSampleDataBtn" class="text-xs text-slate-400 hover:text-slate-600 underline">
+            기본 샘플 데이터로 초기화
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 일정 상세 팝업 (클릭 시 간단 보기) -->
+  <div id="viewEventModal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm overflow-hidden">
+      <div id="viewHeaderColor" class="h-3 bg-indigo-600"></div>
+      <div class="p-5">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <span id="viewFriendBadge" class="inline-block text-xs px-2.5 py-0.5 rounded-full font-semibold text-white mb-1.5">친구이름</span>
+            <h4 id="viewEventTitle" class="text-lg font-bold text-slate-900">약속 제목</h4>
+          </div>
+          <button id="closeViewModalBtn" class="text-slate-400 hover:text-slate-600">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <div class="mt-4 space-y-2.5 text-xs text-slate-600">
+          <div class="flex items-center gap-2">
+            <i class="fa-regular fa-calendar text-slate-400 w-4"></i>
+            <span id="viewEventDateTime" class="font-medium text-slate-800">2026.10.18 (일) 14:00</span>
+          </div>
+          <div id="viewLocationRow" class="flex items-center gap-2 hidden">
+            <i class="fa-solid fa-location-dot text-slate-400 w-4"></i>
+            <span id="viewEventLocation">강남역</span>
+          </div>
+          <div id="viewMemoRow" class="flex items-start gap-2 pt-1 border-t border-slate-100 hidden">
+            <i class="fa-regular fa-note-sticky text-slate-400 w-4 mt-0.5"></i>
+            <p id="viewEventMemo" class="text-slate-700 whitespace-pre-wrap flex-1"></p>
+          </div>
+        </div>
+
+        <div class="mt-6 flex items-center justify-end gap-2">
+          <button id="editFromViewBtn" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">
+            <i class="fa-regular fa-pen-to-square mr-1"></i>수정
+          </button>
+          <button id="deleteFromViewBtn" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-lg transition">
+            <i class="fa-regular fa-trash-can mr-1"></i>삭제
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 스크립트 영역 -->
+  <script>
+    // 기본 친구 및 색상 팔레트
+    const DEFAULT_FRIENDS = [
+      { id: 'f_1', name: '민수', color: '#3b82f6' }, // Blue
+      { id: 'f_2', name: '지은', color: '#ec4899' }, // Pink
+      { id: 'f_3', name: '태호', color: '#10b981' }, // Emerald
+      { id: 'f_4', name: '수빈', color: '#f59e0b' }, // Amber
+      { id: 'f_5', name: '동현', color: '#8b5cf6' }  // Purple
+    ];
+
+    // 기본 샘플 일정 생성 (오늘 기준)
+    function generateSampleEvents() {
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, '0');
+      const d = String(today.getDate()).padStart(2, '0');
+
+      return [
+        {
+          id: 'ev_' + Date.now() + '_1',
+          friendId: 'f_1',
+          title: '민수 생일 저녁 약속',
+          date: `${y}-${m}-${d}`,
+          time: '18:30',
+          location: '홍대입구역 맛집',
+          memo: '케이크 준비하기!'
+        },
+        {
+          id: 'ev_' + Date.now() + '_2',
+          friendId: 'f_2',
+          title: '지은이와 전시회 관람',
+          date: `${y}-${m}-${String(Math.min(28, today.getDate() + 2)).padStart(2, '0')}`,
+          time: '14:00',
+          location: '예술의전당 한가람미술관',
+          memo: '사전 예매 티켓 확인'
+        },
+        {
+          id: 'ev_' + Date.now() + '_3',
+          friendId: 'f_3',
+          title: '태호와 주말 등산',
+          date: `${y}-${m}-${String(Math.min(28, today.getDate() + 5)).padStart(2, '0')}`,
+          time: '09:00',
+          location: '북한산 백운대 코스',
+          memo: '등산화, 이온음료 챙기기'
+        }
+      ];
+    }
+
+    // 상태 관리 (State)
+    let state = {
+      currentDate: new Date(),
+      friends: JSON.parse(localStorage.getItem('fc_friends')) || DEFAULT_FRIENDS,
+      events: JSON.parse(localStorage.getItem('fc_events')) || generateSampleEvents(),
+      activeFilterFriendId: 'ALL',
+      searchKeyword: '',
+      selectedEventId: null
+    };
+
+    // 저장 함수
+    function saveState() {
+      localStorage.setItem('fc_friends', JSON.stringify(state.friends));
+      localStorage.setItem('fc_events', JSON.stringify(state.events));
+    }
+
+    // 헬퍼: 친구 정보 가져오기
+    function getFriend(friendId) {
+      return state.friends.find(f => f.id === friendId) || { name: '알 수 없음', color: '#94a3b8' };
+    }
+
+    // 초기화 및 이벤트 리스너 등록
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCalendar();
+      renderFriendFilters();
+      renderFriendSelectOptions();
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      // 월 이동 버튼
+      document.getElementById('prevMonthBtn').addEventListener('click', () => {
+        state.currentDate.setMonth(state.currentDate.getMonth() - 1);
+        renderCalendar();
+      });
+      document.getElementById('nextMonthBtn').addEventListener('click', () => {
+        state.currentDate.setMonth(state.currentDate.getMonth() + 1);
+        renderCalendar();
+      });
+      document.getElementById('todayBtn').addEventListener('click', () => {
+        state.currentDate = new Date();
+        renderCalendar();
+      });
+
+      // 검색창
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        state.searchKeyword = e.target.value.trim().toLowerCase();
+        renderCalendar();
+      });
+
+      // 새 일정 추가 버튼
+      document.getElementById('addEventQuickBtn').addEventListener('click', () => {
+        openEventModal();
+      });
+
+      // 친구 관리 버튼
+      document.getElementById('manageFriendsBtn').addEventListener('click', () => {
+        openFriendModal();
+      });
+
+      // 백업 버튼
+      document.getElementById('backupBtn').addEventListener('click', () => {
+        document.getElementById('backupModal').classList.remove('hidden');
+      });
+      document.getElementById('closeBackupModalBtn').addEventListener('click', () => {
+        document.getElementById('backupModal').classList.add('hidden');
+      });
+
+      // 일정 폼 제출
+      document.getElementById('eventForm').addEventListener('submit', handleEventFormSubmit);
+
+      // 모달 닫기
+      document.getElementById('closeModalBtn').addEventListener('click', closeEventModal);
+      document.getElementById('cancelModalBtn').addEventListener('click', closeEventModal);
+
+      // 일정 삭제 버튼
+      document.getElementById('deleteEventBtn').addEventListener('click', () => {
+        const id = document.getElementById('eventId').value;
+        if (id && confirm('정말 이 일정을 삭제하시겠습니까?')) {
+          state.events = state.events.filter(e => e.id !== id);
+          saveState();
+          closeEventModal();
+          renderCalendar();
+        }
+      });
+
+      // 친구 관리 모달 내 추가
+      document.getElementById('newFriendForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('newFriendName');
+        const colorInput = document.getElementById('newFriendColor');
+        const name = nameInput.value.trim();
+        if (!name) return;
+
+        const newFriend = {
+          id: 'f_' + Date.now(),
+          name: name,
+          color: colorInput.value
+        };
+        state.friends.push(newFriend);
+        saveState();
+        nameInput.value = '';
+        renderFriendList();
+        renderFriendFilters();
+        renderFriendSelectOptions();
+        renderCalendar();
+      });
+
+      document.getElementById('closeFriendModalBtn').addEventListener('click', () => {
+        document.getElementById('friendModal').classList.add('hidden');
+      });
+
+      document.getElementById('quickAddFriendBtn').addEventListener('click', () => {
+        openFriendModal();
+      });
+
+      // 뷰 모달 닫기 및 액션
+      document.getElementById('closeViewModalBtn').addEventListener('click', () => {
+        document.getElementById('viewEventModal').classList.add('hidden');
+      });
+      document.getElementById('editFromViewBtn').addEventListener('click', () => {
+        document.getElementById('viewEventModal').classList.add('hidden');
+        if (state.selectedEventId) {
+          const ev = state.events.find(e => e.id === state.selectedEventId);
+          if (ev) openEventModal(ev.date, ev);
+        }
+      });
+      document.getElementById('deleteFromViewBtn').addEventListener('click', () => {
+        if (state.selectedEventId && confirm('이 일정을 삭제할까요?')) {
+          state.events = state.events.filter(e => e.id !== state.selectedEventId);
+          saveState();
+          document.getElementById('viewEventModal').classList.add('hidden');
+          renderCalendar();
+        }
+      });
+
+      // 백업 내보내기/불러오기
+      document.getElementById('exportDataBtn').addEventListener('click', exportDataAsJson);
+      document.getElementById('importDataBtn').addEventListener('click', () => {
+        document.getElementById('importFileInput').click();
+      });
+      document.getElementById('importFileInput').addEventListener('change', importDataFromJson);
+      document.getElementById('resetSampleDataBtn').addEventListener('click', () => {
+        if (confirm('샘플 데이터로 초기화하시겠습니까? 기존에 적은 내용이 사라집니다.')) {
+          state.friends = DEFAULT_FRIENDS;
+          state.events = generateSampleEvents();
+          saveState();
+          document.getElementById('backupModal').classList.add('hidden');
+          renderFriendFilters();
+          renderFriendSelectOptions();
+          renderCalendar();
+        }
+      });
+    }
+
+    // 캘린더 렌더링
+    function renderCalendar() {
+      const year = state.currentDate.getFullYear();
+      const month = state.currentDate.getMonth(); // 0 ~ 11
+
+      // 연월 텍스트
+      document.getElementById('currentMonthYearText').textContent = `${year}년 ${month + 1}월`;
+
+      const grid = document.getElementById('calendarDaysGrid');
+      grid.innerHTML = '';
+
+      // 이번 달의 1일과 마지막 날
+      const firstDayOfMonth = new Date(year, month, 1);
+      const lastDayOfMonth = new Date(year, month + 1, 0);
+
+      const firstDayWeekIndex = firstDayOfMonth.getDay(); // 0(일) ~ 6(토)
+      const totalDays = lastDayOfMonth.getDate();
+
+      // 이전 달 마지막 날들
+      const prevMonthLastDay = new Date(year, month, 0).getDate();
+
+      const todayStr = getFormattedDate(new Date());
+
+      // 1. 이전 달 날짜 채우기 (연한 색상)
+      for (let i = firstDayWeekIndex - 1; i >= 0; i--) {
+        const d = prevMonthLastDay - i;
+        const prevMonthDate = new Date(year, month - 1, d);
+        const dateStr = getFormattedDate(prevMonthDate);
+        grid.appendChild(createDayCell(d, dateStr, true));
+      }
+
+      // 2. 이번 달 날짜 채우기
+      for (let d = 1; d <= totalDays; d++) {
+        const dateObj = new Date(year, month, d);
+        const dateStr = getFormattedDate(dateObj);
+        const isToday = dateStr === todayStr;
+        const dayOfWeek = dateObj.getDay();
+        grid.appendChild(createDayCell(d, dateStr, false, isToday, dayOfWeek));
+      }
+
+      // 3. 다음 달 날짜 채우기 (7의 배수 맞추기)
+      const totalCellsFilled = firstDayWeekIndex + totalDays;
+      const remainingCells = (7 - (totalCellsFilled % 7)) % 7;
+      for (let d = 1; d <= remainingCells; d++) {
+        const nextMonthDate = new Date(year, month + 1, d);
+        const dateStr = getFormattedDate(nextMonthDate);
+        grid.appendChild(createDayCell(d, dateStr, true));
+      }
+    }
+
+    // 날짜 셀 생성
+    function createDayCell(dayNumber, dateStr, isOtherMonth, isToday = false, dayOfWeek = null) {
+      const cell = document.createElement('div');
+      cell.className = `day-cell p-2 flex flex-col transition hover:bg-slate-50/70 border-r border-b border-slate-100 ${
+        isOtherMonth ? 'bg-slate-50/40 text-slate-300' : 'bg-white'
+      }`;
+
+      // 셀 헤더 (날짜 숫자 + 추가 버튼)
+      const header = document.createElement('div');
+      header.className = 'flex items-center justify-between mb-1';
+
+      let numClass = 'text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ';
+      if (isToday) {
+        numClass += 'bg-indigo-600 text-white font-bold shadow-xs';
+      } else if (isOtherMonth) {
+        numClass += 'text-slate-400';
+      } else if (dayOfWeek === 0) {
+        numClass += 'text-red-500';
+      } else if (dayOfWeek === 6) {
+        numClass += 'text-blue-500';
+      } else {
+        numClass += 'text-slate-700';
+      }
+
+      const numSpan = document.createElement('span');
+      numSpan.className = numClass;
+      numSpan.textContent = dayNumber;
+      header.appendChild(numSpan);
+
+      // 날짜별 빠른 추가 버튼 (+)
+      const addBtn = document.createElement('button');
+      addBtn.className = 'opacity-0 hover:opacity-100 text-slate-400 hover:text-indigo-600 text-[11px] p-0.5 rounded transition';
+      addBtn.title = '이 날에 일정 추가';
+      addBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
+      addBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEventModal(dateStr);
+      });
+      header.appendChild(addBtn);
+
+      cell.appendChild(header);
+
+      // 셀 자체 호버 시 + 버튼 보이도록
+      cell.addEventListener('mouseenter', () => {
+        addBtn.style.opacity = '1';
+      });
+      cell.addEventListener('mouseleave', () => {
+        addBtn.style.opacity = '';
+      });
+
+      // 셀 클릭 시 일정 추가
+      cell.addEventListener('click', () => {
+        openEventModal(dateStr);
+      });
+
+      // 해당 날짜의 이벤트 목록 가져오기 & 필터링
+      const dayEvents = state.events.filter(ev => {
+        if (ev.date !== dateStr) return false;
+        // 친구 필터
+        if (state.activeFilterFriendId !== 'ALL' && ev.friendId !== state.activeFilterFriendId) return false;
+        // 검색 필터
+        if (state.searchKeyword) {
+          const friend = getFriend(ev.friendId);
+          const matchTitle = ev.title.toLowerCase().includes(state.searchKeyword);
+          const matchFriend = friend.name.toLowerCase().includes(state.searchKeyword);
+          const matchLocation = (ev.location || '').toLowerCase().includes(state.searchKeyword);
+          if (!matchTitle && !matchFriend && !matchLocation) return false;
+        }
+        return true;
+      });
+
+      // 이벤트 배지 렌더링 컨테이너
+      const eventsContainer = document.createElement('div');
+      eventsContainer.className = 'flex-1 space-y-1 overflow-y-auto max-h-20 scrollbar-none';
+
+      dayEvents.forEach(ev => {
+        const friend = getFriend(ev.friendId);
+        const badge = document.createElement('div');
+        badge.className = 'text-[11px] font-medium px-2 py-0.5 rounded-md truncate cursor-pointer transition shadow-2xs hover:brightness-95 flex items-center gap-1.5';
+        badge.style.backgroundColor = friend.color + '18'; // 10% opacity 배경
+        badge.style.borderLeft = `3px solid ${friend.color}`;
+        badge.style.color = '#1e293b';
+
+        // 시간 아이콘 및 텍스트
+        let timeLabel = '';
+        if (ev.time) {
+          timeLabel = `<span class="text-[10px] text-slate-500 font-normal shrink-0">${ev.time}</span>`;
+        }
+
+        badge.innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background-color: ${friend.color}"></span>
+          <span class="font-semibold text-slate-700 shrink-0">${friend.name}:</span>
+          <span class="truncate flex-1">${ev.title}</span>
+          ${timeLabel}
+        `;
+
+        badge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openViewModal(ev);
+        });
+
+        eventsContainer.appendChild(badge);
+      });
+
+      cell.appendChild(eventsContainer);
+      return cell;
+    }
+
+    // 친구 필터 태그 렌더링
+    function renderFriendFilters() {
+      const container = document.getElementById('friendFilterContainer');
+      container.innerHTML = '';
+
+      // '전체' 버튼
+      const allBtn = document.createElement('button');
+      const isAllActive = state.activeFilterFriendId === 'ALL';
+      allBtn.className = `px-2.5 py-1 text-xs font-semibold rounded-full transition ${
+        isAllActive ? 'bg-slate-800 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+      }`;
+      allBtn.textContent = '전체 보기';
+      allBtn.addEventListener('click', () => {
+        state.activeFilterFriendId = 'ALL';
+        renderFriendFilters();
+        renderCalendar();
+      });
+      container.appendChild(allBtn);
+
+      // 각 친구 버튼
+      state.friends.forEach(f => {
+        const btn = document.createElement('button');
+        const isActive = state.activeFilterFriendId === f.id;
+        btn.className = `px-2.5 py-1 text-xs font-semibold rounded-full transition flex items-center gap-1.5 ${
+          isActive ? 'shadow-xs text-white' : 'hover:opacity-85'
+        }`;
+
+        if (isActive) {
+          btn.style.backgroundColor = f.color;
+        } else {
+          btn.style.backgroundColor = f.color + '20';
+          btn.style.color = '#334155';
+          btn.style.border = `1px solid ${f.color}50`;
+        }
+
+        btn.innerHTML = `
+          <span class="w-2 h-2 rounded-full" style="background-color: ${f.color}"></span>
+          <span>${f.name}</span>
+        `;
+
+        btn.addEventListener('click', () => {
+          state.activeFilterFriendId = isActive ? 'ALL' : f.id;
+          renderFriendFilters();
+          renderCalendar();
+        });
+
+        container.appendChild(btn);
+      });
+    }
+
+    // 모달 내 친구 선택 셀렉트박스 채우기
+    function renderFriendSelectOptions(selectedId = null) {
+      const select = document.getElementById('eventFriend');
+      select.innerHTML = '';
+
+      if (state.friends.length === 0) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = '친구를 먼저 등록해주세요';
+        select.appendChild(opt);
+        return;
+      }
+
+      state.friends.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = `● ${f.name}`;
+        if (selectedId && f.id === selectedId) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    // 친구 관리 모달 열기
+    function openFriendModal() {
+      renderFriendList();
+      document.getElementById('friendModal').classList.remove('hidden');
+    }
+
+    // 친구 목록 리스트 렌더링
+    function renderFriendList() {
+      const list = document.getElementById('friendListContainer');
+      list.innerHTML = '';
+
+      if (state.friends.length === 0) {
+        list.innerHTML = '<p class="text-xs text-slate-400 py-3 text-center">등록된 친구가 없습니다.</p>';
+        return;
+      }
+
+      state.friends.forEach(f => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-2 bg-slate-50 rounded-xl border border-slate-200/60';
+        item.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <input type="color" value="${f.color}" class="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent" data-id="${f.id}">
+            <span class="text-sm font-medium text-slate-800">${f.name}</span>
+          </div>
+          <button class="text-slate-400 hover:text-rose-600 p-1 transition" data-action="delete" data-id="${f.id}" title="친구 삭제">
+            <i class="fa-regular fa-trash-can text-xs"></i>
+          </button>
+        `;
+
+        // 색상 변경 리스너
+        const colorInput = item.querySelector('input[type="color"]');
+        colorInput.addEventListener('change', (e) => {
+          f.color = e.target.value;
+          saveState();
+          renderFriendFilters();
+          renderCalendar();
+        });
+
+        // 삭제 버튼 리스너
+        const delBtn = item.querySelector('button[data-action="delete"]');
+        delBtn.addEventListener('click', () => {
+          if (confirm(`'${f.name}' 친구를 삭제하시겠습니까? 관련된 일정도 함께 삭제될 수 있습니다.`)) {
+            state.friends = state.friends.filter(x => x.id !== f.id);
+            saveState();
+            renderFriendList();
+            renderFriendFilters();
+            renderFriendSelectOptions();
+            renderCalendar();
+          }
+        });
+
+        list.appendChild(item);
+      });
+    }
+
+    // 일정 추가/수정 모달 열기
+    function openEventModal(defaultDate = null, eventObj = null) {
+      const modal = document.getElementById('eventModal');
+      const titleElem = document.getElementById('modalTitle');
+      const delBtn = document.getElementById('deleteEventBtn');
+
+      renderFriendSelectOptions(eventObj ? eventObj.friendId : null);
+
+      if (eventObj) {
+        titleElem.textContent = '일정 수정';
+        document.getElementById('eventId').value = eventObj.id;
+        document.getElementById('eventFriend').value = eventObj.friendId;
+        document.getElementById('eventTitle').value = eventObj.title;
+        document.getElementById('eventDate').value = eventObj.date;
+        document.getElementById('eventTime').value = eventObj.time || '';
+        document.getElementById('eventLocation').value = eventObj.location || '';
+        document.getElementById('eventMemo').value = eventObj.memo || '';
+        delBtn.classList.remove('hidden');
+      } else {
+        titleElem.textContent = '새 일정 추가';
+        document.getElementById('eventForm').reset();
+        document.getElementById('eventId').value = '';
+        document.getElementById('eventDate').value = defaultDate || getFormattedDate(new Date());
+        delBtn.classList.add('hidden');
+      }
+
+      modal.classList.remove('hidden');
+      setTimeout(() => document.getElementById('eventTitle').focus(), 50);
+    }
+
+    function closeEventModal() {
+      document.getElementById('eventModal').classList.add('hidden');
+    }
+
+    // 일정 폼 저장
+    function handleEventFormSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('eventId').value;
+      const friendId = document.getElementById('eventFriend').value;
+      const title = document.getElementById('eventTitle').value.trim();
+      const date = document.getElementById('eventDate').value;
+      const time = document.getElementById('eventTime').value;
+      const location = document.getElementById('eventLocation').value.trim();
+      const memo = document.getElementById('eventMemo').value.trim();
+
+      if (!friendId) {
+        alert('친구를 선택해주세요!');
+        return;
+      }
+
+      if (id) {
+        // 수정
+        const index = state.events.findIndex(x => x.id === id);
+        if (index !== -1) {
+          state.events[index] = { id, friendId, title, date, time, location, memo };
+        }
+      } else {
+        // 새로 추가
+        const newEvent = {
+          id: 'ev_' + Date.now(),
+          friendId,
+          title,
+          date,
+          time,
+          location,
+          memo
+        };
+        state.events.push(newEvent);
+      }
+
+      saveState();
+      closeEventModal();
+      renderCalendar();
+    }
+
+    // 상세 보기 팝업 열기
+    function openViewModal(ev) {
+      state.selectedEventId = ev.id;
+      const friend = getFriend(ev.friendId);
+      
+      const badge = document.getElementById('viewFriendBadge');
+      badge.textContent = friend.name;
+      badge.style.backgroundColor = friend.color;
+
+      document.getElementById('viewHeaderColor').style.backgroundColor = friend.color;
+      document.getElementById('viewEventTitle').textContent = ev.title;
+
+      // 일시 포맷
+      const dateParts = ev.date.split('-');
+      const dObj = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+      const daysStr = ['일', '월', '화', '수', '목', '금', '토'];
+      let timeText = `${ev.date} (${daysStr[dObj.getDay()]})`;
+      if (ev.time) timeText += ` ${ev.time}`;
+      document.getElementById('viewEventDateTime').textContent = timeText;
+
+      // 장소
+      const locRow = document.getElementById('viewLocationRow');
+      if (ev.location) {
+        locRow.classList.remove('hidden');
+        document.getElementById('viewEventLocation').textContent = ev.location;
+      } else {
+        locRow.classList.add('hidden');
+      }
+
+      // 메모
+      const memoRow = document.getElementById('viewMemoRow');
+      if (ev.memo) {
+        memoRow.classList.remove('hidden');
+        document.getElementById('viewEventMemo').textContent = ev.memo;
+      } else {
+        memoRow.classList.add('hidden');
+      }
+
+      document.getElementById('viewEventModal').classList.remove('hidden');
+    }
+
+    // 데이터 JSON 내보내기
+    function exportDataAsJson() {
+      const data = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        friends: state.friends,
+        events: state.events
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `friends_calendar_backup_${getFormattedDate(new Date())}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // 데이터 JSON 불러오기
+    function importDataFromJson(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (imported.friends && Array.isArray(imported.friends) && imported.events && Array.isArray(imported.events)) {
+            state.friends = imported.friends;
+            state.events = imported.events;
+            saveState();
+            alert('데이터를 성공적으로 복원했습니다!');
+            document.getElementById('backupModal').classList.add('hidden');
+            renderFriendFilters();
+            renderFriendSelectOptions();
+            renderCalendar();
+          } else {
+            alert('유효하지 않은 데이터 파일 형식입니다.');
+          }
+        } catch (err) {
+          alert('파일을 읽는 도중 오류가 발생했습니다: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // YYYY-MM-DD 포맷 헬퍼
+    function getFormattedDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+  </script>
+</body>
+</html>
