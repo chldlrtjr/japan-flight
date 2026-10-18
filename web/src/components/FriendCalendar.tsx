@@ -362,18 +362,54 @@ export const FriendCalendar: React.FC = () => {
     return days;
   }, [year, month]);
 
-  // 해당 날짜에 걸쳐 있는 일정 가져오기 (startDate <= dateStr <= endDate)
-  const getEventsForDate = (dateStr: string) => {
-    return events.filter((ev) => {
-      const start = ev.startDate;
-      const end = ev.endDate || ev.startDate;
-      const isInRange = dateStr >= start && dateStr <= end;
-      if (!isInRange) return false;
+  // 주(Week) 단위로 7일씩 분할
+  const weeks = useMemo(() => {
+    const result: (typeof calendarDays)[] = [];
+    for (let i = 0; i < calendarDays.length; i += 7) {
+      result.push(calendarDays.slice(i, i + 7));
+    }
+    return result;
+  }, [calendarDays]);
+
+  interface WeekEventSegment {
+    event: CalendarEvent;
+    friend: Friend;
+    startCol: number;      // 0 ~ 6
+    endCol: number;        // 0 ~ 6
+    span: number;          // 1 ~ 7
+    isRealStart: boolean;  // 이번 주의 세그먼트 시작이 실제 이벤트 시작일인지
+    isRealEnd: boolean;    // 이번 주의 세그먼트 끝이 실제 이벤트 종료일인지
+    durationText: string;  // "3박 4일" 등
+  }
+
+  // N박 N일 배지용 텍스트
+  const getNightsDaysBadge = (startStr: string, endStr: string) => {
+    if (!startStr || !endStr || startStr === endStr) return '';
+    const start = new Date(startStr);
+    const end = new Date(endStr);
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    if (diffDays <= 1) return '';
+    const nights = diffDays - 1;
+    return `${nights}박 ${diffDays}일`;
+  };
+
+  // 주(Week)에 속한 연속 일정들을 슬롯에 배치하여 반환하는 함수
+  const getWeekSlots = (week: typeof calendarDays) => {
+    const weekStartStr = week[0].dateStr;
+    const weekEndStr = week[6].dateStr;
+
+    // 이번 주와 날짜가 겹치는 이벤트 선별
+    const matchingEvents = events.filter((ev) => {
+      const evStart = ev.startDate;
+      const evEnd = ev.endDate || ev.startDate;
+      const isOverlapping = evStart <= weekEndStr && evEnd >= weekStartStr;
+      if (!isOverlapping) return false;
 
       // 친구 필터
       if (activeFilterFriendId !== 'ALL' && ev.friendId !== activeFilterFriendId) return false;
 
-      // 검색 키워드 필터
+      // 검색 필터
       if (searchKeyword) {
         const friend = getFriend(ev.friendId);
         const matchTitle = ev.title.toLowerCase().includes(searchKeyword.toLowerCase());
@@ -383,6 +419,88 @@ export const FriendCalendar: React.FC = () => {
       }
       return true;
     });
+
+    const segments: WeekEventSegment[] = matchingEvents.map((ev) => {
+      const friend = getFriend(ev.friendId);
+      const evStart = ev.startDate;
+      const evEnd = ev.endDate || ev.startDate;
+
+      let startCol = 0;
+      let isRealStart = true;
+      if (evStart < weekStartStr) {
+        startCol = 0;
+        isRealStart = false;
+      } else {
+        const idx = week.findIndex((d) => d.dateStr === evStart);
+        startCol = idx >= 0 ? idx : 0;
+        isRealStart = true;
+      }
+
+      let endCol = 6;
+      let isRealEnd = true;
+      if (evEnd > weekEndStr) {
+        endCol = 6;
+        isRealEnd = false;
+      } else {
+        const idx = week.findIndex((d) => d.dateStr === evEnd);
+        endCol = idx >= 0 ? idx : 6;
+        isRealEnd = true;
+      }
+
+      const span = Math.max(1, endCol - startCol + 1);
+      const durationText = getNightsDaysBadge(ev.startDate, ev.endDate || ev.startDate);
+
+      return {
+        event: ev,
+        friend,
+        startCol,
+        endCol,
+        span,
+        isRealStart,
+        isRealEnd,
+        durationText,
+      };
+    });
+
+    // 시작일(startCol) 빠른 순 -> 기간(span) 긴 순 -> id 순 정렬
+    segments.sort((a, b) => {
+      if (a.startCol !== b.startCol) return a.startCol - b.startCol;
+      if (b.span !== a.span) return b.span - a.span;
+      return a.event.id.localeCompare(b.event.id);
+    });
+
+    // 슬롯(행 레벨) 배정
+    const slots: WeekEventSegment[][] = [];
+    const occupied: boolean[][] = [];
+
+    segments.forEach((seg) => {
+      let slotIdx = 0;
+      while (true) {
+        if (!occupied[slotIdx]) {
+          occupied[slotIdx] = [false, false, false, false, false, false, false];
+          slots[slotIdx] = [];
+        }
+
+        let isAvailable = true;
+        for (let c = seg.startCol; c <= seg.endCol; c++) {
+          if (occupied[slotIdx][c]) {
+            isAvailable = false;
+            break;
+          }
+        }
+
+        if (isAvailable) {
+          for (let c = seg.startCol; c <= seg.endCol; c++) {
+            occupied[slotIdx][c] = true;
+          }
+          slots[slotIdx].push(seg);
+          break;
+        }
+        slotIdx++;
+      }
+    });
+
+    return slots;
   };
 
   return (
@@ -504,88 +622,129 @@ export const FriendCalendar: React.FC = () => {
           <div className="text-sky-600">토</div>
         </div>
 
-        {/* Days Matrix */}
-        <div className="grid grid-cols-7 divide-x divide-y divide-slate-100">
-          {calendarDays.map((cDay, idx) => {
-            const dayEvents = getEventsForDate(cDay.dateStr);
-
-            let dayColorClass = 'text-slate-800';
-            if (cDay.isOtherMonth) {
-              dayColorClass = 'text-slate-300';
-            } else if (cDay.dayOfWeek === 0) {
-              dayColorClass = 'text-rose-500';
-            } else if (cDay.dayOfWeek === 6) {
-              dayColorClass = 'text-sky-600';
-            }
+        {/* Days Matrix (주 단위로 연속 막대 렌더링) */}
+        <div className="divide-y divide-slate-100">
+          {weeks.map((week, weekIdx) => {
+            const slots = getWeekSlots(week);
 
             return (
               <div
-                key={idx}
-                onClick={() => openAddEventModal(cDay.dateStr)}
-                className={`min-h-[110px] sm:min-h-[120px] p-2 flex flex-col transition hover:bg-slate-50 cursor-pointer group ${
-                  cDay.isOtherMonth ? 'bg-slate-50/40' : 'bg-white'
-                }`}
+                key={weekIdx}
+                className="relative min-h-[115px] sm:min-h-[125px] flex flex-col"
               >
-                {/* Cell Header */}
-                <div className="flex items-center justify-between mb-1">
-                  <span
-                    className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${
-                      cDay.isToday ? 'bg-indigo-600 text-white font-bold shadow-xs' : dayColorClass
-                    }`}
-                  >
-                    {cDay.day}
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openAddEventModal(cDay.dateStr);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-indigo-600 text-xs transition p-0.5"
-                    title="일정 추가"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                {/* Event Badges List */}
-                <div className="flex-1 space-y-1 overflow-y-auto max-h-24">
-                  {dayEvents.map((ev) => {
-                    const friend = getFriend(ev.friendId);
-                    const isMultiDay = ev.startDate !== ev.endDate;
-                    const isStart = ev.startDate === cDay.dateStr;
-                    const isEnd = ev.endDate === cDay.dateStr;
+                {/* 1. 배경 날짜 셀 그리드 (7열) */}
+                <div className="absolute inset-0 grid grid-cols-7 divide-x divide-slate-100 pointer-events-none">
+                  {week.map((cDay, colIdx) => {
+                    let dayColorClass = 'text-slate-800';
+                    if (cDay.isOtherMonth) {
+                      dayColorClass = 'text-slate-300';
+                    } else if (cDay.dayOfWeek === 0) {
+                      dayColorClass = 'text-rose-500';
+                    } else if (cDay.dayOfWeek === 6) {
+                      dayColorClass = 'text-sky-600';
+                    }
 
                     return (
                       <div
-                        key={ev.id + '_' + cDay.dateStr}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedEvent(ev);
-                          setIsViewModalOpen(true);
-                        }}
-                        className="text-[11px] font-medium px-2 py-0.5 rounded-md truncate cursor-pointer transition hover:brightness-95 flex items-center gap-1.5 shadow-2xs"
-                        style={{
-                          backgroundColor: `${friend.color}15`,
-                          borderLeft: `3px solid ${friend.color}`,
-                          color: '#1e293b',
-                        }}
+                        key={colIdx}
+                        onClick={() => openAddEventModal(cDay.dateStr)}
+                        className={`h-full p-2 flex flex-col justify-between transition hover:bg-slate-50/70 cursor-pointer pointer-events-auto group ${
+                          cDay.isOtherMonth ? 'bg-slate-50/40' : 'bg-white'
+                        }`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: friend.color }} />
-                        <span className="font-bold text-slate-700 shrink-0">{friend.name}:</span>
-                        <span className="truncate flex-1">{ev.title}</span>
-                        {isMultiDay && isStart && (
-                          <span className="text-[9px] px-1 rounded bg-slate-200/60 text-slate-600 shrink-0 font-bold">
-                            시작
+                        {/* 상단 날짜 숫자 및 + 버튼 */}
+                        <div className="flex items-center justify-between">
+                          <span
+                            className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full transition ${
+                              cDay.isToday ? 'bg-indigo-600 text-white font-bold shadow-xs' : dayColorClass
+                            }`}
+                          >
+                            {cDay.day}
                           </span>
-                        )}
-                        {isMultiDay && isEnd && (
-                          <span className="text-[9px] px-1 rounded bg-slate-200/60 text-slate-600 shrink-0 font-bold">
-                            종료
-                          </span>
-                        )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openAddEventModal(cDay.dateStr);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-indigo-600 text-xs transition p-0.5 rounded"
+                            title="일정 추가"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
+                </div>
+
+                {/* 2. 전면 이벤트 바 레이어 (연속 바 렌더링) */}
+                <div className="relative pt-9 pb-2 px-1 pointer-events-none flex flex-col gap-1.5 z-10 flex-1">
+                  {slots.map((slotEvents, slotIdx) => (
+                    <div key={slotIdx} className="grid grid-cols-7 h-6 sm:h-7 items-center">
+                      {slotEvents.map((seg) => {
+                        const isMultiDay = seg.event.startDate !== (seg.event.endDate || seg.event.startDate);
+
+                        return (
+                          <div
+                            key={seg.event.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedEvent(seg.event);
+                              setIsViewModalOpen(true);
+                            }}
+                            style={{
+                              gridColumnStart: seg.startCol + 1,
+                              gridColumnEnd: `span ${seg.span}`,
+                              backgroundColor: `${seg.friend.color}18`,
+                              borderColor: `${seg.friend.color}55`,
+                            }}
+                            title={`${seg.friend.name} - ${seg.event.title} (${seg.event.startDate} ~ ${seg.event.endDate || seg.event.startDate}${seg.durationText ? ', ' + seg.durationText : ''})`}
+                            className={`h-full my-0.5 border text-[11px] sm:text-xs font-medium cursor-pointer transition flex items-center gap-1.5 shadow-2xs pointer-events-auto hover:brightness-95 hover:shadow-xs overflow-hidden ${
+                              seg.isRealStart ? 'ml-1 rounded-l-md' : 'ml-0 rounded-l-none border-l-0 pl-1'
+                            } ${
+                              seg.isRealEnd ? 'mr-1 rounded-r-md' : 'mr-0 rounded-r-none border-r-0 pr-1'
+                            } px-2`}
+                          >
+                            {/* 이전 주에서 이어진 경우 화살표 */}
+                            {!seg.isRealStart && (
+                              <span className="text-[10px] text-slate-400 font-bold shrink-0">◀</span>
+                            )}
+
+                            {/* 친구 고유 컬러 도트 */}
+                            <span
+                              className="w-2 h-2 rounded-full shrink-0"
+                              style={{ backgroundColor: seg.friend.color }}
+                            />
+
+                            {/* 친구 이름 */}
+                            <span
+                              className="font-bold shrink-0 text-slate-800"
+                              style={{ color: seg.friend.color }}
+                            >
+                              {seg.friend.name}:
+                            </span>
+
+                            {/* 일정 제목 */}
+                            <span className="truncate text-slate-800 font-semibold flex-1">
+                              {seg.event.title}
+                            </span>
+
+                            {/* N박 N일 배지 (다일정인 경우) */}
+                            {isMultiDay && seg.durationText && (
+                              <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/90 text-slate-700 border border-slate-200 shadow-2xs">
+                                {seg.durationText}
+                              </span>
+                            )}
+
+                            {/* 다음 주로 이어지는 경우 화살표 */}
+                            {!seg.isRealEnd && (
+                              <span className="text-[10px] text-slate-400 font-bold shrink-0">▶</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
                 </div>
               </div>
             );
