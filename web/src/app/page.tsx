@@ -22,8 +22,28 @@ export default function Home() {
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
   const [selectedPromo, setSelectedPromo] = useState<Promotion | null>(null);
 
+  // 탭 감지 헬퍼 (URL Hash 우선 -> LocalStorage 순)
+  const getInitialTab = (): 'promotions' | 'news' | 'calendar' => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'calendar' || hash === 'news' || hash === 'promotions') {
+        return hash as 'promotions' | 'news' | 'calendar';
+      }
+      try {
+        const savedTab = localStorage.getItem('flypromo_active_tab');
+        if (savedTab === 'calendar' || savedTab === 'news' || savedTab === 'promotions') {
+          return savedTab as 'promotions' | 'news' | 'calendar';
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    return 'promotions';
+  };
+
   // Tab: 'promotions' (공식 특가) | 'news' (특가 기사) | 'calendar' (친구 일정 달력)
-  const [activeTab, setActiveTab] = useState<'promotions' | 'news' | 'calendar'>('promotions');
+  // ⚡ 브라우저 초기 로딩 첫 프레임부터 해당 탭으로 즉시 시작하여 깜빡임(0.1초 번쩍임) 원천 차단
+  const [activeTab, setActiveTab] = useState<'promotions' | 'news' | 'calendar'>(getInitialTab);
 
   // 탭 변경 시 URL Hash 및 LocalStorage에 저장
   const handleTabChange = useCallback((tab: 'promotions' | 'news' | 'calendar') => {
@@ -38,36 +58,23 @@ export default function Home() {
     }
   }, []);
 
-  // 새로고침 시 탭 복원 (URL Hash 우선 -> LocalStorage 순)
+  // 새로고침 및 브라우저 뒤로가기/앞으로가기 시 동기화
   useEffect(() => {
-    const getTabFromHash = () => {
-      if (typeof window === 'undefined') return null;
-      const hash = window.location.hash.replace('#', '');
-      if (hash === 'calendar' || hash === 'news' || hash === 'promotions') {
-        return hash as 'promotions' | 'news' | 'calendar';
+    const syncTab = () => {
+      const tab = getInitialTab();
+      setActiveTab(tab);
+      if (typeof window !== 'undefined' && !window.location.hash && tab !== 'promotions') {
+        window.history.replaceState(null, '', `#${tab}`);
       }
-      return null;
     };
 
-    const initialTab = getTabFromHash();
-    if (initialTab) {
-      setActiveTab(initialTab);
-    } else {
-      try {
-        const savedTab = localStorage.getItem('flypromo_active_tab');
-        if (savedTab === 'calendar' || savedTab === 'news' || savedTab === 'promotions') {
-          setActiveTab(savedTab as 'promotions' | 'news' | 'calendar');
-          window.history.replaceState(null, '', `#${savedTab}`);
-        }
-      } catch (e) {
-        console.error('Failed to get saved tab:', e);
-      }
-    }
+    syncTab();
 
     const handleHashChange = () => {
-      const tab = getTabFromHash();
-      if (tab) {
-        setActiveTab(tab);
+      if (typeof window === 'undefined') return;
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'calendar' || hash === 'news' || hash === 'promotions') {
+        setActiveTab(hash as 'promotions' | 'news' | 'calendar');
       }
     };
 
