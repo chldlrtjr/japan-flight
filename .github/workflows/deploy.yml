@@ -1,8 +1,8 @@
-name: ✈️ JapanFlight - Hourly Crawl & Deploy to GitHub Pages
+name: ✈️ JapanFlight - Fast Deploy & Hourly Crawl
 
 on:
   schedule:
-    # ⏰ 매 1시간마다 자동 실행 (정각)
+    # ⏰ 매 1시간마다 자동 크롤링 실행 (정각)
     - cron: '0 * * * *'
   push:
     branches:
@@ -30,28 +30,47 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 1. Python 세팅 & 크롤러 실행
+      # -------------------------------------------------------------
+      # 🚀 [속도 최적화] 정각 자동 스케줄 또는 수동 실행일 때만 크롤러 동작
+      # 코드 푸시(Push)일 때는 크롤러를 건너뛰고 30초 초고속 웹 배포 직행!
+      # -------------------------------------------------------------
+      - name: 🔍 Check if crawler should run
+        id: check_crawl
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ] || [[ "${{ github.event.head_commit.message }}" == *"[crawl]"* ]]; then
+            echo "run_crawler=true" >> $GITHUB_OUTPUT
+            echo "Crawler will run."
+          else
+            echo "run_crawler=false" >> $GITHUB_OUTPUT
+            echo "Skipping crawler for fast deployment (~30s)."
+          fi
+
+      # 1. Python 세팅 & 크롤러 실행 (스케줄/수동 실행일 때만)
       - name: 🐍 Set up Python 3.12
+        if: steps.check_crawl.outputs.run_crawler == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: 'pip'
 
       - name: 📦 Install Python dependencies
+        if: steps.check_crawl.outputs.run_crawler == 'true'
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           python -m playwright install --with-deps chromium || true
 
       - name: 🚀 Run Flight & News Crawler
+        if: steps.check_crawl.outputs.run_crawler == 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           python crawler/runner.py
 
-      # 2. 업데이트된 최신 데이터를 Git에 커밋 & 푸시
+      # 2. 업데이트된 최신 데이터를 Git에 커밋 & 푸시 (크롤러가 돌았을 때만)
       - name: 💾 Commit & Push updated flight data
+        if: steps.check_crawl.outputs.run_crawler == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
@@ -63,13 +82,24 @@ jobs:
             git push origin main || echo "Git push skipped or up to date"
           fi
 
-      # 3. Node.js 세팅 & Next.js 정적 사이트 빌드
+      # -------------------------------------------------------------
+      # 3. Node.js 세팅 & Next.js 빌드 (캐시 적용으로 초고속 빌드)
+      # -------------------------------------------------------------
       - name: 🟢 Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: web/package-lock.json
+
+      - name: ⚡ Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/web/package-lock.json') }}-${{ hashFiles('**/web/src/**') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/web/package-lock.json') }}-
 
       - name: 📦 Install Web dependencies
         working-directory: ./web
