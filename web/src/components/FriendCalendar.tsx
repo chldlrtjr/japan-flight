@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,7 +16,9 @@ import {
   X,
   Download,
   Upload,
-  RotateCcw,
+  RefreshCw,
+  Globe,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface Friend {
@@ -36,11 +38,11 @@ interface CalendarEvent {
 }
 
 const DEFAULT_FRIENDS: Friend[] = [
-  { id: 'f_1', name: '민수', color: '#3b82f6' }, // Blue
-  { id: 'f_2', name: '지은', color: '#ec4899' }, // Pink
-  { id: 'f_3', name: '태호', color: '#10b981' }, // Emerald
-  { id: 'f_4', name: '수빈', color: '#f59e0b' }, // Amber
-  { id: 'f_5', name: '동현', color: '#8b5cf6' }, // Purple
+  { id: 'f_1', name: '민수', color: '#3b82f6' },
+  { id: 'f_2', name: '지은', color: '#ec4899' },
+  { id: 'f_3', name: '태호', color: '#10b981' },
+  { id: 'f_4', name: '수빈', color: '#f59e0b' },
+  { id: 'f_5', name: '동현', color: '#8b5cf6' },
 ];
 
 const getFormattedDate = (date: Date) => {
@@ -52,8 +54,12 @@ const getFormattedDate = (date: Date) => {
 
 export const FriendCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friends, setFriends] = useState<Friend[]>(DEFAULT_FRIENDS);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [isLoadingSharedData, setIsLoadingSharedData] = useState<boolean>(true);
+  const [sharedUpdatedAt, setSharedUpdatedAt] = useState<string | null>(null);
+  const [syncNotice, setSyncNotice] = useState<string | null>(null);
+
   const [activeFilterFriendId, setActiveFilterFriendId] = useState<string>('ALL');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
 
@@ -62,6 +68,7 @@ export const FriendCalendar: React.FC = () => {
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+  const [isDeployGuideOpen, setIsDeployGuideOpen] = useState(false);
 
   // Form states
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
@@ -79,62 +86,63 @@ export const FriendCalendar: React.FC = () => {
   // Selected event for view modal
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
-  // Load from localStorage on mount
-  useEffect(() => {
+  // 1. Fetch Shared Calendar Data from GitHub Hosting (/data/calendar.json)
+  const fetchSharedData = useCallback(async (isManualRefresh = false) => {
+    setIsLoadingSharedData(true);
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
     try {
-      const savedFriends = localStorage.getItem('flypromo_calendar_friends');
-      if (savedFriends) {
-        setFriends(JSON.parse(savedFriends));
+      const cacheBust = `?t=${Date.now()}`;
+      const res = await fetch(`${basePath}/data/calendar.json${cacheBust}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.friends && Array.isArray(json.friends)) {
+          setFriends(json.friends);
+          localStorage.setItem('flypromo_calendar_friends', JSON.stringify(json.friends));
+        }
+        if (json.events && Array.isArray(json.events)) {
+          setEvents(json.events);
+          localStorage.setItem('flypromo_calendar_events', JSON.stringify(json.events));
+        }
+        if (json.updatedAt) {
+          setSharedUpdatedAt(json.updatedAt);
+        }
+        if (isManualRefresh) {
+          setSyncNotice('깃허브 공통 달력 데이터를 최신으로 동기화했습니다!');
+          setTimeout(() => setSyncNotice(null), 3000);
+        }
       } else {
-        setFriends(DEFAULT_FRIENDS);
-      }
-
-      const savedEvents = localStorage.getItem('flypromo_calendar_events');
-      if (savedEvents) {
-        setEvents(JSON.parse(savedEvents));
-      } else {
-        const today = new Date();
-        const y = today.getFullYear();
-        const m = String(today.getMonth() + 1).padStart(2, '0');
-        const d = String(today.getDate()).padStart(2, '0');
-
-        setEvents([
-          {
-            id: 'ev_init_1',
-            friendId: 'f_1',
-            title: '민수와 오사카 여행 준비 회의',
-            date: `${y}-${m}-${d}`,
-            time: '18:30',
-            location: '강남역 카페',
-            memo: '특가 항공권 및 호텔 예약 리스트 정리',
-          },
-          {
-            id: 'ev_init_2',
-            friendId: 'f_2',
-            title: '지은이 후쿠오카 특가 발권 완료',
-            date: `${y}-${m}-${String(Math.min(28, today.getDate() + 2)).padStart(2, '0')}`,
-            time: '14:00',
-            location: '인천공항 T1',
-            memo: 'e티켓 출력',
-          },
-        ]);
+        // Fallback to local storage if json fetch fails
+        loadFromLocalStorage();
       }
     } catch (e) {
-      console.error('Failed to load calendar data:', e);
-      setFriends(DEFAULT_FRIENDS);
+      console.warn('Failed to fetch shared calendar.json, falling back to local storage:', e);
+      loadFromLocalStorage();
+    } finally {
+      setIsLoadingSharedData(false);
     }
   }, []);
 
-  // Save changes
-  useEffect(() => {
-    if (friends.length > 0) {
-      localStorage.setItem('flypromo_calendar_friends', JSON.stringify(friends));
+  const loadFromLocalStorage = () => {
+    try {
+      const savedFriends = localStorage.getItem('flypromo_calendar_friends');
+      if (savedFriends) setFriends(JSON.parse(savedFriends));
+
+      const savedEvents = localStorage.getItem('flypromo_calendar_events');
+      if (savedEvents) setEvents(JSON.parse(savedEvents));
+    } catch (e) {
+      console.error(e);
     }
-  }, [friends]);
+  };
 
   useEffect(() => {
-    localStorage.setItem('flypromo_calendar_events', JSON.stringify(events));
-  }, [events]);
+    fetchSharedData();
+  }, [fetchSharedData]);
+
+  // Save to local storage whenever user edits
+  const saveLocalState = (newFriends: Friend[], newEvents: CalendarEvent[]) => {
+    localStorage.setItem('flypromo_calendar_friends', JSON.stringify(newFriends));
+    localStorage.setItem('flypromo_calendar_events', JSON.stringify(newEvents));
+  };
 
   const getFriend = (friendId: string): Friend => {
     return friends.find((f) => f.id === friendId) || { id: 'unknown', name: '알 수 없음', color: '#94a3b8' };
@@ -181,21 +189,20 @@ export const FriendCalendar: React.FC = () => {
       return;
     }
 
+    let updatedEvents: CalendarEvent[];
     if (editingEventId) {
-      setEvents((prev) =>
-        prev.map((ev) =>
-          ev.id === editingEventId
-            ? {
-                ...ev,
-                friendId: formFriendId,
-                title: formTitle,
-                date: formDate,
-                time: formTime,
-                location: formLocation,
-                memo: formMemo,
-              }
-            : ev
-        )
+      updatedEvents = events.map((ev) =>
+        ev.id === editingEventId
+          ? {
+              ...ev,
+              friendId: formFriendId,
+              title: formTitle,
+              date: formDate,
+              time: formTime,
+              location: formLocation,
+              memo: formMemo,
+            }
+          : ev
       );
     } else {
       const newEv: CalendarEvent = {
@@ -207,15 +214,19 @@ export const FriendCalendar: React.FC = () => {
         location: formLocation,
         memo: formMemo,
       };
-      setEvents((prev) => [...prev, newEv]);
+      updatedEvents = [...events, newEv];
     }
 
+    setEvents(updatedEvents);
+    saveLocalState(friends, updatedEvents);
     setIsEventModalOpen(false);
   };
 
   const handleDeleteEvent = (id: string) => {
     if (confirm('이 일정을 삭제하시겠습니까?')) {
-      setEvents((prev) => prev.filter((ev) => ev.id !== id));
+      const updatedEvents = events.filter((ev) => ev.id !== id);
+      setEvents(updatedEvents);
+      saveLocalState(friends, updatedEvents);
       setIsEventModalOpen(false);
       setIsViewModalOpen(false);
     }
@@ -231,21 +242,24 @@ export const FriendCalendar: React.FC = () => {
       name: trimmed,
       color: newFriendColor,
     };
-    setFriends((prev) => [...prev, newFriend]);
+    const updated = [...friends, newFriend];
+    setFriends(updated);
+    saveLocalState(updated, events);
     setNewFriendName('');
   };
 
   const handleDeleteFriend = (id: string) => {
-    if (confirm('이 친구를 삭제하시겠습니까? 관련 일정도 함께 유지하거나 정리될 수 있습니다.')) {
-      setFriends((prev) => prev.filter((f) => f.id !== id));
+    if (confirm('이 친구를 삭제하시겠습니까?')) {
+      const updated = friends.filter((f) => f.id !== id);
+      setFriends(updated);
+      saveLocalState(updated, events);
     }
   };
 
-  // Export JSON
-  const handleExport = () => {
+  // Export JSON (for GitHub repository data/calendar.json)
+  const handleDownloadCalendarJson = () => {
     const data = {
-      version: '1.0',
-      exportedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       friends,
       events,
     };
@@ -253,33 +267,10 @@ export const FriendCalendar: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `flight_calendar_backup_${getFormattedDate(new Date())}.json`;
+    a.download = `calendar.json`;
     a.click();
     URL.revokeObjectURL(url);
-  };
-
-  // Import JSON
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const imported = JSON.parse(event.target?.result as string);
-        if (Array.isArray(imported.friends) && Array.isArray(imported.events)) {
-          setFriends(imported.friends);
-          setEvents(imported.events);
-          alert('데이터를 성공적으로 복원했습니다!');
-          setIsBackupModalOpen(false);
-        } else {
-          alert('올바른 백업 파일 형식이 아닙니다.');
-        }
-      } catch (err: unknown) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
-        alert('파일을 불러오는 중 오류가 발생했습니다: ' + errorMsg);
-      }
-    };
-    reader.readAsText(file);
+    setIsDeployGuideOpen(true);
   };
 
   // Calendar cells computation
@@ -357,7 +348,58 @@ export const FriendCalendar: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Top Header Card */}
+      {/* Toast Notification */}
+      {syncNotice && (
+        <div className="fixed top-4 right-4 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in duration-200">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{syncNotice}</span>
+        </div>
+      )}
+
+      {/* Top Banner: GitHub Shared Info & Action Buttons */}
+      <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+            <Globe className="w-5 h-5 text-indigo-300" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-sm sm:text-base tracking-tight">공통 친구 일정 (GitHub 동기화)</h3>
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
+                전원 공유
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-0.5">
+              접속한 모든 친구들이 깃허브에 저장된 동일한 달력 일정을 실시간으로 공유받습니다.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+          {/* Refresh Shared Data */}
+          <button
+            onClick={() => fetchSharedData(true)}
+            disabled={isLoadingSharedData}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-semibold transition border border-white/15"
+            title="깃허브의 최신 공통 일정 불러오기"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingSharedData ? 'animate-spin' : ''}`} />
+            <span>깃허브 동기화</span>
+          </button>
+
+          {/* Download calendar.json for GitHub commit */}
+          <button
+            onClick={handleDownloadCalendarJson}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold transition shadow-sm active:scale-95"
+            title="현재 일정을 calendar.json으로 내려받아 깃허브에 반영"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>일정 깃허브 반영 (JSON)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Calendar Card */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Navigation & Title */}
         <div className="flex items-center gap-3">
@@ -405,10 +447,10 @@ export const FriendCalendar: React.FC = () => {
           {/* Add Event Button */}
           <button
             onClick={() => openAddEventModal()}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>새 일정</span>
+            <span>새 일정 등록</span>
           </button>
 
           {/* Manage Friends */}
@@ -418,15 +460,6 @@ export const FriendCalendar: React.FC = () => {
           >
             <Users className="w-4 h-4 text-slate-500" />
             <span>친구 관리</span>
-          </button>
-
-          {/* Backup Button */}
-          <button
-            onClick={() => setIsBackupModalOpen(true)}
-            className="p-2 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-xl transition"
-            title="데이터 백업 및 복원"
-          >
-            <Download className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -503,7 +536,7 @@ export const FriendCalendar: React.FC = () => {
                 <div className="flex items-center justify-between mb-1">
                   <span
                     className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${
-                      cDay.isToday ? 'bg-sky-600 text-white font-bold shadow-xs' : dayColorClass
+                      cDay.isToday ? 'bg-indigo-600 text-white font-bold shadow-xs' : dayColorClass
                     }`}
                   >
                     {cDay.day}
@@ -513,7 +546,7 @@ export const FriendCalendar: React.FC = () => {
                       e.stopPropagation();
                       openAddEventModal(cDay.dateStr);
                     }}
-                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-sky-600 text-xs transition p-0.5"
+                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-indigo-600 text-xs transition p-0.5"
                     title="일정 추가"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -574,7 +607,7 @@ export const FriendCalendar: React.FC = () => {
                     value={formFriendId}
                     onChange={(e) => setFormFriendId(e.target.value)}
                     required
-                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     {friends.map((f) => (
                       <option key={f.id} value={f.id}>
@@ -600,7 +633,7 @@ export const FriendCalendar: React.FC = () => {
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="예: 후쿠오카 특가 여행, 주말 모임"
                   required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
@@ -612,7 +645,7 @@ export const FriendCalendar: React.FC = () => {
                     value={formDate}
                     onChange={(e) => setFormDate(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
@@ -621,7 +654,7 @@ export const FriendCalendar: React.FC = () => {
                     type="time"
                     value={formTime}
                     onChange={(e) => setFormTime(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </div>
@@ -635,7 +668,7 @@ export const FriendCalendar: React.FC = () => {
                     value={formLocation}
                     onChange={(e) => setFormLocation(e.target.value)}
                     placeholder="예: 인천국제공항 제1여객터미널"
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </div>
@@ -647,7 +680,7 @@ export const FriendCalendar: React.FC = () => {
                   value={formMemo}
                   onChange={(e) => setFormMemo(e.target.value)}
                   placeholder="항공권 예약번호, 챙길 것 등"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                 />
               </div>
 
@@ -672,7 +705,7 @@ export const FriendCalendar: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 shadow-sm transition"
+                    className="px-5 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-sm transition"
                   >
                     저장
                   </button>
@@ -702,7 +735,7 @@ export const FriendCalendar: React.FC = () => {
                   onChange={(e) => setNewFriendName(e.target.value)}
                   placeholder="새 친구 이름 (예: 민호)"
                   required
-                  className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <input
                   type="color"
@@ -713,7 +746,7 @@ export const FriendCalendar: React.FC = () => {
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-sky-600 text-white rounded-xl text-sm font-bold hover:bg-sky-700 transition"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition"
                 >
                   추가
                 </button>
@@ -735,9 +768,9 @@ export const FriendCalendar: React.FC = () => {
                           value={f.color}
                           onChange={(e) => {
                             const newColor = e.target.value;
-                            setFriends((prev) =>
-                              prev.map((item) => (item.id === f.id ? { ...item, color: newColor } : item))
-                            );
+                            const updated = friends.map((item) => (item.id === f.id ? { ...item, color: newColor } : item));
+                            setFriends(updated);
+                            saveLocalState(updated, events);
                           }}
                           className="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent"
                         />
@@ -828,54 +861,37 @@ export const FriendCalendar: React.FC = () => {
         </div>
       )}
 
-      {/* 4. Backup & Restore Modal */}
-      {isBackupModalOpen && (
+      {/* 4. GitHub Deploy Guide Modal */}
+      {isDeployGuideOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800">캘린더 데이터 백업 및 복원</h3>
-              <button onClick={() => setIsBackupModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <span>calendar.json 다운로드 완료!</span>
+              </h3>
+              <button onClick={() => setIsDeployGuideOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
-              <p className="text-xs text-slate-500 leading-relaxed">
-                친구 일정 데이터는 현재 브라우저의 로컬 저장소에 보관됩니다. 다른 기기나 컴퓨터로 옮기려면 백업 파일을
-                다운로드하세요.
+            <div className="p-6 space-y-4 text-xs text-slate-600 leading-relaxed">
+              <p className="font-medium text-slate-800">
+                다운로드받은 <code>calendar.json</code> 파일을 프로젝트의 <code>data/</code> 폴더와 <code>web/public/data/</code> 폴더에 덮어씌운 뒤, Git 커밋 & 푸시하시면 모든 친구들에게 똑같이 반영됩니다.
               </p>
 
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
-                <button
-                  onClick={handleExport}
-                  className="w-full py-2.5 px-4 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2"
-                >
-                  <Download className="w-4 h-4 text-sky-600" />
-                  <span>백업 파일 다운로드 (JSON)</span>
-                </button>
-
-                <label className="w-full py-2.5 px-4 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 cursor-pointer">
-                  <Upload className="w-4 h-4 text-emerald-600" />
-                  <span>백업 파일에서 불러오기</span>
-                  <input type="file" accept=".json" onChange={handleImport} className="hidden" />
-                </label>
+              <div className="p-3 bg-slate-900 text-slate-100 rounded-xl font-mono text-[11px] space-y-1">
+                <p>git add data/ web/public/data/</p>
+                <p>git commit -m &quot;chore: 캘린더 공통 일정 업데이트&quot;</p>
+                <p>git push origin main</p>
               </div>
 
-              <div className="text-center pt-2">
-                <button
-                  onClick={() => {
-                    if (confirm('샘플 데이터로 초기화하시겠습니까?')) {
-                      setFriends(DEFAULT_FRIENDS);
-                      setEvents([]);
-                      setIsBackupModalOpen(false);
-                    }
-                  }}
-                  className="text-xs text-slate-400 hover:text-slate-600 underline flex items-center justify-center gap-1 mx-auto"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>기본 상태로 초기화</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setIsDeployGuideOpen(false)}
+                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition text-sm"
+              >
+                확인했습니다
+              </button>
             </div>
           </div>
         </div>
