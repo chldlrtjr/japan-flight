@@ -710,6 +710,7 @@
       state.friends.forEach(f => {
         const btn = document.createElement('button');
         const isActive = state.activeFilterFriendId === f.id;
+        const fCount = state.events.filter(e => e.friendId === f.id || (e.friendIds && e.friendIds.includes(f.id))).length;
         btn.className = `px-2.5 py-1 text-xs font-semibold rounded-full transition flex items-center gap-1.5 ${
           isActive ? 'shadow-xs text-white' : 'hover:opacity-85'
         }`;
@@ -725,6 +726,7 @@
         btn.innerHTML = `
           <span class="w-2 h-2 rounded-full" style="background-color: ${f.color}"></span>
           <span>${f.name}</span>
+          <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-white text-slate-800' : 'bg-slate-200 text-slate-600'} font-bold">${fCount}</span>
         `;
 
         btn.addEventListener('click', () => {

@@ -277,6 +277,8 @@ export const FriendCalendar: React.FC = () => {
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isFriendProfileModalOpen, setIsFriendProfileModalOpen] = useState(false);
+  const [isFriendScheduleModalOpen, setIsFriendScheduleModalOpen] = useState(false);
+  const [selectedFriendForSchedule, setSelectedFriendForSchedule] = useState<Friend | null>(null);
 
   // 친구 인적사항 및 생년월일 프로필 폼 상태
   const [editingFriendId, setEditingFriendId] = useState<string | null>(null);
@@ -618,12 +620,80 @@ export const FriendCalendar: React.FC = () => {
     setCurrentDate(new Date());
   };
 
+  // 특정 친구의 모든 일정 추출 및 정렬 (시작일 기준 오름차순)
+  const getEventsForFriend = (friendId: string) => {
+    return events
+      .filter((ev) => {
+        const pIds = getEventFriendIds(ev);
+        return pIds.includes(friendId) || ev.friendId === friendId;
+      })
+      .sort((a, b) => a.startDate.localeCompare(b.startDate));
+  };
+
+  // 특정 친구의 일정 모달 열기 및 필터 적용
+  const openFriendSchedule = (friend: Friend) => {
+    setSelectedFriendForSchedule(friend);
+    setActiveFilterFriendId(friend.id);
+    setIsFriendScheduleModalOpen(true);
+  };
+
+  // 특정 날짜(연-월)로 캘린더 이동
+  const jumpToDate = (dateStr: string) => {
+    if (!dateStr) return;
+    const parts = dateStr.split('-');
+    if (parts.length >= 2) {
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10);
+      if (!isNaN(y) && !isNaN(m)) {
+        setCurrentDate(new Date(y, m - 1, 1));
+      }
+    }
+  };
+
+  // 일정 상태 및 D-day 계산
+  const getEventStatusBadge = (startDate: string, endDate?: string) => {
+    const todayStr = getFormattedDate(new Date());
+    const endStr = endDate || startDate;
+    if (todayStr >= startDate && todayStr <= endStr) {
+      return { label: '🔥 진행 중', color: 'bg-emerald-600 text-white animate-pulse' };
+    }
+    if (todayStr > endStr) {
+      return { label: '종료됨', color: 'bg-slate-200 text-slate-600' };
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(startDate);
+    target.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return { label: `D-${diffDays}`, color: 'bg-indigo-600 text-white' };
+  };
+
+  // 인적사항 만료일 계산
+  const getprofileExpiryInfo = (expiryStr?: string) => {
+    if (!expiryStr) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const exp = new Date(expiryStr);
+    exp.setHours(0, 0, 0, 0);
+    if (isNaN(exp.getTime())) return null;
+    const diffTime = exp.getTime() - today.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+    const isExpired = diffDays <= 0;
+    const isImminent = diffDays > 0 && diffDays <= 180;
+    return {
+      diffDays,
+      isExpired,
+      isImminent,
+      yearsRemaining: (diffDays / 365).toFixed(1),
+    };
+  };
+
   // Open Event Modal
-  const openAddEventModal = (defaultDate?: string) => {
+  const openAddEventModal = (defaultDate?: string, defaultFriendId?: string) => {
     const initialDate = defaultDate || getFormattedDate(new Date());
     setEditingEventId(null);
-    setFormFriendIds([]); // 참여 인원 없이도 바로 등록 가능
-    setFormFriendId('');
+    setFormFriendIds(defaultFriendId ? [defaultFriendId] : []);
+    setFormFriendId(defaultFriendId || '');
     setFormTitle('');
     setFormStartDate(initialDate);
     setFormEndDate(initialDate);
@@ -1310,26 +1380,178 @@ export const FriendCalendar: React.FC = () => {
 
         {friends.map((f) => {
           const isActive = activeFilterFriendId === f.id;
+          const friendEventCount = getEventsForFriend(f.id).length;
           return (
             <button
               key={f.id}
-              onClick={() => setActiveFilterFriendId(isActive ? 'ALL' : f.id)}
-              className="px-3 py-1 text-xs font-semibold rounded-full transition shrink-0 flex items-center gap-1.5"
+              onClick={() => {
+                openFriendSchedule(f);
+              }}
+              className="px-3 py-1 text-xs font-semibold rounded-full transition shrink-0 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs hover:shadow-xs"
               style={{
                 backgroundColor: isActive ? f.color : `${f.color}15`,
                 color: isActive ? '#ffffff' : '#334155',
-                border: `1px solid ${f.color}40`,
+                border: `1px solid ${isActive ? f.color : `${f.color}40`}`,
               }}
+              title={`${f.name} 님의 일정 및 프로필 보기`}
             >
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: f.color }} />
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: isActive ? '#ffffff' : f.color }}
+              />
               <span>{f.name}</span>
+              {friendEventCount > 0 ? (
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                    isActive ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'
+                  }`}
+                >
+                  {friendEventCount}
+                </span>
+              ) : (
+                <span
+                  className={`text-[10px] px-1 rounded-full ${
+                    isActive ? 'text-white/80' : 'text-slate-400'
+                  }`}
+                >
+                  0
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
+      {/* 👤 활성화된 친구 필터 및 일정 요약 배너 */}
+      {activeFilterFriendId !== 'ALL' && (
+        <div className="bg-white rounded-xl px-4 py-3 border border-indigo-200/90 shadow-2xs flex flex-wrap items-center justify-between gap-3 animate-in fade-in duration-150">
+          {activeFilterFriendId === 'UNASSIGNED' ? (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0 border border-indigo-200/60">
+                  🤝
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-900">참여자 미정 약속 (오픈 일정) 필터링</span>
+                    <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[11px] font-extrabold rounded-full">
+                      총 {events.filter((e) => getEventFriendIds(e).length === 0).length}건
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    누구나 자유롭게 참여할 수 있는 열린 약속들입니다.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => openAddEventModal()}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition flex items-center gap-1 shadow-2xs active:scale-95"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>새 오픈 약속 등록</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveFilterFriendId('ALL')}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-lg transition flex items-center gap-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>전체 보기</span>
+                </button>
+              </div>
+            </>
+          ) : (
+            (() => {
+              const curFriend = friends.find((f) => f.id === activeFilterFriendId);
+              if (!curFriend) return null;
+              const fEvents = getEventsForFriend(curFriend.id);
+              const todayStr = getFormattedDate(new Date());
+              const nextUpcoming = fEvents.find((e) => (e.endDate || e.startDate) >= todayStr);
+
+              return (
+                <>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-sm text-white shrink-0 shadow-2xs"
+                      style={{ backgroundColor: curFriend.color }}
+                    >
+                      {curFriend.name.slice(0, 1)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold text-slate-900">{curFriend.name}</span>
+                        {curFriend.englishName && (
+                          <span className="text-xs font-mono font-medium text-slate-500">
+                            ({curFriend.englishName})
+                          </span>
+                        )}
+                        <span
+                          className={`px-2 py-0.5 text-[11px] font-extrabold rounded-full ${
+                            fEvents.length > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'
+                          }`}
+                        >
+                          등록된 일정 {fEvents.length}건
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
+                        {nextUpcoming ? (
+                          <>
+                            <span className="font-semibold text-indigo-600">
+                              다음 일정: {nextUpcoming.title}
+                            </span>
+                            <span>
+                              ({nextUpcoming.startDate} ~ {nextUpcoming.endDate || nextUpcoming.startDate})
+                            </span>
+                          </>
+                        ) : fEvents.length > 0 ? (
+                          <span>과거 완료된 일정 {fEvents.length}건이 있습니다.</span>
+                        ) : (
+                          <span className="text-slate-400">등록된 일정이 없습니다. 새 일정을 추가해보세요!</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFriendForSchedule(curFriend);
+                        setIsFriendScheduleModalOpen(true);
+                      }}
+                      className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-2xs active:scale-95"
+                    >
+                      <CalendarIcon className="w-3.5 h-3.5" />
+                      <span>전체 일정 보기 ({fEvents.length})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openAddEventModal(undefined, curFriend.id)}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition flex items-center gap-1 shadow-2xs active:scale-95"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+ 일정 등록</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveFilterFriendId('ALL')}
+                      className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-lg transition"
+                      title="필터 해제 (전체 보기)"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </>
+              );
+            })()
+          )}
+        </div>
+      )}
+
       {/* Calendar Grid Container */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div id="calendar-container" className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {/* Day of Week Header */}
         <div className="grid grid-cols-7 text-center text-xs font-bold py-3 bg-slate-50 border-b border-slate-200 text-slate-500">
           <div className="text-rose-500">일</div>
@@ -1880,8 +2102,18 @@ export const FriendCalendar: React.FC = () => {
                           key={f.id}
                           className="group inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs"
                         >
-                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: f.color }} />
-                          <span className="text-slate-800">{f.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsViewModalOpen(false);
+                              openFriendSchedule(f);
+                            }}
+                            className="inline-flex items-center gap-1.5 hover:text-indigo-600 transition"
+                            title={`${f.name}의 전체 일정 확인하기`}
+                          >
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: f.color }} />
+                            <span className="text-slate-800 hover:text-indigo-600 underline-offset-2 hover:underline">{f.name}</span>
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleToggleEventParticipant(selectedEvent.id, f.id)}
@@ -2338,7 +2570,19 @@ export const FriendCalendar: React.FC = () => {
                           </div>
 
                           {/* Action Buttons */}
-                          <div className="flex items-center gap-1 self-end sm:self-center shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
+                          <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsFriendProfileModalOpen(false);
+                                openFriendSchedule(f);
+                              }}
+                              className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs"
+                              title={`${f.name}의 전체 일정 확인`}
+                            >
+                              <CalendarIcon className="w-3 h-3" />
+                              <span>일정 ({getEventsForFriend(f.id).length})</span>
+                            </button>
                             <button
                               type="button"
                               onClick={() => startEditProfile(f)}
@@ -2516,6 +2760,321 @@ export const FriendCalendar: React.FC = () => {
                 type="button"
                 onClick={() => setIsHistoryModalOpen(false)}
                 className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. 친구 전체 일정 및 여행 프로필 상세 모달 */}
+      {isFriendScheduleModalOpen && selectedFriendForSchedule && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-100">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden my-auto flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-extrabold text-base shadow-sm shrink-0"
+                  style={{ backgroundColor: selectedFriendForSchedule.color }}
+                >
+                  {selectedFriendForSchedule.name.slice(0, 1)}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-slate-900">
+                      {selectedFriendForSchedule.name}
+                    </h3>
+                    <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                      개인별 일정 브리핑
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    {selectedFriendForSchedule.englishName || '영문명 미등록'}
+                    {selectedFriendForSchedule.birthDate && ` · ${selectedFriendForSchedule.birthDate}`}
+                    {selectedFriendForSchedule.birthDate && calculateAge(selectedFriendForSchedule.birthDate) && ` (${calculateAge(selectedFriendForSchedule.birthDate)})`}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsFriendScheduleModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body: Scrollable */}
+            <div className="p-6 overflow-y-auto space-y-5 flex-1">
+              {/* Profile Card */}
+              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2 flex-1">
+                  {selectedFriendForSchedule.englishName && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyToClipboard(
+                          selectedFriendForSchedule.englishName!,
+                          `modal_eng_${selectedFriendForSchedule.id}`,
+                          `${selectedFriendForSchedule.name}의 인적사항 영문명이`
+                        )
+                      }
+                      className="group flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-mono font-bold transition shadow-2xs"
+                      title="클릭하여 영문명 복사"
+                    >
+                      <span>인적사항명: {selectedFriendForSchedule.englishName}</span>
+                      {copiedId === `modal_eng_${selectedFriendForSchedule.id}` ? (
+                        <Check className="w-3 h-3 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-indigo-400" />
+                      )}
+                    </button>
+                  )}
+
+                  {selectedFriendForSchedule.profileNumber && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyToClipboard(
+                          selectedFriendForSchedule.profileNumber!,
+                          `modal_pass_${selectedFriendForSchedule.id}`,
+                          `${selectedFriendForSchedule.name}의 인적사항번호가`
+                        )
+                      }
+                      className="group flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-amber-50 text-amber-800 border border-amber-200 rounded-lg text-xs font-mono font-bold transition shadow-2xs"
+                      title="클릭하여 인적사항번호 복사"
+                    >
+                      <span>인적사항: {selectedFriendForSchedule.profileNumber}</span>
+                      {copiedId === `modal_pass_${selectedFriendForSchedule.id}` ? (
+                        <Check className="w-3 h-3 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-amber-400" />
+                      )}
+                    </button>
+                  )}
+
+                  {selectedFriendForSchedule.profileExpiry && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-700 shadow-2xs">
+                      <span>만료일: {selectedFriendForSchedule.profileExpiry}</span>
+                      {(() => {
+                        const pInfo = getprofileExpiryInfo(selectedFriendForSchedule.profileExpiry);
+                        if (!pInfo) return null;
+                        if (pInfo.isExpired) {
+                          return <span className="text-[10px] bg-rose-100 text-rose-700 font-bold px-1.5 py-0.2 rounded">만료됨</span>;
+                        }
+                        if (pInfo.isImminent) {
+                          return <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded">만료 임박 ({pInfo.diffDays}일)</span>;
+                        }
+                        return <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">안전 ({pInfo.yearsRemaining}년 남음)</span>;
+                      })()}
+                    </div>
+                  )}
+
+                  {selectedFriendForSchedule.memo && (
+                    <div className="w-full text-xs text-slate-600 bg-white p-2.5 rounded-xl border border-slate-200 mt-1">
+                      <span className="font-bold text-slate-500 mr-1.5">메모:</span>
+                      {selectedFriendForSchedule.memo}
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsFriendScheduleModalOpen(false);
+                    startEditProfile(selectedFriendForSchedule);
+                    setIsFriendProfileModalOpen(true);
+                  }}
+                  className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl transition shrink-0 flex items-center gap-1 self-start sm:self-center shadow-2xs"
+                >
+                  <Edit2 className="w-3 h-3" />
+                  <span>정보 수정</span>
+                </button>
+              </div>
+
+              {/* Schedules Section Header */}
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="w-4 h-4 text-indigo-600" />
+                  <h4 className="text-sm font-bold text-slate-800">
+                    {selectedFriendForSchedule.name} 님의 등록된 일정
+                  </h4>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-extrabold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                    {getEventsForFriend(selectedFriendForSchedule.id).length}건
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsFriendScheduleModalOpen(false);
+                    openAddEventModal(undefined, selectedFriendForSchedule.id);
+                  }}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs active:scale-95"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ 새 일정 등록</span>
+                </button>
+              </div>
+
+              {/* Schedules List */}
+              {(() => {
+                const fEvents = getEventsForFriend(selectedFriendForSchedule.id);
+                if (fEvents.length === 0) {
+                  return (
+                    <div className="py-12 px-4 text-center bg-slate-50/70 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-3">
+                        <Sparkles className="w-6 h-6" />
+                      </div>
+                      <h5 className="text-sm font-bold text-slate-800 mb-1">
+                        등록된 일정이 아직 없습니다
+                      </h5>
+                      <p className="text-xs text-slate-500 max-w-sm mb-4">
+                        {selectedFriendForSchedule.name} 님과 함께 갈 일본 여행이나 항공권 특가, 약속 일정을 지금 추가해보세요!
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsFriendScheduleModalOpen(false);
+                          openAddEventModal(undefined, selectedFriendForSchedule.id);
+                        }}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-sm active:scale-95 flex items-center gap-1.5"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>{selectedFriendForSchedule.name} 님의 새 일정 등록하기</span>
+                      </button>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-3">
+                    {fEvents.map((ev) => {
+                      const status = getEventStatusBadge(ev.startDate, ev.endDate || ev.startDate);
+                      const durationStr = calculateDuration(ev.startDate, ev.endDate || ev.startDate);
+                      const otherFriends = getEventFriends(ev).filter((f) => f.id !== selectedFriendForSchedule.id);
+
+                      return (
+                        <div
+                          key={ev.id}
+                          className="p-4 bg-white rounded-2xl border border-slate-200 hover:border-indigo-300 hover:shadow-xs transition space-y-3 group"
+                        >
+                          {/* Card Header: Dates & D-day */}
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${status.color}`}>
+                                {status.label}
+                              </span>
+                              <span className="text-xs font-bold text-slate-800">
+                                {ev.startDate}
+                                {ev.endDate && ev.endDate !== ev.startDate ? ` ~ ${ev.endDate}` : ''}
+                              </span>
+                              {durationStr && (
+                                <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                                  {durationStr}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  jumpToDate(ev.startDate);
+                                  setIsFriendScheduleModalOpen(false);
+                                  const calElem = document.getElementById('calendar-container');
+                                  if (calElem) calElem.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                                title="캘린더 해당 일자로 이동"
+                              >
+                                <CalendarIcon className="w-3 h-3" />
+                                <span>캘린더 보기</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsFriendScheduleModalOpen(false);
+                                  openEditEventModal(ev);
+                                }}
+                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition"
+                                title="일정 수정"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Title */}
+                          <div className="text-sm sm:text-base font-bold text-slate-900">
+                            {ev.title}
+                          </div>
+
+                          {/* Details (Location, Time, Memo) */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                            {ev.location && (
+                              <div className="flex items-center gap-1.5 text-slate-700">
+                                <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                                <span className="truncate">{ev.location}</span>
+                              </div>
+                            )}
+                            {ev.time && (
+                              <div className="flex items-center gap-1.5 text-slate-700">
+                                <Clock className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                                <span>{ev.time}</span>
+                              </div>
+                            )}
+                            {ev.memo && (
+                              <div className="sm:col-span-2 flex items-start gap-1.5 text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                                <span className="whitespace-pre-wrap">{ev.memo}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Other Participants */}
+                          {otherFriends.length > 0 && (
+                            <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[11px] font-bold text-slate-400">함께하는 친구:</span>
+                              {otherFriends.map((of) => (
+                                <button
+                                  key={of.id}
+                                  type="button"
+                                  onClick={() => openFriendSchedule(of)}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md text-[11px] font-semibold text-slate-700 transition"
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: of.color }} />
+                                  <span>{of.name}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveFilterFriendId('ALL');
+                  setIsFriendScheduleModalOpen(false);
+                }}
+                className="px-3 py-1.5 text-slate-500 hover:text-slate-800 text-xs font-semibold rounded-lg hover:bg-slate-100 transition"
+              >
+                전체 친구 일정 보기 (필터 해제)
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsFriendScheduleModalOpen(false)}
+                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-2xs"
               >
                 닫기
               </button>
