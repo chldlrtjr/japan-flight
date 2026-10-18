@@ -1385,7 +1385,7 @@ export const FriendCalendar: React.FC = () => {
             <button
               key={f.id}
               onClick={() => {
-                openFriendSchedule(f);
+                setActiveFilterFriendId(activeFilterFriendId === f.id ? 'ALL' : f.id);
               }}
               className="px-3 py-1 text-xs font-semibold rounded-full transition shrink-0 flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs hover:shadow-xs"
               style={{
@@ -1393,7 +1393,7 @@ export const FriendCalendar: React.FC = () => {
                 color: isActive ? '#ffffff' : '#334155',
                 border: `1px solid ${isActive ? f.color : `${f.color}40`}`,
               }}
-              title={`${f.name} 님의 일정 및 프로필 보기`}
+              title={isActive ? `${f.name} 필터 해제 (전체 보기)` : `${f.name} 님의 일정만 보기`}
             >
               <span
                 className="w-2 h-2 rounded-full shrink-0"
