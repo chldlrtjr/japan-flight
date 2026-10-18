@@ -60,34 +60,10 @@ interface CalendarBackupSnapshot {
   events: CalendarEvent[];
 }
 
-const DEFAULT_FRIENDS: Friend[] = [
-  { id: 'f_1', name: '민수', color: '#3b82f6', englishName: 'KIM MINSU', birthDate: '1996-05-12', gender: 'M' },
-  { id: 'f_2', name: '지은', color: '#ec4899', englishName: 'LEE JIEUN', birthDate: '1998-09-24', gender: 'F' },
-  { id: 'f_3', name: '태호', color: '#10b981', englishName: 'PARK TAEHO', birthDate: '1995-11-03', gender: 'M' },
-  { id: 'f_4', name: '수빈', color: '#f59e0b', englishName: 'CHOI SUBIN', birthDate: '1997-03-18', gender: 'F' },
-  { id: 'f_5', name: '동현', color: '#8b5cf6', englishName: 'JUNG DONGHYUN', birthDate: '1996-08-30', gender: 'M' },
-];
-
-const INITIAL_EVENTS: CalendarEvent[] = [
-  {
-    id: 'ev_init_1',
-    friendId: 'f_1',
-    title: '민수 오사카 여행',
-    startDate: '2026-10-20',
-    endDate: '2026-10-23',
-    location: '오사카 난바/우메다',
-    memo: '간사이 공항 입국, 호텔 체크인',
-  },
-  {
-    id: 'ev_init_2',
-    friendId: 'f_2',
-    title: '지은 후쿠오카 주말 특가 여행',
-    startDate: '2026-10-24',
-    endDate: '2026-10-26',
-    location: '후쿠오카 하카타/텐진',
-    memo: '맛집 투어 및 온천 방문',
-  },
-];
+// 🚫 가상/예시 데이터 완전 배제 (Zero Fake Data 원칙)
+// 기본 상태는 비어 있는 깨끗한 상태로 시작하여 가상 인물이 실제 입력을 오염시키지 않도록 보장합니다.
+const DEFAULT_FRIENDS: Friend[] = [];
+const INITIAL_EVENTS: CalendarEvent[] = [];
 
 const getFormattedDate = (date: Date) => {
   const y = date.getFullYear();
@@ -260,7 +236,7 @@ export const FriendCalendar: React.FC = () => {
         }
       } catch (e) {}
     }
-    return DEFAULT_FRIENDS;
+    return [];
   });
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -348,13 +324,13 @@ export const FriendCalendar: React.FC = () => {
       }
 
       if (candidateFriends.length > 0) {
-        // 샘플 이름이 아닌 실제 입력된 데이터가 있는지 확인
+        // 과거 구버전 예시 데이터(민수, 지은 등)는 복원 후보에서 완전히 필터링하여 배제
         const sampleNames = ['민수', '지은', '태호', '수빈', '동현'];
-        const hasCustomData = candidateFriends.some(f => !sampleNames.includes(f.name) || f.profileNumber || f.memo);
-        // 또는 친구 수가 5명과 다르거나 정보가 있는 경우
-        if (hasCustomData || candidateFriends.length !== 5) {
+        const realFriends = candidateFriends.filter((f) => !sampleNames.includes(f.name));
+
+        if (realFriends.length > 0) {
           setLocalBackupData({
-            friends: candidateFriends,
+            friends: realFriends,
             events: candidateEvents,
             sourceName: source,
           });
@@ -369,8 +345,12 @@ export const FriendCalendar: React.FC = () => {
   const saveToLocalVault = (friendsToSave: Friend[], eventsToSave: CalendarEvent[]) => {
     if (typeof window === 'undefined') return;
     try {
-      if (friendsToSave && friendsToSave.length > 0) {
-        localStorage.setItem('flypromo_safe_friends_vault', JSON.stringify(friendsToSave));
+      // 혹시라도 예시 데이터가 섞여 들어가지 않도록 필터링
+      const cleanFriends = (friendsToSave || []).filter(
+        (f) => !['민수', '지은', '태호', '수빈', '동현'].includes(f.name)
+      );
+      if (cleanFriends.length > 0) {
+        localStorage.setItem('flypromo_safe_friends_vault', JSON.stringify(cleanFriends));
         localStorage.setItem('flypromo_safe_events_vault', JSON.stringify(eventsToSave));
         localStorage.setItem('flypromo_safe_vault_time', new Date().toISOString());
       }
@@ -446,10 +426,11 @@ export const FriendCalendar: React.FC = () => {
             saveToLocalVault(loadedFriends, loadedEvents);
           }
         } else {
-          // 최초 실행 시 기본 데이터 생성
+          // 최초 실행 시에도 가상 예시 데이터 없이 완전히 비어 있는 상태로 생성
           setDoc(docRef, {
-            friends: DEFAULT_FRIENDS,
-            events: INITIAL_EVENTS,
+            friends: [],
+            events: [],
+            backupHistory: [],
             updatedAt: new Date().toISOString(),
           }).catch((err) => console.error('Failed to init Firestore document:', err));
         }
