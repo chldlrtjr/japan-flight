@@ -1368,7 +1368,7 @@ export const FriendCalendar: React.FC = () => {
           }`}
         >
           <span>🤝</span>
-          <span>약속/미정</span>
+          <span>약속</span>
           <span
             className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
               activeFilterFriendId === 'UNASSIGNED' ? 'bg-indigo-700 text-white' : 'bg-indigo-200 text-indigo-900'
@@ -1433,7 +1433,7 @@ export const FriendCalendar: React.FC = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">참여자 미정 약속 (오픈 일정) 필터링</span>
+                    <span className="text-xs font-bold text-slate-900">약속 (오픈 일정) 필터링</span>
                     <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[11px] font-extrabold rounded-full">
                       총 {events.filter((e) => getEventFriendIds(e).length === 0).length}건
                     </span>
