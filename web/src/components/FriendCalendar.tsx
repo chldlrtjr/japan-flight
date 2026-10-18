@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -248,6 +248,8 @@ export const FriendCalendar: React.FC = () => {
 
   // 친구 인적사항 및 생년월일 프로필 폼 상태
   const [editingFriendId, setEditingFriendId] = useState<string | null>(null);
+  const [isProfileFormOpen, setIsProfileFormOpen] = useState(false); // 수정/등록 버튼 클릭 시 최상단에 표시
+  const profileModalBodyRef = useRef<HTMLDivElement>(null);
   const [profileName, setProfileName] = useState('');
   const [profileEnglishName, setProfileEnglishName] = useState('');
   const [profileBirthDate, setProfileBirthDate] = useState('');
@@ -477,7 +479,7 @@ export const FriendCalendar: React.FC = () => {
     setProfileColor('#3b82f6');
   };
 
-  // 친구 프로필 수정 모드로 폼에 채우기
+  // 친구 프로필 수정 모드로 폼에 채우기 및 상단으로 스크롤 이동
   const startEditProfile = (friend: Friend) => {
     setEditingFriendId(friend.id);
     setProfileName(friend.name);
@@ -486,6 +488,11 @@ export const FriendCalendar: React.FC = () => {
     setProfileGender(friend.gender || '');
     setProfileprofileNumber(friend.profileNumber || '');
     setProfileColor(friend.color || '#3b82f6');
+    setIsProfileFormOpen(true);
+    // 수정 폼이 위치한 최상단으로 부드럽게 스크롤
+    setTimeout(() => {
+      profileModalBodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 50);
   };
 
   // 친구 프로필 저장 (추가 또는 수정) -> Firestore 실시간 동기화
@@ -527,6 +534,7 @@ export const FriendCalendar: React.FC = () => {
 
     setFriends(updatedFriends);
     resetProfileForm();
+    setIsProfileFormOpen(false); // 저장 완료 후 폼 닫기
     await syncToFirestore(updatedFriends, events);
   };
 
@@ -1396,142 +1404,172 @@ export const FriendCalendar: React.FC = () => {
                   </span>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={copyAllFriendsInfo}
-                className="flex items-center gap-1.5 px-3 py-1 bg-white hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
-                title="항공권 예매창에 붙여넣을 수 있도록 전체 친구 정보를 복사합니다"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                <span>전체 친구 정보 텍스트 복사</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isProfileFormOpen && !editingFriendId) {
+                      setIsProfileFormOpen(false);
+                    } else {
+                      resetProfileForm();
+                      setIsProfileFormOpen(true);
+                      setTimeout(() => {
+                        profileModalBodyRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                      }, 50);
+                    }
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95 ${
+                    isProfileFormOpen && !editingFriendId
+                      ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20'
+                  }`}
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isProfileFormOpen && !editingFriendId ? '등록창 닫기' : '새 친구 추가'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={copyAllFriendsInfo}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                  title="항공권 예매창에 붙여넣을 수 있도록 전체 친구 정보를 복사합니다"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">전체 정보 복사</span>
+                </button>
+              </div>
             </div>
 
             {/* Modal Body: Scrollable */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1">
-              {/* Profile Edit / Add Form */}
-              <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 sm:p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wide">
-                    <span>{editingFriendId ? '✏️ 친구 정보 수정' : '➕ 새 친구 정보 등록'}</span>
-                  </h4>
-                  {editingFriendId && (
+            <div ref={profileModalBodyRef} className="p-6 overflow-y-auto space-y-6 flex-1 scroll-smooth">
+              {/* Profile Edit / Add Form (수정 버튼이나 새 친구 추가 버튼을 누르면 최상단에 나타남!) */}
+              {isProfileFormOpen && (
+                <div className="bg-gradient-to-br from-indigo-50/70 to-blue-50/70 border-2 border-indigo-200 rounded-2xl p-4 sm:p-5 shadow-sm animate-in slide-in-from-top-3 fade-in duration-150">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-xs font-bold text-indigo-950 flex items-center gap-1.5 uppercase tracking-wide">
+                      <span>{editingFriendId ? `✏️ '${profileName}' 정보 수정` : '➕ 새 친구 정보 등록'}</span>
+                    </h4>
                     <button
                       type="button"
-                      onClick={resetProfileForm}
-                      className="text-xs text-slate-500 hover:text-slate-700 underline"
+                      onClick={() => {
+                        resetProfileForm();
+                        setIsProfileFormOpen(false);
+                      }}
+                      className="text-xs text-slate-400 hover:text-slate-600 p-1 hover:bg-white/80 rounded-lg transition flex items-center gap-1"
+                      title="닫기"
                     >
-                      새 등록으로 전환
+                      <X className="w-4 h-4" />
+                      <span className="text-[11px]">닫기</span>
                     </button>
-                  )}
-                </div>
+                  </div>
 
-                <form onSubmit={handleSaveFriendProfile} className="space-y-3.5 text-xs">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* 한글 이름 */}
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">
-                        한글 이름 <span className="text-rose-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={profileName}
-                        onChange={(e) => setProfileName(e.target.value)}
-                        placeholder="예: 민수"
-                        required
-                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
-                      />
-                    </div>
-
-                    {/* 인적사항 영문명 */}
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
-                        <span>인적사항 영문명 (profile Name)</span>
-                        <span className="text-[10px] text-indigo-600 font-normal">자동 대문자 변환</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={profileEnglishName}
-                        onChange={(e) => setProfileEnglishName(e.target.value.toUpperCase())}
-                        placeholder="예: KIM MINSU"
-                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800"
-                      />
-                    </div>
-
-                    {/* 생년월일 */}
-                    <div>
-                      <label className="block font-bold text-slate-700 mb-1">생년월일</label>
-                      <input
-                        type="date"
-                        value={profileBirthDate}
-                        onChange={(e) => setProfileBirthDate(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
-                      />
-                    </div>
-
-                    {/* 성별 & 라벨 색상 */}
-                    <div className="grid grid-cols-2 gap-2">
+                  <form onSubmit={handleSaveFriendProfile} className="space-y-3.5 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* 한글 이름 */}
                       <div>
-                        <label className="block font-bold text-slate-700 mb-1">성별</label>
-                        <select
-                          value={profileGender}
-                          onChange={(e) => setProfileGender(e.target.value as any)}
+                        <label className="block font-bold text-slate-700 mb-1">
+                          한글 이름 <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={profileName}
+                          onChange={(e) => setProfileName(e.target.value)}
+                          placeholder="예: 민수"
+                          required
                           className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
-                        >
-                          <option value="">선택안함</option>
-                          <option value="M">남성 (M)</option>
-                          <option value="F">여성 (F)</option>
-                        </select>
+                        />
                       </div>
 
+                      {/* 인적사항 영문명 */}
                       <div>
-                        <label className="block font-bold text-slate-700 mb-1">라벨 색상</label>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="color"
-                            value={profileColor}
-                            onChange={(e) => setProfileColor(e.target.value)}
-                            className="w-full h-9 p-0.5 border border-slate-200 rounded-xl cursor-pointer bg-white"
-                          />
+                        <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                          <span>인적사항 영문명 (profile Name)</span>
+                          <span className="text-[10px] text-indigo-600 font-normal">자동 대문자 변환</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={profileEnglishName}
+                          onChange={(e) => setProfileEnglishName(e.target.value.toUpperCase())}
+                          placeholder="예: KIM MINSU"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800"
+                        />
+                      </div>
+
+                      {/* 생년월일 */}
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">생년월일</label>
+                        <input
+                          type="date"
+                          value={profileBirthDate}
+                          onChange={(e) => setProfileBirthDate(e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+                        />
+                      </div>
+
+                      {/* 성별 & 라벨 색상 */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">성별</label>
+                          <select
+                            value={profileGender}
+                            onChange={(e) => setProfileGender(e.target.value as any)}
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+                          >
+                            <option value="">선택안함</option>
+                            <option value="M">남성 (M)</option>
+                            <option value="F">여성 (F)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">라벨 색상</label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="color"
+                              value={profileColor}
+                              onChange={(e) => setProfileColor(e.target.value)}
+                              className="w-full h-9 p-0.5 border border-slate-200 rounded-xl cursor-pointer bg-white"
+                            />
+                          </div>
                         </div>
                       </div>
+
+                      {/* 인적사항번호 (선택) */}
+                      <div className="sm:col-span-2">
+                        <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                          <span>인적사항번호 (선택사항)</span>
+                          <span className="text-[10px] text-slate-400">발권 시 빠른 복사 지원</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={profileprofileNumber}
+                          onChange={(e) => setProfileprofileNumber(e.target.value.toUpperCase())}
+                          placeholder="예: M12345678"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800"
+                        />
+                      </div>
                     </div>
 
-                    {/* 인적사항번호 (선택) */}
-                    <div className="sm:col-span-2">
-                      <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
-                        <span>인적사항번호 (선택사항)</span>
-                        <span className="text-[10px] text-slate-400">발권 시 빠른 복사 지원</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={profileprofileNumber}
-                        onChange={(e) => setProfileprofileNumber(e.target.value.toUpperCase())}
-                        placeholder="예: M12345678"
-                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-2">
-                    {editingFriendId && (
+                    <div className="flex items-center justify-end gap-2 pt-2">
                       <button
                         type="button"
-                        onClick={resetProfileForm}
+                        onClick={() => {
+                          resetProfileForm();
+                          setIsProfileFormOpen(false);
+                        }}
                         className="px-3.5 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-white transition text-xs"
                       >
-                        수정 취소
+                        취소
                       </button>
-                    )}
-                    <button
-                      type="submit"
-                      className="px-5 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-sm transition text-xs flex items-center gap-1.5"
-                    >
-                      <span>{editingFriendId ? '수정 완료' : '친구 등록'}</span>
-                    </button>
-                  </div>
-                </form>
-              </div>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-sm transition text-xs flex items-center gap-1.5"
+                      >
+                        <span>{editingFriendId ? '수정 완료' : '친구 등록'}</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
 
               {/* Friends List with Quick Copy */}
               <div>
