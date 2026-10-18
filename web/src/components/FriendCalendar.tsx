@@ -250,6 +250,27 @@ export const FriendCalendar: React.FC = () => {
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
+  // 🔐 관리자 모드 상태 (본인만 백업/복원 버튼을 볼 수 있도록 제어)
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      // 로컬 개발 환경에서는 항상 관리자 권한
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return true;
+      }
+      // 로컬스토리지에 저장된 관리자 인증 여부
+      if (localStorage.getItem('flypromo_admin_mode') === 'true') {
+        return true;
+      }
+      // URL 파라미터(?admin=1 또는 ?admin=true) 확인
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1') {
+        localStorage.setItem('flypromo_admin_mode', 'true');
+        return true;
+      }
+    }
+    return false;
+  });
+
   // Modals
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isFriendModalOpen, setIsFriendModalOpen] = useState(false);
@@ -1052,27 +1073,59 @@ export const FriendCalendar: React.FC = () => {
             <span className="sm:hidden">인적사항·생년월일</span>
           </button>
 
-          {/* 🛡️ 데이터 안전 보관함 및 복원 버튼 */}
+          {/* 🛡️ 데이터 안전 보관함 및 복원 버튼 (관리자/본인 전용) */}
+          {isAdmin && (
+            <button
+              onClick={() => setIsHistoryModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+              title="친구 정보 백업 다운로드 및 과거 변경 이력 복원 (관리자 전용)"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">안전 보관함 & 이력 복원</span>
+              <span className="sm:hidden">백업·복원</span>
+              {backupHistory.length > 0 && (
+                <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                  {backupHistory.length}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* Real-time Indicator Pill & 관리자 인증 트리거 */}
           <button
-            onClick={() => setIsHistoryModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
-            title="친구 정보 백업 다운로드 및 과거 변경 이력 복원"
+            type="button"
+            onClick={() => {
+              if (!isAdmin) {
+                const pin = prompt('관리자 비밀번호(PIN)를 입력하세요:');
+                if (pin === '7777' || pin === '1234' || pin === '0603') {
+                  setIsAdmin(true);
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('flypromo_admin_mode', 'true');
+                  }
+                  alert('관리자 모드가 활성화되었습니다. 안전 보관함 & 이력 복원 메뉴가 표시됩니다.');
+                } else if (pin !== null) {
+                  alert('비밀번호가 일치하지 않습니다.');
+                }
+              } else {
+                if (confirm('현재 관리자 모드입니다. 일반 모드(친구 화면 보기)로 전환하시겠습니까?')) {
+                  setIsAdmin(false);
+                  if (typeof window !== 'undefined') {
+                    localStorage.removeItem('flypromo_admin_mode');
+                  }
+                }
+              }
+            }}
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100/70 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-semibold transition cursor-pointer"
+            title={isAdmin ? "관리자 모드 활성 중 (클릭 시 일반 모드로 전환)" : "실시간 자동 동기화 중 (클릭 시 관리자 로그인)"}
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="hidden sm:inline">안전 보관함 & 이력 복원</span>
-            <span className="sm:hidden">백업·복원</span>
-            {backupHistory.length > 0 && (
-              <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-                {backupHistory.length}
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>실시간 자동 동기화</span>
+            {isAdmin && (
+              <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.2 rounded font-bold">
+                관리자
               </span>
             )}
           </button>
-
-          {/* Real-time Indicator Pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>실시간 자동 동기화</span>
-          </div>
         </div>
 
         {/* Action Controls */}
@@ -1684,33 +1737,37 @@ export const FriendCalendar: React.FC = () => {
                   <Copy className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">전체 정보 복사</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={exportFriendsAsJsonFile}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
-                  title="친구 전체 정보를 내 PC/스마트폰에 영구 보관용 JSON 파일로 다운로드합니다"
-                >
-                  <Download className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="hidden sm:inline">백업 저장</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => jsonFileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
-                  title="다운로드해둔 백업 JSON 파일에서 친구 정보를 복원합니다"
-                >
-                  <Upload className="w-3.5 h-3.5 text-amber-600" />
-                  <span className="hidden sm:inline">파일 복원</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsHistoryModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
-                  title="과거 저장 시점 목록을 확인하고 원하는 시점으로 복원합니다"
-                >
-                  <History className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>이력 ({backupHistory.length})</span>
-                </button>
+                {isAdmin && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={exportFriendsAsJsonFile}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                      title="친구 전체 정보를 내 PC/스마트폰에 영구 보관용 JSON 파일로 다운로드합니다 (관리자 전용)"
+                    >
+                      <Download className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="hidden sm:inline">백업 저장</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => jsonFileInputRef.current?.click()}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                      title="다운로드해둔 백업 JSON 파일에서 친구 정보를 복원합니다 (관리자 전용)"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-amber-600" />
+                      <span className="hidden sm:inline">파일 복원</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsHistoryModalOpen(true)}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                      title="과거 저장 시점 목록을 확인하고 원하는 시점으로 복원합니다 (관리자 전용)"
+                    >
+                      <History className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>이력 ({backupHistory.length})</span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
