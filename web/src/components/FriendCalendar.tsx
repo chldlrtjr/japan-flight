@@ -423,6 +423,9 @@ export const FriendCalendar: React.FC = () => {
               id: f.id,
               name: f.name,
               color: f.color || '#3b82f6',
+              bank: f.bank || '',
+              accountNumber: f.accountNumber || '',
+              accountHolder: f.accountHolder || '',
               englishName: f.englishName || '',
               birthDate: f.birthDate || '',
               gender: f.gender || '',
@@ -1534,26 +1537,7 @@ export const FriendCalendar: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                    {curFriend.accountNumber && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          copyToClipboard(
-                            `${curFriend.bank ? curFriend.bank + ' ' : ''}${curFriend.accountNumber}`,
-                            `top_acc_${curFriend.id}`,
-                            `${curFriend.name} 님의 계좌번호가`
-                          )
-                        }
-                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-2xs active:scale-95"
-                        title={`${curFriend.bank || ''} ${curFriend.accountNumber} 복사`}
-                      >
-                        <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>
-                          {copiedId === `top_acc_${curFriend.id}` ? '✓ 계좌 복사됨!' : '계좌 복사'}
-                        </span>
-                      </button>
-                    )}
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() => {

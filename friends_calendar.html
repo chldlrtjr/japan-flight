@@ -79,6 +79,30 @@
   <!-- 메인 컨테이너 -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col gap-6">
 
+    <!-- 💳 친구 정산 계좌 상시 확인 배너 (A안) -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-xl relative overflow-hidden border border-slate-800">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-500/20 shrink-0">
+            <i class="fa-solid fa-credit-card"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              💳 친구 정산 계좌 <span class="text-emerald-400">상시 확인</span>
+            </h3>
+            <p class="text-xs text-slate-300">카드를 클릭하면 계좌번호가 즉시 복사됩니다. (토스/카카오뱅크로 바로 송금)</p>
+          </div>
+        </div>
+        <div id="accountCopyToast" class="text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-500/50 px-3 py-1 rounded-xl hidden items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-check text-emerald-400"></i>
+          <span id="accountCopyToastText">복사되었습니다!</span>
+        </div>
+      </div>
+      <div id="quickAccountGrid" class="pt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+        <!-- JS로 렌더링 -->
+      </div>
+    </div>
+
     <!-- 상단 컨트롤 바 (월 이동 / 친구 필터 / 검색) -->
     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
       
@@ -498,6 +522,7 @@
       renderCalendar();
       renderFriendFilters();
       renderFriendSelectOptions();
+      renderQuickAccountBanner();
       setupEventListeners();
     });
 
@@ -660,6 +685,7 @@
         friend.holder = document.getElementById('inputAccHolder').value.trim();
         saveState();
         renderFriendFilters();
+        renderQuickAccountBanner();
         openAccountModal(currentAccFriendId);
       });
     }
@@ -843,24 +869,19 @@
 
       // 각 친구 버튼
       state.friends.forEach(f => {
+        const btn = document.createElement('button');
         const isActive = state.activeFilterFriendId === f.id;
         const fCount = state.events.filter(e => e.friendId === f.id || (e.friendIds && e.friendIds.includes(f.id))).length;
-
-        const chipWrap = document.createElement('div');
-        chipWrap.className = 'inline-flex items-center rounded-full transition shadow-2xs';
-
-        const btn = document.createElement('button');
-        btn.className = `px-2.5 py-1 text-xs font-semibold rounded-l-full transition flex items-center gap-1.5 ${
-          isActive ? 'text-white' : 'hover:opacity-85'
+        btn.className = `px-2.5 py-1 text-xs font-semibold rounded-full transition flex items-center gap-1.5 ${
+          isActive ? 'shadow-xs text-white' : 'hover:opacity-85'
         }`;
 
         if (isActive) {
-          chipWrap.style.backgroundColor = f.color;
           btn.style.backgroundColor = f.color;
         } else {
-          chipWrap.style.backgroundColor = f.color + '20';
-          chipWrap.style.border = `1px solid ${f.color}50`;
+          btn.style.backgroundColor = f.color + '20';
           btn.style.color = '#334155';
+          btn.style.border = `1px solid ${f.color}50`;
         }
 
         btn.innerHTML = `
@@ -875,22 +896,93 @@
           renderCalendar();
         });
 
-        // 💳 계좌 확인 버튼 (B안)
-        const accBtn = document.createElement('button');
-        accBtn.type = 'button';
-        accBtn.className = `px-2 py-1 text-xs rounded-r-full transition flex items-center ${
-          isActive ? 'text-white/80 hover:text-white hover:bg-black/15' : 'text-slate-500 hover:text-emerald-700 hover:bg-emerald-100/50'
-        }`;
-        accBtn.title = `${f.name}의 계좌번호 확인 및 복사`;
-        accBtn.innerHTML = '<i class="fa-solid fa-credit-card text-[10px]"></i>';
-        accBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          openAccountModal(f.id);
-        });
+        container.appendChild(btn);
+      });
+    }
 
-        chipWrap.appendChild(btn);
-        chipWrap.appendChild(accBtn);
-        container.appendChild(chipWrap);
+    // 💳 상단 친구 정산 계좌 배너 렌더링 (A안 핵심)
+    function renderQuickAccountBanner() {
+      const grid = document.getElementById('quickAccountGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      if (state.friends.length === 0) {
+        grid.innerHTML = '<p class="text-xs text-slate-400 py-2 col-span-full text-center">등록된 친구가 없습니다.</p>';
+        return;
+      }
+
+      state.friends.forEach(f => {
+        const card = document.createElement('div');
+        const hasAcc = f.account && f.account.trim() !== '';
+
+        card.className = `p-3 rounded-xl border transition-all text-left flex flex-col justify-between gap-2 ${
+          hasAcc 
+            ? 'bg-white/10 hover:bg-white/15 border-white/10 hover:border-white/25 cursor-pointer active:scale-95'
+            : 'bg-white/5 border-dashed border-white/10'
+        }`;
+
+        if (hasAcc) {
+          card.innerHTML = `
+            <div class="flex items-center justify-between gap-1.5">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${f.color}"></span>
+                <span class="font-extrabold text-sm text-white truncate">${f.name}</span>
+              </div>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
+                ${f.bank || '은행'}
+              </span>
+            </div>
+            <div class="font-mono text-xs font-semibold text-slate-200 tracking-tight truncate select-all">
+              ${f.account}
+            </div>
+            <div class="flex items-center justify-between text-[11px] pt-1 border-t border-white/10 text-slate-400">
+              <span class="truncate">${f.holder ? `예금주: ${f.holder}` : ''}</span>
+              <span class="text-emerald-400 font-bold flex items-center gap-1 group-hover:underline">
+                <i class="fa-regular fa-copy text-[10px]"></i>
+                <span class="btn-copy-label">복사</span>
+              </span>
+            </div>
+          `;
+
+          card.addEventListener('click', () => {
+            const copyText = `${f.bank ? f.bank + ' ' : ''}${f.account}`;
+            navigator.clipboard.writeText(copyText).then(() => {
+              const toast = document.getElementById('accountCopyToast');
+              const toastText = document.getElementById('accountCopyToastText');
+              if (toast && toastText) {
+                toastText.textContent = `${f.name} 계좌 (${copyText}) 복사 완료!`;
+                toast.classList.remove('hidden');
+                toast.classList.add('flex');
+                setTimeout(() => {
+                  toast.classList.add('hidden');
+                  toast.classList.remove('flex');
+                }, 2500);
+              }
+              const label = card.querySelector('.btn-copy-label');
+              if (label) {
+                label.textContent = '완료!';
+                setTimeout(() => { label.textContent = '복사'; }, 1500);
+              }
+            });
+          });
+        } else {
+          card.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full shrink-0 opacity-50" style="background-color: ${f.color}"></span>
+              <span class="font-bold text-sm text-slate-400">${f.name}</span>
+            </div>
+            <span class="text-xs text-slate-500">계좌 미등록</span>
+            <button type="button" class="text-[11px] text-indigo-300 hover:text-white font-medium text-left">
+              + 계좌 등록하기
+            </button>
+          `;
+          card.querySelector('button').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openAccountModal(f.id);
+          });
+        }
+
+        grid.appendChild(card);
       });
     }
 

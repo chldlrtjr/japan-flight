@@ -12,6 +12,7 @@ import { filterPromotions, filterNewsArticles, calculatePromoStats, isPromoExpir
 import { Promotion, CrawlStats, NewsArticle, GroupedNews } from '@/types';
 import { BookmarkX, PlaneTakeoff, Newspaper, RefreshCw, Search, X, Calendar } from 'lucide-react';
 import { FriendCalendar } from '@/components/FriendCalendar';
+import { FriendAccountBanner } from '@/components/FriendAccountBanner';
 
 export default function Home() {
   const [rawPromotions, setRawPromotions] = useState<Promotion[]>([]);
@@ -229,14 +230,18 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
-        {/* Stats & Header Hero Banner */}
-        <StatsBanner
-          stats={stats}
-          selectedAirline={selectedAirline}
-          onSelectAirline={setSelectedAirline}
-          selectedRegion={selectedRegion}
-          onSelectRegion={setSelectedRegion}
-        />
+        {/* Header Hero Banner: 캘린더 탭일 때는 친구 정산 계좌 퀵뷰 배너, 그 외에는 항공권 특가 통계 배너 */}
+        {isMounted && activeTab === 'calendar' ? (
+          <FriendAccountBanner />
+        ) : (
+          <StatsBanner
+            stats={stats}
+            selectedAirline={selectedAirline}
+            onSelectAirline={setSelectedAirline}
+            selectedRegion={selectedRegion}
+            onSelectRegion={setSelectedRegion}
+          />
+        )}
 
         {/* Tab Switcher: Airline Website Events vs Flight News */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 mb-6 border-b border-slate-200 pb-3">
