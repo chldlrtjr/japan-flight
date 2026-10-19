@@ -1508,41 +1508,7 @@ export const FriendCalendar: React.FC = () => {
                 </button>
               )}
 
-              {/* Real-time Indicator Pill & 관리자 인증 트리거 */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (!isAdmin) {
-                    const pin = prompt('관리자 비밀번호(PIN)를 입력하세요:');
-                    if (pin === '7777' || pin === '1234' || pin === '0603') {
-                      setIsAdmin(true);
-                      if (typeof window !== 'undefined') {
-                        localStorage.setItem('flypromo_admin_mode', 'true');
-                      }
-                      alert('관리자 모드가 활성화되었습니다. 친구 관리 및 안전 보관함 메뉴가 표시됩니다.');
-                    } else if (pin !== null) {
-                      alert('비밀번호가 일치하지 않습니다.');
-                    }
-                  } else {
-                    if (confirm('현재 관리자 모드입니다. 일반 모드(친구 화면 보기)로 전환하시겠습니까?')) {
-                      setIsAdmin(false);
-                      if (typeof window !== 'undefined') {
-                        localStorage.removeItem('flypromo_admin_mode');
-                      }
-                    }
-                  }
-                }}
-                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100/70 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-semibold transition cursor-pointer"
-                title={isAdmin ? "관리자 모드 활성 중 (클릭 시 일반 모드로 전환)" : "실시간 자동 동기화 중 (클릭 시 관리자 로그인)"}
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>실시간 자동 동기화</span>
-                {isAdmin && (
-                  <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.2 rounded font-bold">
-                    관리자
-                  </span>
-                )}
-              </button>
+
             </div>
 
             {/* Search Input */}
