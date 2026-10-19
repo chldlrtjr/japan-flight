@@ -231,18 +231,7 @@ export const FriendCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   
   // 🛡️ [영구 안전 금고] 로컬스토리지에 저장된 실제 친구 정보가 있으면 즉시 우선 복원!
-  const [friends, setFriends] = useState<Friend[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const cached = localStorage.getItem('flypromo_safe_friends_vault');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      } catch (e) {}
-    }
-    return [];
-  });
+  const [friends, setFriends] = useState<Friend[]>([]);
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -256,25 +245,7 @@ export const FriendCalendar: React.FC = () => {
   const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
   // 🔐 관리자 모드 상태 (본인만 백업/복원 버튼을 볼 수 있도록 제어)
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      // 로컬 개발 환경에서는 항상 관리자 권한
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return true;
-      }
-      // 로컬스토리지에 저장된 관리자 인증 여부
-      if (localStorage.getItem('flypromo_admin_mode') === 'true') {
-        return true;
-      }
-      // URL 파라미터(?admin=1 또는 ?admin=true) 확인
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1') {
-        localStorage.setItem('flypromo_admin_mode', 'true');
-        return true;
-      }
-    }
-    return false;
-  });
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   // Modals
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
@@ -327,6 +298,37 @@ export const FriendCalendar: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
+      // 0. 관리자 모드 확인 (로컬 환경, 로컬스토리지, URL 파라미터)
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        setIsAdmin(true);
+      } else if (localStorage.getItem('flypromo_admin_mode') === 'true') {
+        setIsAdmin(true);
+      } else {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === 'true' || urlParams.get('admin') === '1') {
+          localStorage.setItem('flypromo_admin_mode', 'true');
+          setIsAdmin(true);
+        }
+      }
+
+      // 0-1. 영구 안전 금고 캐시 우선 로드
+      const cached = localStorage.getItem('flypromo_safe_friends_vault');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setFriends(parsed);
+        }
+      }
+
+      // 0-2. 구버전 로컬스토리지 예시 데이터(민수, 지은 등) 영구 삭제
+      const sampleNames = ['민수', '지은', '태호', '수빈', '동현'];
+      ['fc_friends', 'fc_events', 'flypromo_calendar_friends', 'flypromo_calendar_events'].forEach((key) => {
+        const item = localStorage.getItem(key);
+        if (item && sampleNames.some((name) => item.includes(name))) {
+          localStorage.removeItem(key);
+        }
+      });
+
       // 1. web 서비스 이전 로컬스토리지 검사
       const flyFriends = localStorage.getItem('flypromo_calendar_friends');
       const flyEvents = localStorage.getItem('flypromo_calendar_events');
@@ -418,36 +420,42 @@ export const FriendCalendar: React.FC = () => {
           let loadedFriends: Friend[] = [];
           let loadedEvents: CalendarEvent[] = [];
 
+          const sampleNames = ['민수', '지은', '태호', '수빈', '동현'];
           if (data.friends && Array.isArray(data.friends)) {
-            loadedFriends = data.friends.map((f: any) => ({
-              id: f.id,
-              name: f.name,
-              color: f.color || '#3b82f6',
-              bank: f.bank || '',
-              accountNumber: f.accountNumber || '',
-              accountHolder: f.accountHolder || '',
-              englishName: f.englishName || '',
-              birthDate: f.birthDate || '',
-              gender: f.gender || '',
-              profileNumber: f.profileNumber || '',
-              profileExpiry: f.profileExpiry || '',
-              memo: f.memo || '',
-            }));
+            loadedFriends = data.friends
+              .filter((f: any) => !sampleNames.includes(f.name))
+              .map((f: any) => ({
+                id: f.id,
+                name: f.name,
+                color: f.color || '#3b82f6',
+                bank: f.bank || '',
+                accountNumber: f.accountNumber || '',
+                accountHolder: f.accountHolder || '',
+                englishName: f.englishName || '',
+                birthDate: f.birthDate || '',
+                gender: f.gender || '',
+                profileNumber: f.profileNumber || '',
+                profileExpiry: f.profileExpiry || '',
+                memo: f.memo || '',
+              }));
             setFriends(loadedFriends);
           }
 
           if (data.events && Array.isArray(data.events)) {
-            // 과거 데이터(date 단일 필드) 호환성 보정
-            loadedEvents = data.events.map((ev: any) => ({
-              id: ev.id,
-              friendId: ev.friendId,
-              title: ev.title,
-              startDate: ev.startDate || ev.date || getFormattedDate(new Date()),
-              endDate: ev.endDate || ev.startDate || ev.date || getFormattedDate(new Date()),
-              time: ev.time || '',
-              location: ev.location || '',
-              memo: ev.memo || '',
-            }));
+            // 과거 데이터(date 단일 필드) 호환성 보정 및 예시 일정 제거
+            const sampleKeywords = ['민수', '지은', '태호', '수빈', '동현', '오사카 특가 여행 계획 회의', '후쿠오카 주말 특가', '도쿄 시부야 모임'];
+            loadedEvents = data.events
+              .filter((ev: any) => !sampleKeywords.some((k) => (ev.title || '').includes(k)))
+              .map((ev: any) => ({
+                id: ev.id,
+                friendId: ev.friendId,
+                title: ev.title,
+                startDate: ev.startDate || ev.date || getFormattedDate(new Date()),
+                endDate: ev.endDate || ev.startDate || ev.date || getFormattedDate(new Date()),
+                time: ev.time || '',
+                location: ev.location || '',
+                memo: ev.memo || '',
+              }));
             setEvents(loadedEvents);
           }
 
@@ -1307,7 +1315,7 @@ export const FriendCalendar: React.FC = () => {
                   if (typeof window !== 'undefined') {
                     localStorage.setItem('flypromo_admin_mode', 'true');
                   }
-                  alert('관리자 모드가 활성화되었습니다. 안전 보관함 & 이력 복원 메뉴가 표시됩니다.');
+                  alert('관리자 모드가 활성화되었습니다. 친구 관리 및 안전 보관함 메뉴가 표시됩니다.');
                 } else if (pin !== null) {
                   alert('비밀번호가 일치하지 않습니다.');
                 }
@@ -1356,14 +1364,16 @@ export const FriendCalendar: React.FC = () => {
             <span>새 일정 등록</span>
           </button>
 
-          {/* Manage Friends */}
-          <button
-            onClick={() => setIsFriendModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs sm:text-sm font-semibold rounded-xl transition"
-          >
-            <Users className="w-4 h-4 text-slate-500" />
-            <span>친구 관리</span>
-          </button>
+          {/* Manage Friends (관리자 전용) */}
+          {isAdmin && (
+            <button
+              onClick={() => setIsFriendModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs sm:text-sm font-semibold rounded-xl transition"
+            >
+              <Users className="w-4 h-4 text-slate-500" />
+              <span>친구 관리</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -1783,13 +1793,15 @@ export const FriendCalendar: React.FC = () => {
                         {formFriendIds.length === friends.length ? '모두 해제' : '전체 선택'}
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => setIsFriendModalOpen(true)}
-                      className="text-[11px] text-slate-500 hover:text-slate-800 font-semibold transition"
-                    >
-                      + 친구 관리
-                    </button>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => setIsFriendModalOpen(true)}
+                        className="text-[11px] text-slate-500 hover:text-slate-800 font-semibold transition"
+                      >
+                        + 친구 관리
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -1952,8 +1964,8 @@ export const FriendCalendar: React.FC = () => {
         </div>
       )}
 
-      {/* 2. Friend Management Modal */}
-      {isFriendModalOpen && (
+      {/* 2. Friend Management Modal (관리자 전용) */}
+      {isAdmin && isFriendModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
@@ -2173,16 +2185,18 @@ export const FriendCalendar: React.FC = () => {
                             <span>+ {f.name} 참여</span>
                           </button>
                         ))}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsViewModalOpen(false);
-                            setIsFriendModalOpen(true);
-                          }}
-                          className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-medium transition"
-                        >
-                          <span>+ 새 친구 등록</span>
-                        </button>
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsViewModalOpen(false);
+                              setIsFriendModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-medium transition"
+                          >
+                            <span>+ 새 친구 등록</span>
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

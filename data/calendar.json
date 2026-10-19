@@ -1,39 +1,5 @@
 {
-  "updatedAt": "2026-10-18T19:00:00Z",
-  "friends": [
-    { "id": "f_1", "name": "민수", "color": "#3b82f6" },
-    { "id": "f_2", "name": "지은", "color": "#ec4899" },
-    { "id": "f_3", "name": "태호", "color": "#10b981" },
-    { "id": "f_4", "name": "수빈", "color": "#f59e0b" },
-    { "id": "f_5", "name": "동현", "color": "#8b5cf6" }
-  ],
-  "events": [
-    {
-      "id": "ev_shared_1",
-      "friendId": "f_1",
-      "title": "민수와 오사카 특가 여행 계획 회의",
-      "date": "2026-10-18",
-      "time": "19:00",
-      "location": "강남역 카페",
-      "memo": "항공권 예매 및 숙소 리스트 공유"
-    },
-    {
-      "id": "ev_shared_2",
-      "friendId": "f_2",
-      "title": "지은이 후쿠오카 주말 특가 출발",
-      "date": "2026-10-24",
-      "time": "08:30",
-      "location": "인천공항 제1터미널",
-      "memo": "인적사항, e티켓 출력물 확인"
-    },
-    {
-      "id": "ev_shared_3",
-      "friendId": "f_3",
-      "title": "태호와 도쿄 시부야 모임",
-      "date": "2026-10-28",
-      "time": "18:00",
-      "location": "도쿄 시부야 스크램블",
-      "memo": "저녁 예약 확인"
-    }
-  ]
+  "updatedAt": "2026-10-19T00:00:00Z",
+  "friends": [],
+  "events": []
 }

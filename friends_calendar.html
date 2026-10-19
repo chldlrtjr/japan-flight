@@ -425,51 +425,12 @@
 
   <!-- 스크립트 영역 -->
   <script>
-    // 기본 친구 및 색상 팔레트 (계좌 정보 포함)
-    const DEFAULT_FRIENDS = [
-      { id: 'f_1', name: '민수', color: '#3b82f6', bank: '카카오뱅크', account: '3333-01-9876543', holder: '김민수' }, // Blue
-      { id: 'f_2', name: '지은', color: '#ec4899', bank: '신한은행', account: '110-456-789012', holder: '이지은' }, // Pink
-      { id: 'f_3', name: '태호', color: '#10b981', bank: '토스뱅크', account: '1000-1234-5678', holder: '박태호' }, // Emerald
-      { id: 'f_4', name: '수빈', color: '#f59e0b', bank: '국민은행', account: '987654-02-123456', holder: '정수빈' }, // Amber
-      { id: 'f_5', name: '동현', color: '#8b5cf6', bank: '우리은행', account: '1002-345-678901', holder: '강동현' }  // Purple
-    ];
+    // 기본 친구 및 색상 팔레트 (예시 데이터 완전 배제)
+    const DEFAULT_FRIENDS = [];
 
-    // 기본 샘플 일정 생성 (오늘 기준)
+    // 기본 샘플 일정 생성 (예시 데이터 완전 배제)
     function generateSampleEvents() {
-      const today = new Date();
-      const y = today.getFullYear();
-      const m = String(today.getMonth() + 1).padStart(2, '0');
-      const d = String(today.getDate()).padStart(2, '0');
-
-      return [
-        {
-          id: 'ev_' + Date.now() + '_1',
-          friendId: 'f_1',
-          title: '민수 생일 저녁 약속',
-          date: `${y}-${m}-${d}`,
-          time: '18:30',
-          location: '홍대입구역 맛집',
-          memo: '케이크 준비하기!'
-        },
-        {
-          id: 'ev_' + Date.now() + '_2',
-          friendId: 'f_2',
-          title: '지은이와 전시회 관람',
-          date: `${y}-${m}-${String(Math.min(28, today.getDate() + 2)).padStart(2, '0')}`,
-          time: '14:00',
-          location: '예술의전당 한가람미술관',
-          memo: '사전 예매 티켓 확인'
-        },
-        {
-          id: 'ev_' + Date.now() + '_3',
-          friendId: 'f_3',
-          title: '태호와 주말 등산',
-          date: `${y}-${m}-${String(Math.min(28, today.getDate() + 5)).padStart(2, '0')}`,
-          time: '09:00',
-          location: '북한산 백운대 코스',
-          memo: '등산화, 이온음료 챙기기'
-        }
-      ];
+      return [];
     }
 
     // 로컬스토리지 데이터 로드 및 계좌 필드 보완

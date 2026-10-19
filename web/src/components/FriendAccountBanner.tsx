@@ -14,19 +14,35 @@ interface Friend {
   accountHolder?: string;
 }
 
+const SAMPLE_NAMES = ['민수', '지은', '태호', '수빈', '동현'];
+
 export const FriendAccountBanner: React.FC = () => {
+  // 🛡️ 영구 안전 금고에서 실제 친구 목록을 즉시 로드 (예시 데이터는 원천 차단)
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [hasLoaded, setHasLoaded] = useState<boolean>(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // 1. LocalStorage 우선 로드
+    // 0. 구버전 로컬스토리지 예시 데이터(민수, 지은 등) 영구 삭제
     try {
-      const cached = localStorage.getItem('flypromo_calendar_friends') || localStorage.getItem('fc_friends');
+      ['fc_friends', 'fc_events', 'flypromo_calendar_friends', 'flypromo_calendar_events'].forEach((key) => {
+        const item = localStorage.getItem(key);
+        if (item && SAMPLE_NAMES.some((name) => item.includes(name))) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (e) {}
+
+    // 1. LocalStorage 안전 금고 재확인
+    try {
+      const cached = localStorage.getItem('flypromo_safe_friends_vault');
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setFriends(parsed);
+          const realFriends = parsed.filter((f: any) => !SAMPLE_NAMES.includes(f.name));
+          setFriends(realFriends);
+          setHasLoaded(true);
         }
       }
     } catch (e) {
@@ -36,18 +52,26 @@ export const FriendAccountBanner: React.FC = () => {
     // 2. Firestore 실시간 구독
     const docRef = doc(db, 'calendar_data', 'shared');
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      setHasLoaded(true);
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data.friends && Array.isArray(data.friends)) {
-          const list: Friend[] = data.friends.map((f: any) => ({
-            id: f.id,
-            name: f.name,
-            color: f.color || '#3b82f6',
-            bank: f.bank || '',
-            accountNumber: f.accountNumber || '',
-            accountHolder: f.accountHolder || '',
-          }));
+          const list: Friend[] = data.friends
+            .filter((f: any) => !SAMPLE_NAMES.includes(f.name))
+            .map((f: any) => ({
+              id: f.id,
+              name: f.name,
+              color: f.color || '#3b82f6',
+              bank: f.bank || '',
+              accountNumber: f.accountNumber || '',
+              accountHolder: f.accountHolder || '',
+            }));
           setFriends(list);
+          if (list.length > 0) {
+            try {
+              localStorage.setItem('flypromo_safe_friends_vault', JSON.stringify(list));
+            } catch (e) {}
+          }
         }
       }
     });
@@ -121,9 +145,17 @@ export const FriendAccountBanner: React.FC = () => {
       {/* Friends Accounts Grid */}
       <div className="relative z-10 pt-4">
         {friends.length === 0 ? (
-          <div className="p-6 text-center bg-white/5 rounded-xl border border-dashed border-white/10 text-xs text-slate-400">
-            등록된 친구가 없습니다. 아래 캘린더에서 [친구 관리]를 눌러 친구와 계좌를 등록해보세요!
-          </div>
+          !hasLoaded ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-16 bg-white/5 rounded-xl border border-white/5 animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="p-6 text-center bg-white/5 rounded-xl border border-dashed border-white/10 text-xs text-slate-400">
+              등록된 친구가 없습니다.
+            </div>
+          )
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
             {/* 1. 계좌 등록된 친구들 */}
