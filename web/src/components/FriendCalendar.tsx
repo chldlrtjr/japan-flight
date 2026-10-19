@@ -1474,8 +1474,8 @@ export const FriendCalendar: React.FC = () => {
                 title="친구 영문 이름(인적사항명) 및 생년월일 관리"
               >
                 <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
-                <span className="hidden sm:inline">친구 정보 (인적사항명·생년월일)</span>
-                <span className="sm:hidden">인적사항·생년월일</span>
+                <span className="hidden sm:inline">친구 인적사항</span>
+                <span className="sm:hidden">인적사항</span>
               </button>
 
               {/* 💳 친구 정산 계좌 확인 및 원터치 복사 버튼 */}
@@ -2278,7 +2278,7 @@ export const FriendCalendar: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-                    친구 정보 & 인적사항 영문명
+                    친구 인적사항 & 인적사항 정보
                     <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
                       항공권 예약용
                     </span>
@@ -2821,7 +2821,7 @@ export const FriendCalendar: React.FC = () => {
             <div className="relative z-10 p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
               {friends.length === 0 ? (
                 <div className="p-8 text-center bg-white/5 rounded-2xl border border-dashed border-white/10 text-xs text-slate-400">
-                  등록된 친구가 없습니다. 친구 정보 관리에서 친구를 추가해주세요.
+                  등록된 친구가 없습니다. 친구 인적사항 관리에서 친구를 추가해주세요.
                 </div>
               ) : (
                 <>
@@ -2965,7 +2965,7 @@ export const FriendCalendar: React.FC = () => {
                 }}
                 className="text-xs text-indigo-300 hover:text-indigo-200 font-medium underline underline-offset-4 flex items-center gap-1 transition"
               >
-                <span>친구 정보 관리에서 계좌 수정하기 →</span>
+                <span>친구 인적사항 관리에서 계좌 수정하기 →</span>
               </button>
               <button
                 type="button"
