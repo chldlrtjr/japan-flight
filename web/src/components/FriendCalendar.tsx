@@ -1378,7 +1378,14 @@ export const FriendCalendar: React.FC = () => {
       </div>
 
       {/* Friends Filter Chips */}
-      <div className="bg-white rounded-xl px-4 py-3 border border-slate-200 shadow-sm flex items-center gap-2 overflow-x-auto">
+      <div
+        className="bg-white rounded-xl px-4 py-3 border border-slate-200 shadow-sm flex items-center gap-2 overflow-x-auto no-scrollbar"
+        onWheel={(e) => {
+          if (e.deltaY !== 0) {
+            e.currentTarget.scrollLeft += e.deltaY;
+          }
+        }}
+      >
         <span className="text-xs font-bold text-slate-400 uppercase shrink-0 mr-1">친구 필터:</span>
         <button
           onClick={() => setActiveFilterFriendId('ALL')}
