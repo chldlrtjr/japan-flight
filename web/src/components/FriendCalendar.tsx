@@ -1242,142 +1242,7 @@ export const FriendCalendar: React.FC = () => {
         </div>
       )}
 
-      {/* Top Banner: Real-time Sync Status & Controls */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Navigation & Title */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
-          <div className="flex items-center bg-slate-100 rounded-lg p-1 shrink-0">
-            <button
-              onClick={prevMonth}
-              className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600 transition"
-              title="이전달"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={goToday}
-              className="px-3 h-8 text-xs font-semibold rounded-md hover:bg-white text-slate-700 transition"
-            >
-              오늘
-            </button>
-            <button
-              onClick={nextMonth}
-              className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600 transition"
-              title="다음달"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-            {year}년 {month + 1}월
-          </h2>
-
-          {/* 친구 인적사항 정보 / 생년월일 관리 버튼 */}
-          <button
-            onClick={() => {
-              resetProfileForm();
-              setIsFriendProfileModalOpen(true);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 text-indigo-700 border border-indigo-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
-            title="친구 영문 이름(인적사항명) 및 생년월일 관리"
-          >
-            <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
-            <span className="hidden sm:inline">친구 정보 (인적사항명·생년월일)</span>
-            <span className="sm:hidden">인적사항·생년월일</span>
-          </button>
-
-          {/* 🛡️ 데이터 안전 보관함 및 복원 버튼 (관리자/본인 전용) */}
-          {isAdmin && (
-            <button
-              onClick={() => setIsHistoryModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
-              title="친구 정보 백업 다운로드 및 과거 변경 이력 복원 (관리자 전용)"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="hidden sm:inline">안전 보관함 & 이력 복원</span>
-              <span className="sm:hidden">백업·복원</span>
-              {backupHistory.length > 0 && (
-                <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
-                  {backupHistory.length}
-                </span>
-              )}
-            </button>
-          )}
-
-          {/* Real-time Indicator Pill & 관리자 인증 트리거 */}
-          <button
-            type="button"
-            onClick={() => {
-              if (!isAdmin) {
-                const pin = prompt('관리자 비밀번호(PIN)를 입력하세요:');
-                if (pin === '7777' || pin === '1234' || pin === '0603') {
-                  setIsAdmin(true);
-                  if (typeof window !== 'undefined') {
-                    localStorage.setItem('flypromo_admin_mode', 'true');
-                  }
-                  alert('관리자 모드가 활성화되었습니다. 친구 관리 및 안전 보관함 메뉴가 표시됩니다.');
-                } else if (pin !== null) {
-                  alert('비밀번호가 일치하지 않습니다.');
-                }
-              } else {
-                if (confirm('현재 관리자 모드입니다. 일반 모드(친구 화면 보기)로 전환하시겠습니까?')) {
-                  setIsAdmin(false);
-                  if (typeof window !== 'undefined') {
-                    localStorage.removeItem('flypromo_admin_mode');
-                  }
-                }
-              }
-            }}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100/70 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-semibold transition cursor-pointer"
-            title={isAdmin ? "관리자 모드 활성 중 (클릭 시 일반 모드로 전환)" : "실시간 자동 동기화 중 (클릭 시 관리자 로그인)"}
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>실시간 자동 동기화</span>
-            {isAdmin && (
-              <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.2 rounded font-bold">
-                관리자
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-          {/* Search Input */}
-          <div className="relative w-full sm:w-48">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              placeholder="일정/장소 검색..."
-              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-
-          {/* Add Event Button */}
-          <button
-            onClick={() => openAddEventModal()}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition active:scale-95"
-          >
-            <Plus className="w-4 h-4" />
-            <span>새 일정 등록</span>
-          </button>
-
-          {/* Manage Friends (관리자 전용) */}
-          {isAdmin && (
-            <button
-              onClick={() => setIsFriendModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs sm:text-sm font-semibold rounded-xl transition"
-            >
-              <Users className="w-4 h-4 text-slate-500" />
-              <span>친구 관리</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Friends Filter Chips */}
+      {/* Friends Filter Chips (섹션 상단 배치) */}
       <div
         className="bg-white rounded-xl px-4 py-3 border border-slate-200 shadow-sm flex items-center gap-2 overflow-x-auto no-scrollbar"
         onWheel={(e) => {
@@ -1590,8 +1455,143 @@ export const FriendCalendar: React.FC = () => {
         </div>
       )}
 
-      {/* Calendar Grid Container */}
+      {/* Calendar Grid Container (상단 컨트롤 바와 달력 그리드가 일체형으로 통합) */}
       <div id="calendar-container" className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full min-w-0">
+        {/* Calendar Integrated Header Bar */}
+        <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 bg-white">
+          {/* Navigation & Title */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
+            <div className="flex items-center bg-slate-100 rounded-lg p-1 shrink-0">
+              <button
+                onClick={prevMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600 transition"
+                title="이전달"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={goToday}
+                className="px-3 h-8 text-xs font-semibold rounded-md hover:bg-white text-slate-700 transition"
+              >
+                오늘
+              </button>
+              <button
+                onClick={nextMonth}
+                className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600 transition"
+                title="다음달"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+              {year}년 {month + 1}월
+            </h2>
+
+            {/* 친구 인적사항 정보 / 생년월일 관리 버튼 */}
+            <button
+              onClick={() => {
+                resetProfileForm();
+                setIsFriendProfileModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 text-indigo-700 border border-indigo-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+              title="친구 영문 이름(인적사항명) 및 생년월일 관리"
+            >
+              <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
+              <span className="hidden sm:inline">친구 정보 (인적사항명·생년월일)</span>
+              <span className="sm:hidden">인적사항·생년월일</span>
+            </button>
+
+            {/* 🛡️ 데이터 안전 보관함 및 복원 버튼 (관리자/본인 전용) */}
+            {isAdmin && (
+              <button
+                onClick={() => setIsHistoryModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+                title="친구 정보 백업 다운로드 및 과거 변경 이력 복원 (관리자 전용)"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="hidden sm:inline">안전 보관함 & 이력 복원</span>
+                <span className="sm:hidden">백업·복원</span>
+                {backupHistory.length > 0 && (
+                  <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                    {backupHistory.length}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* Real-time Indicator Pill & 관리자 인증 트리거 */}
+            <button
+              type="button"
+              onClick={() => {
+                if (!isAdmin) {
+                  const pin = prompt('관리자 비밀번호(PIN)를 입력하세요:');
+                  if (pin === '7777' || pin === '1234' || pin === '0603') {
+                    setIsAdmin(true);
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('flypromo_admin_mode', 'true');
+                    }
+                    alert('관리자 모드가 활성화되었습니다. 친구 관리 및 안전 보관함 메뉴가 표시됩니다.');
+                  } else if (pin !== null) {
+                    alert('비밀번호가 일치하지 않습니다.');
+                  }
+                } else {
+                  if (confirm('현재 관리자 모드입니다. 일반 모드(친구 화면 보기)로 전환하시겠습니까?')) {
+                    setIsAdmin(false);
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('flypromo_admin_mode');
+                    }
+                  }
+                }
+              }}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100/70 text-emerald-700 border border-emerald-200/60 rounded-full text-[11px] font-semibold transition cursor-pointer"
+              title={isAdmin ? "관리자 모드 활성 중 (클릭 시 일반 모드로 전환)" : "실시간 자동 동기화 중 (클릭 시 관리자 로그인)"}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>실시간 자동 동기화</span>
+              {isAdmin && (
+                <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.2 rounded font-bold">
+                  관리자
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Action Controls */}
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-48">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="일정/장소 검색..."
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            {/* Add Event Button */}
+            <button
+              onClick={() => openAddEventModal()}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span>새 일정 등록</span>
+            </button>
+
+            {/* Manage Friends (관리자 전용) */}
+            {isAdmin && (
+              <button
+                onClick={() => setIsFriendModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs sm:text-sm font-semibold rounded-xl transition"
+              >
+                <Users className="w-4 h-4 text-slate-500" />
+                <span>친구 관리</span>
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Day of Week Header */}
         <div className="grid grid-cols-7 text-center text-xs font-bold py-3 bg-slate-50 border-b border-slate-200 text-slate-500">
           <div className="text-rose-500">일</div>
