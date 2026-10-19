@@ -12,7 +12,6 @@ import { filterPromotions, filterNewsArticles, calculatePromoStats, isPromoExpir
 import { Promotion, CrawlStats, NewsArticle, GroupedNews } from '@/types';
 import { BookmarkX, PlaneTakeoff, Newspaper, RefreshCw, Search, X, Calendar } from 'lucide-react';
 import { FriendCalendar } from '@/components/FriendCalendar';
-import { FriendAccountBanner } from '@/components/FriendAccountBanner';
 
 export default function Home() {
   const [rawPromotions, setRawPromotions] = useState<Promotion[]>([]);
@@ -218,8 +217,9 @@ export default function Home() {
         </div>
       )}
 
-      {/* Global Navbar */}
+      {/* Global Navbar (친구 일정 캘린더 탭에서는 모바일 화면에서 숨김 처리) */}
       <Navbar
+        className={activeTab === 'calendar' ? 'hidden sm:block' : ''}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
         bookmarkCount={bookmarkedIds.length}
@@ -230,10 +230,8 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full min-w-0">
-        {/* Header Hero Banner: 캘린더 탭일 때는 친구 정산 계좌 퀵뷰 배너, 그 외에는 항공권 특가 통계 배너 */}
-        {activeTab === 'calendar' ? (
-          <FriendAccountBanner />
-        ) : (
+        {/* Header Hero Banner: 항공권 특가 통계 배너 (캘린더 탭에서는 상단 클린 뷰를 위해 미표시) */}
+        {activeTab !== 'calendar' && (
           <StatsBanner
             stats={stats}
             selectedAirline={selectedAirline}

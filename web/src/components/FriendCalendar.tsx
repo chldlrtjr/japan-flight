@@ -253,6 +253,7 @@ export const FriendCalendar: React.FC = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isFriendProfileModalOpen, setIsFriendProfileModalOpen] = useState(false);
   const [isFriendScheduleModalOpen, setIsFriendScheduleModalOpen] = useState(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [selectedFriendForSchedule, setSelectedFriendForSchedule] = useState<Friend | null>(null);
 
   // 친구 인적사항 및 생년월일 프로필 폼 상태
@@ -1475,6 +1476,18 @@ export const FriendCalendar: React.FC = () => {
                 <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
                 <span className="hidden sm:inline">친구 정보 (인적사항명·생년월일)</span>
                 <span className="sm:hidden">인적사항·생년월일</span>
+              </button>
+
+              {/* 💳 친구 정산 계좌 확인 및 원터치 복사 버튼 */}
+              <button
+                type="button"
+                onClick={() => setIsAccountModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+                title="친구 정산 계좌 원터치 복사 및 확인"
+              >
+                <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="hidden sm:inline">친구 정산 계좌</span>
+                <span className="sm:hidden">정산 계좌</span>
               </button>
 
               {/* 🛡️ 데이터 안전 보관함 및 복원 버튼 (관리자/본인 전용) */}
@@ -2738,6 +2751,226 @@ export const FriendCalendar: React.FC = () => {
                 type="button"
                 onClick={() => setIsFriendProfileModalOpen(false)}
                 className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 💳 친구 정산 계좌 모달 */}
+      {isAccountModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
+          <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-700/80 max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden relative my-auto animate-in zoom-in-95 duration-150">
+            {/* Background decorative glows */}
+            <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute right-1/3 -top-12 w-56 h-56 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Header */}
+            <div className="relative z-10 px-5 sm:px-6 py-4 sm:py-5 border-b border-white/10 flex items-center justify-between shrink-0 bg-slate-900/60 backdrop-blur-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-500/20 shrink-0">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-white flex items-center gap-1.5">
+                      💳 친구 정산 계좌 <span className="text-emerald-400 font-bold">원터치 복사</span>
+                    </h3>
+                    <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      토스·카카오뱅크 바로 송금
+                    </span>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5">
+                    카드를 터치하면 계좌번호가 즉시 복사되어 은행 앱에 바로 붙여넣기할 수 있습니다.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAccountModalOpen(false)}
+                className="text-slate-400 hover:text-white p-2 rounded-xl bg-white/5 hover:bg-white/10 transition shrink-0 ml-2"
+                title="닫기"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Subheader / Status Bar */}
+            <div className="relative z-10 px-5 sm:px-6 py-2.5 bg-white/5 border-b border-white/10 flex items-center justify-between gap-2 shrink-0 flex-wrap">
+              <div className="text-xs text-slate-300 flex items-center gap-2">
+                <span>
+                  등록된 친구: <strong className="text-white">{friends.length}명</strong>
+                </span>
+                {friends.filter((f) => f.accountNumber && f.accountNumber.trim() !== '').length > 0 && (
+                  <span className="text-emerald-400 font-bold">
+                    (계좌 등록 {friends.filter((f) => f.accountNumber && f.accountNumber.trim() !== '').length}명)
+                  </span>
+                )}
+              </div>
+              {copyToastMessage && (
+                <span className="text-xs font-bold text-emerald-300 bg-emerald-950/90 border border-emerald-500/50 px-2.5 py-0.5 rounded-full animate-in fade-in flex items-center gap-1 shadow-xs">
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{copyToastMessage}</span>
+                </span>
+              )}
+            </div>
+
+            {/* Body Content */}
+            <div className="relative z-10 p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+              {friends.length === 0 ? (
+                <div className="p-8 text-center bg-white/5 rounded-2xl border border-dashed border-white/10 text-xs text-slate-400">
+                  등록된 친구가 없습니다. 친구 정보 관리에서 친구를 추가해주세요.
+                </div>
+              ) : (
+                <>
+                  {/* 1. 계좌 등록된 친구들 */}
+                  {friends.filter((f) => f.accountNumber && f.accountNumber.trim() !== '').length > 0 && (
+                    <div>
+                      <div className="text-xs font-bold text-emerald-400 mb-2.5 flex items-center gap-1.5">
+                        <span>계좌 등록 완료 ({friends.filter((f) => f.accountNumber && f.accountNumber.trim() !== '').length}명)</span>
+                        <span className="text-[10px] text-slate-400 font-normal">카드 클릭 시 복사</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {friends
+                          .filter((f) => f.accountNumber && f.accountNumber.trim() !== '')
+                          .map((f) => {
+                            const copyKey = `acc_modal_${f.id}`;
+                            const isCopied = copiedId === copyKey;
+                            const copyText = `${f.bank ? f.bank + ' ' : ''}${f.accountNumber}`;
+                            return (
+                              <div
+                                key={f.id}
+                                onClick={() => copyToClipboard(copyText, copyKey, `${f.name}의 계좌번호가`)}
+                                role="button"
+                                tabIndex={0}
+                                className={`group p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 text-left ${
+                                  isCopied
+                                    ? 'bg-emerald-500/25 border-emerald-400 ring-2 ring-emerald-400/50 shadow-lg scale-[1.01]'
+                                    : 'bg-white/10 hover:bg-white/15 border-white/10 hover:border-white/25 active:scale-[0.98]'
+                                }`}
+                                title="클릭하여 계좌번호 복사"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div
+                                    className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0 shadow-xs"
+                                    style={{ backgroundColor: f.color }}
+                                  >
+                                    {f.name.slice(0, 1)}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-extrabold text-sm text-white truncate">{f.name}</span>
+                                      {f.bank && (
+                                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white/15 text-emerald-300 shrink-0">
+                                          {f.bank}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-xs font-mono font-medium text-slate-200 tracking-tight truncate mt-0.5">
+                                      {f.accountNumber}
+                                      {f.accountHolder && (
+                                        <span className="text-[11px] text-slate-400 ml-1 font-sans">
+                                          ({f.accountHolder})
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="shrink-0">
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition shadow-xs ${
+                                      isCopied
+                                        ? 'bg-emerald-500 text-white'
+                                        : 'bg-white/15 text-slate-200 group-hover:bg-white group-hover:text-slate-900'
+                                    }`}
+                                  >
+                                    {isCopied ? (
+                                      <>
+                                        <Check className="w-3.5 h-3.5" />
+                                        <span>복사됨!</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="w-3.5 h-3.5" />
+                                        <span>복사</span>
+                                      </>
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2. 계좌 미등록 친구들 */}
+                  {friends.filter((f) => !f.accountNumber || f.accountNumber.trim() === '').length > 0 && (
+                    <div className={friends.filter((f) => f.accountNumber && f.accountNumber.trim() !== '').length > 0 ? "pt-3 border-t border-white/10" : ""}>
+                      <div className="text-xs font-bold text-slate-400 mb-2.5 flex items-center gap-1.5">
+                        <span>계좌 미등록 친구 ({friends.filter((f) => !f.accountNumber || f.accountNumber.trim() === '').length}명)</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {friends
+                          .filter((f) => !f.accountNumber || f.accountNumber.trim() === '')
+                          .map((f) => (
+                            <div
+                              key={f.id}
+                              className="p-3 rounded-xl border border-dashed border-white/10 bg-white/5 flex items-center justify-between gap-2.5 text-xs text-slate-400"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div
+                                  className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] text-white shrink-0 opacity-70"
+                                  style={{ backgroundColor: f.color }}
+                                >
+                                  {f.name.slice(0, 1)}
+                                </div>
+                                <div className="truncate">
+                                  <span className="font-bold text-slate-300">{f.name}</span>
+                                  <span className="text-[11px] text-slate-500 ml-1.5">계좌 미등록</span>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsAccountModalOpen(false);
+                                  resetProfileForm();
+                                  startEditProfile(f);
+                                  setIsFriendProfileModalOpen(true);
+                                }}
+                                className="text-[11px] font-bold text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30 transition active:scale-95 shrink-0"
+                              >
+                                + 계좌 등록
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="relative z-10 px-5 sm:px-6 py-3.5 border-t border-white/10 bg-slate-950/70 flex items-center justify-between shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAccountModalOpen(false);
+                  resetProfileForm();
+                  setIsFriendProfileModalOpen(true);
+                }}
+                className="text-xs text-indigo-300 hover:text-indigo-200 font-medium underline underline-offset-4 flex items-center gap-1 transition"
+              >
+                <span>친구 정보 관리에서 계좌 수정하기 →</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsAccountModalOpen(false)}
+                className="px-4 py-2 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-bold transition shadow-xs active:scale-95"
               >
                 닫기
               </button>
