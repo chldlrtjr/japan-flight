@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Search, SlidersHorizontal, Check, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, SlidersHorizontal, Check, X, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FilterBarProps {
   searchTerm: string;
@@ -50,6 +50,9 @@ export const JAPAN_CITIES = [
   { id: '이바라키', label: '🌸 이바라키' },
 ];
 
+const PRIMARY_CITIES = JAPAN_CITIES.slice(0, 7);
+const SECONDARY_CITIES = JAPAN_CITIES.slice(7);
+
 const AIRLINES = [
   { id: 'ALL', label: '전체 항공사' },
   { id: 'JAPAN_ALL', label: '🇯🇵 일본 항공사 전체' },
@@ -67,6 +70,9 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onSortChange,
   totalFilteredCount,
 }) => {
+  const [isCitiesExpanded, setIsCitiesExpanded] = useState(false);
+  const isSelectedInSecondary = SECONDARY_CITIES.some((c) => c.id === selectedRegion);
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm mb-6 space-y-4">
       {/* Top Search & Sort Row */}
@@ -125,7 +131,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
-          {JAPAN_CITIES.map((city) => {
+          {PRIMARY_CITIES.map((city) => {
             const isSelected = selectedRegion === city.id;
             return (
               <button
@@ -133,7 +139,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 onClick={() => onSelectRegion(city.id)}
                 className={`text-xs px-2.5 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all ${
                   isSelected
-                    ? 'bg-rose-600 text-white font-bold shadow-sm shadow-rose-600/30'
+                    ? 'bg-rose-600 text-white font-bold shadow-sm shadow-rose-600/30 ring-2 ring-rose-600/20'
                     : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300'
                 }`}
               >
@@ -141,6 +147,55 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               </button>
             );
           })}
+
+          {/* 접힌 상태에서 소도시가 선택된 경우 즉시 노출 */}
+          {!isCitiesExpanded && isSelectedInSecondary && (
+            <button
+              onClick={() => onSelectRegion(selectedRegion)}
+              className="text-xs px-2.5 py-1.5 rounded-lg font-bold whitespace-nowrap transition-all bg-rose-600 text-white shadow-sm shadow-rose-600/30 flex items-center gap-1 ring-2 ring-rose-600/20"
+            >
+              <span>{JAPAN_CITIES.find((c) => c.id === selectedRegion)?.label}</span>
+              <span className="text-[10px] bg-rose-700/80 px-1 py-0.2 rounded text-rose-100 font-normal">선택됨</span>
+            </button>
+          )}
+
+          {/* 더보기 시 나머지 소도시 노출 */}
+          {isCitiesExpanded &&
+            SECONDARY_CITIES.map((city) => {
+              const isSelected = selectedRegion === city.id;
+              return (
+                <button
+                  key={city.id}
+                  onClick={() => onSelectRegion(city.id)}
+                  className={`text-xs px-2.5 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all ${
+                    isSelected
+                      ? 'bg-rose-600 text-white font-bold shadow-sm shadow-rose-600/30 ring-2 ring-rose-600/20'
+                      : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300'
+                  }`}
+                >
+                  {city.label}
+                </button>
+              );
+            })}
+
+          {/* 더보기 / 접기 토글 버튼 */}
+          <button
+            onClick={() => setIsCitiesExpanded(!isCitiesExpanded)}
+            className="text-xs px-2.5 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-all flex items-center gap-1 border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900 shadow-2xs active:scale-95"
+            aria-expanded={isCitiesExpanded}
+          >
+            {isCitiesExpanded ? (
+              <>
+                <span>접기</span>
+                <ChevronUp className="w-3.5 h-3.5 text-slate-500" />
+              </>
+            ) : (
+              <>
+                <span>+ 25개 도시 더보기</span>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+              </>
+            )}
+          </button>
         </div>
       </div>
 
