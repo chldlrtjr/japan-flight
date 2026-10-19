@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
-import { StatsBanner } from '@/components/StatsBanner';
 import { FilterBar } from '@/components/FilterBar';
 import { PromoCard } from '@/components/PromoCard';
 import { PromoModal } from '@/components/PromoModal';
@@ -230,17 +229,6 @@ export default function Home() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full min-w-0">
-        {/* Header Hero Banner: 항공권 특가 통계 배너 (캘린더 탭에서는 상단 클린 뷰를 위해 미표시) */}
-        {activeTab !== 'calendar' && (
-          <StatsBanner
-            stats={stats}
-            selectedAirline={selectedAirline}
-            onSelectAirline={setSelectedAirline}
-            selectedRegion={selectedRegion}
-            onSelectRegion={setSelectedRegion}
-          />
-        )}
-
         {/* Tab Switcher: Airline Website Events vs Flight News vs Friend Calendar */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-6 border-b border-slate-200 w-full min-w-0">
           <button
