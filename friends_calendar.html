@@ -293,7 +293,13 @@
       <div class="p-5">
         <div class="flex items-start justify-between gap-2">
           <div>
-            <span id="viewFriendBadge" class="inline-block text-xs px-2.5 py-0.5 rounded-full font-semibold text-white mb-1.5">친구이름</span>
+            <div class="flex items-center gap-1.5 mb-1.5">
+              <span id="viewFriendBadge" class="inline-block text-xs px-2.5 py-0.5 rounded-full font-semibold text-white">친구이름</span>
+              <button id="viewFriendAccBtn" type="button" class="text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-2 py-0.5 rounded-full transition flex items-center gap-1" title="친구 계좌 확인">
+                <i class="fa-solid fa-credit-card text-[10px]"></i>
+                <span>계좌</span>
+              </button>
+            </div>
             <h4 id="viewEventTitle" class="text-lg font-bold text-slate-900">약속 제목</h4>
           </div>
           <button id="closeViewModalBtn" class="text-slate-400 hover:text-slate-600">
@@ -328,15 +334,80 @@
     </div>
   </div>
 
+  <!-- 친구 계좌 확인 & 복사 모달 (B안) -->
+  <div id="accountModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div id="accFriendColorDot" class="w-3.5 h-3.5 rounded-full bg-indigo-600"></div>
+          <h3 class="text-base font-bold text-slate-900"><span id="accFriendName">친구</span>의 정산 계좌</h3>
+        </div>
+        <button id="closeAccountModalBtn" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <!-- 계좌 정보 카드 -->
+        <div id="accDisplayCard" class="bg-gradient-to-br from-slate-50 to-emerald-50/50 border border-emerald-200/70 rounded-xl p-4 space-y-2">
+          <div class="flex items-center justify-between">
+            <span id="accBankName" class="text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">카카오뱅크</span>
+            <span id="accHolderName" class="text-xs text-slate-500 font-medium">예금주: 김민수</span>
+          </div>
+          <div id="accNumber" class="text-lg font-mono font-extrabold text-slate-900 tracking-wide select-all">
+            3333-01-9876543
+          </div>
+        </div>
+
+        <!-- 미등록 시 표시 -->
+        <div id="accEmptyCard" class="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-6 text-center text-xs text-slate-400 hidden">
+          등록된 계좌 정보가 없습니다. 아래 버튼으로 등록해보세요!
+        </div>
+
+        <!-- 액션 버튼 -->
+        <div class="space-y-2">
+          <button id="copyAccBtn" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm shadow-emerald-600/20">
+            <i class="fa-regular fa-copy"></i>
+            <span id="copyAccBtnText">계좌번호 복사하기</span>
+          </button>
+          <button id="toggleEditAccBtn" class="w-full py-2 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-pen-to-square text-slate-400"></i>
+            <span id="toggleEditAccText">계좌 정보 수정</span>
+          </button>
+        </div>
+
+        <!-- 계좌 수정 인라인 폼 -->
+        <form id="editAccForm" class="pt-3 border-t border-slate-100 space-y-2.5 hidden">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">은행명</label>
+            <input type="text" id="inputAccBank" placeholder="예: 카카오뱅크, 신한, 토스" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">계좌번호</label>
+            <input type="text" id="inputAccNumber" placeholder="예: 3333-01-1234567" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">예금주</label>
+            <input type="text" id="inputAccHolder" placeholder="예: 김민수" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div class="flex justify-end gap-2 pt-1">
+            <button type="button" id="cancelEditAccBtn" class="px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-100 rounded-lg">취소</button>
+            <button type="submit" class="px-4 py-1.5 text-xs bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800">저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- 스크립트 영역 -->
   <script>
-    // 기본 친구 및 색상 팔레트
+    // 기본 친구 및 색상 팔레트 (계좌 정보 포함)
     const DEFAULT_FRIENDS = [
-      { id: 'f_1', name: '민수', color: '#3b82f6' }, // Blue
-      { id: 'f_2', name: '지은', color: '#ec4899' }, // Pink
-      { id: 'f_3', name: '태호', color: '#10b981' }, // Emerald
-      { id: 'f_4', name: '수빈', color: '#f59e0b' }, // Amber
-      { id: 'f_5', name: '동현', color: '#8b5cf6' }  // Purple
+      { id: 'f_1', name: '민수', color: '#3b82f6', bank: '카카오뱅크', account: '3333-01-9876543', holder: '김민수' }, // Blue
+      { id: 'f_2', name: '지은', color: '#ec4899', bank: '신한은행', account: '110-456-789012', holder: '이지은' }, // Pink
+      { id: 'f_3', name: '태호', color: '#10b981', bank: '토스뱅크', account: '1000-1234-5678', holder: '박태호' }, // Emerald
+      { id: 'f_4', name: '수빈', color: '#f59e0b', bank: '국민은행', account: '987654-02-123456', holder: '정수빈' }, // Amber
+      { id: 'f_5', name: '동현', color: '#8b5cf6', bank: '우리은행', account: '1002-345-678901', holder: '강동현' }  // Purple
     ];
 
     // 기본 샘플 일정 생성 (오늘 기준)
@@ -377,10 +448,33 @@
       ];
     }
 
+    // 로컬스토리지 데이터 로드 및 계좌 필드 보완
+    function loadInitialFriends() {
+      const saved = localStorage.getItem('fc_friends');
+      if (!saved) return DEFAULT_FRIENDS;
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(f => {
+            const def = DEFAULT_FRIENDS.find(d => d.id === f.id || d.name === f.name);
+            return {
+              ...f,
+              bank: f.bank !== undefined ? f.bank : (def ? def.bank : ''),
+              account: f.account !== undefined ? f.account : (def ? def.account : ''),
+              holder: f.holder !== undefined ? f.holder : (def ? def.holder : '')
+            };
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      return DEFAULT_FRIENDS;
+    }
+
     // 상태 관리 (State)
     let state = {
       currentDate: new Date(),
-      friends: JSON.parse(localStorage.getItem('fc_friends')) || DEFAULT_FRIENDS,
+      friends: loadInitialFriends(),
       events: JSON.parse(localStorage.getItem('fc_events')) || generateSampleEvents(),
       activeFilterFriendId: 'ALL',
       searchKeyword: '',
@@ -530,6 +624,43 @@
           renderFriendSelectOptions();
           renderCalendar();
         }
+      });
+
+      // 계좌 모달 리스너 (B안)
+      document.getElementById('closeAccountModalBtn').addEventListener('click', closeAccountModal);
+      document.getElementById('copyAccBtn').addEventListener('click', () => {
+        const friend = getFriend(currentAccFriendId);
+        if (!friend || !friend.account) return;
+        const copyVal = `${friend.bank ? friend.bank + ' ' : ''}${friend.account}`;
+        navigator.clipboard.writeText(copyVal).then(() => {
+          const btnText = document.getElementById('copyAccBtnText');
+          const orig = btnText.textContent;
+          btnText.textContent = '✓ 복사 완료!';
+          setTimeout(() => {
+            btnText.textContent = orig;
+          }, 2000);
+        });
+      });
+
+      document.getElementById('toggleEditAccBtn').addEventListener('click', () => {
+        const editForm = document.getElementById('editAccForm');
+        editForm.classList.toggle('hidden');
+      });
+
+      document.getElementById('cancelEditAccBtn').addEventListener('click', () => {
+        document.getElementById('editAccForm').classList.add('hidden');
+      });
+
+      document.getElementById('editAccForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const friend = state.friends.find(f => f.id === currentAccFriendId);
+        if (!friend) return;
+        friend.bank = document.getElementById('inputAccBank').value.trim();
+        friend.account = document.getElementById('inputAccNumber').value.trim();
+        friend.holder = document.getElementById('inputAccHolder').value.trim();
+        saveState();
+        renderFriendFilters();
+        openAccountModal(currentAccFriendId);
       });
     }
 
@@ -712,19 +843,24 @@
 
       // 각 친구 버튼
       state.friends.forEach(f => {
-        const btn = document.createElement('button');
         const isActive = state.activeFilterFriendId === f.id;
         const fCount = state.events.filter(e => e.friendId === f.id || (e.friendIds && e.friendIds.includes(f.id))).length;
-        btn.className = `px-2.5 py-1 text-xs font-semibold rounded-full transition flex items-center gap-1.5 ${
-          isActive ? 'shadow-xs text-white' : 'hover:opacity-85'
+
+        const chipWrap = document.createElement('div');
+        chipWrap.className = 'inline-flex items-center rounded-full transition shadow-2xs';
+
+        const btn = document.createElement('button');
+        btn.className = `px-2.5 py-1 text-xs font-semibold rounded-l-full transition flex items-center gap-1.5 ${
+          isActive ? 'text-white' : 'hover:opacity-85'
         }`;
 
         if (isActive) {
+          chipWrap.style.backgroundColor = f.color;
           btn.style.backgroundColor = f.color;
         } else {
-          btn.style.backgroundColor = f.color + '20';
+          chipWrap.style.backgroundColor = f.color + '20';
+          chipWrap.style.border = `1px solid ${f.color}50`;
           btn.style.color = '#334155';
-          btn.style.border = `1px solid ${f.color}50`;
         }
 
         btn.innerHTML = `
@@ -739,7 +875,22 @@
           renderCalendar();
         });
 
-        container.appendChild(btn);
+        // 💳 계좌 확인 버튼 (B안)
+        const accBtn = document.createElement('button');
+        accBtn.type = 'button';
+        accBtn.className = `px-2 py-1 text-xs rounded-r-full transition flex items-center ${
+          isActive ? 'text-white/80 hover:text-white hover:bg-black/15' : 'text-slate-500 hover:text-emerald-700 hover:bg-emerald-100/50'
+        }`;
+        accBtn.title = `${f.name}의 계좌번호 확인 및 복사`;
+        accBtn.innerHTML = '<i class="fa-solid fa-credit-card text-[10px]"></i>';
+        accBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openAccountModal(f.id);
+        });
+
+        chipWrap.appendChild(btn);
+        chipWrap.appendChild(accBtn);
+        container.appendChild(chipWrap);
       });
     }
 
@@ -928,7 +1079,61 @@
         memoRow.classList.add('hidden');
       }
 
+      // 친구 계좌 확인 버튼 (B안)
+      const accBtn = document.getElementById('viewFriendAccBtn');
+      if (friend.id && friend.id !== 'unassigned') {
+        accBtn.classList.remove('hidden');
+        accBtn.onclick = () => {
+          openAccountModal(friend.id);
+        };
+      } else {
+        accBtn.classList.add('hidden');
+      }
+
       document.getElementById('viewEventModal').classList.remove('hidden');
+    }
+
+    // 💳 친구 계좌 팝업 모달 열기 (B안 핵심)
+    let currentAccFriendId = null;
+
+    function openAccountModal(friendId) {
+      const friend = getFriend(friendId);
+      if (!friend || friend.id === 'unassigned') return;
+      currentAccFriendId = friend.id;
+
+      document.getElementById('accFriendName').textContent = friend.name;
+      document.getElementById('accFriendColorDot').style.backgroundColor = friend.color;
+
+      const hasAccount = friend.account && friend.account.trim() !== '';
+      const displayCard = document.getElementById('accDisplayCard');
+      const emptyCard = document.getElementById('accEmptyCard');
+      const editForm = document.getElementById('editAccForm');
+
+      editForm.classList.add('hidden');
+      document.getElementById('toggleEditAccText').textContent = hasAccount ? '계좌 정보 수정' : '새 계좌 등록';
+
+      if (hasAccount) {
+        displayCard.classList.remove('hidden');
+        emptyCard.classList.add('hidden');
+        document.getElementById('accBankName').textContent = friend.bank || '은행';
+        document.getElementById('accHolderName').textContent = friend.holder ? `예금주: ${friend.holder}` : '';
+        document.getElementById('accNumber').textContent = friend.account;
+        document.getElementById('copyAccBtn').classList.remove('hidden');
+      } else {
+        displayCard.classList.add('hidden');
+        emptyCard.classList.remove('hidden');
+        document.getElementById('copyAccBtn').classList.add('hidden');
+      }
+
+      document.getElementById('inputAccBank').value = friend.bank || '';
+      document.getElementById('inputAccNumber').value = friend.account || '';
+      document.getElementById('inputAccHolder').value = friend.holder || '';
+
+      document.getElementById('accountModal').classList.remove('hidden');
+    }
+
+    function closeAccountModal() {
+      document.getElementById('accountModal').classList.add('hidden');
     }
 
     // 데이터 JSON 내보내기

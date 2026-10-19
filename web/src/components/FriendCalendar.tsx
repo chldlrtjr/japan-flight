@@ -25,6 +25,7 @@ import {
   History,
   ShieldCheck,
   RotateCcw,
+  CreditCard,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
@@ -33,6 +34,9 @@ interface Friend {
   id: string;
   name: string;
   color: string;
+  bank?: string;           // 은행명 (예: 카카오뱅크, 신한, 토스 등)
+  accountNumber?: string;  // 계좌번호 (예: 3333-01-xxxx)
+  accountHolder?: string;  // 예금주 (예: 김민수)
   englishName?: string;    // 인적사항상 영문 이름 (예: KIM MINSU)
   birthDate?: string;      // 생년월일 (YYYY-MM-DD)
   gender?: 'M' | 'F' | ''; // 성별 (M: 남성, F: 여성)
@@ -290,6 +294,9 @@ export const FriendCalendar: React.FC = () => {
   const [profileGender, setProfileGender] = useState<'M' | 'F' | ''>('');
   const [profileprofileNumber, setProfileprofileNumber] = useState('');
   const [profileprofileExpiry, setProfileprofileExpiry] = useState('');
+  const [profileBank, setProfileBank] = useState('');
+  const [profileAccountNumber, setProfileAccountNumber] = useState('');
+  const [profileAccountHolder, setProfileAccountHolder] = useState('');
   const [profileColor, setProfileColor] = useState('#3b82f6');
 
   // 클립보드 복사 알림 상태
@@ -845,7 +852,7 @@ export const FriendCalendar: React.FC = () => {
     await syncToFirestore(updatedFriends, events);
   };
 
-  // 친구 프로필 (인적사항 영문명, 생년월일 등) 폼 리셋
+  // 친구 프로필 (인적사항 영문명, 생년월일, 정산 계좌 등) 폼 리셋
   const resetProfileForm = () => {
     setEditingFriendId(null);
     setProfileName('');
@@ -854,6 +861,9 @@ export const FriendCalendar: React.FC = () => {
     setProfileGender('');
     setProfileprofileNumber('');
     setProfileprofileExpiry('');
+    setProfileBank('');
+    setProfileAccountNumber('');
+    setProfileAccountHolder('');
     setProfileColor('#3b82f6');
   };
 
@@ -866,6 +876,9 @@ export const FriendCalendar: React.FC = () => {
     setProfileGender(friend.gender || '');
     setProfileprofileNumber(friend.profileNumber || '');
     setProfileprofileExpiry(friend.profileExpiry || '');
+    setProfileBank(friend.bank || '');
+    setProfileAccountNumber(friend.accountNumber || '');
+    setProfileAccountHolder(friend.accountHolder || '');
     setProfileColor(friend.color || '#3b82f6');
     setIsProfileFormOpen(true);
     // 수정 폼이 위치한 최상단으로 부드럽게 스크롤
@@ -895,6 +908,9 @@ export const FriendCalendar: React.FC = () => {
               gender: profileGender,
               profileNumber: profileprofileNumber.trim().toUpperCase(),
               profileExpiry: profileprofileExpiry,
+              bank: profileBank.trim(),
+              accountNumber: profileAccountNumber.trim(),
+              accountHolder: profileAccountHolder.trim(),
               color: profileColor,
             }
           : f
@@ -908,6 +924,9 @@ export const FriendCalendar: React.FC = () => {
         gender: profileGender,
         profileNumber: profileprofileNumber.trim().toUpperCase(),
         profileExpiry: profileprofileExpiry,
+        bank: profileBank.trim(),
+        accountNumber: profileAccountNumber.trim(),
+        accountHolder: profileAccountHolder.trim(),
         color: profileColor,
       };
       updatedFriends = [...friends, newFriend];
@@ -944,6 +963,7 @@ export const FriendCalendar: React.FC = () => {
       }
       if (f.profileNumber) parts.push(`인적사항번호: ${f.profileNumber}`);
       if (f.profileExpiry) parts.push(`인적사항만료: ${f.profileExpiry}`);
+      if (f.accountNumber) parts.push(`계좌: ${f.bank ? f.bank + ' ' : ''}${f.accountNumber}${f.accountHolder ? ` (${f.accountHolder})` : ''}`);
       return parts.join(' / ');
     });
     copyToClipboard(lines.join('\n'), 'ALL', '전체 친구 정보가');
@@ -1514,7 +1534,26 @@ export const FriendCalendar: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    {curFriend.accountNumber && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          copyToClipboard(
+                            `${curFriend.bank ? curFriend.bank + ' ' : ''}${curFriend.accountNumber}`,
+                            `top_acc_${curFriend.id}`,
+                            `${curFriend.name} 님의 계좌번호가`
+                          )
+                        }
+                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow-2xs active:scale-95"
+                        title={`${curFriend.bank || ''} ${curFriend.accountNumber} 복사`}
+                      >
+                        <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>
+                          {copiedId === `top_acc_${curFriend.id}` ? '✓ 계좌 복사됨!' : '계좌 복사'}
+                        </span>
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
@@ -2430,6 +2469,47 @@ export const FriendCalendar: React.FC = () => {
                           />
                         </div>
                       </div>
+
+                      {/* 정산 계좌 정보 (선택) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:col-span-2 pt-2 border-t border-indigo-100">
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                            <span>정산 은행명</span>
+                            <span className="text-[10px] text-emerald-600 font-normal">송금용</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={profileBank}
+                            onChange={(e) => setProfileBank(e.target.value)}
+                            placeholder="예: 카카오뱅크, 토스, 신한"
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            계좌번호
+                          </label>
+                          <input
+                            type="text"
+                            value={profileAccountNumber}
+                            onChange={(e) => setProfileAccountNumber(e.target.value)}
+                            placeholder="예: 3333-01-1234567"
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold text-slate-700 mb-1">
+                            예금주
+                          </label>
+                          <input
+                            type="text"
+                            value={profileAccountHolder}
+                            onChange={(e) => setProfileAccountHolder(e.target.value)}
+                            placeholder="예: 김민수"
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 text-xs"
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-end gap-2 pt-2">
@@ -2563,6 +2643,33 @@ export const FriendCalendar: React.FC = () => {
                                     <Check className="w-3 h-3 text-emerald-600" />
                                   ) : (
                                     <Copy className="w-3 h-3 text-rose-400 group-hover:text-rose-600 transition" />
+                                  )}
+                                </button>
+                              )}
+
+                              {/* Account Number (if exists) */}
+                              {f.accountNumber && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    copyToClipboard(
+                                      `${f.bank ? f.bank + ' ' : ''}${f.accountNumber}`,
+                                      `acc_${f.id}`,
+                                      `${f.name}의 계좌번호가`
+                                    )
+                                  }
+                                  className="group flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 rounded-lg text-xs font-mono font-bold transition shadow-2xs"
+                                  title="클릭하여 계좌번호 복사"
+                                >
+                                  <CreditCard className="w-3 h-3 text-emerald-600 shrink-0" />
+                                  <span>
+                                    {f.bank ? `${f.bank} ` : ''}{f.accountNumber}
+                                    {f.accountHolder ? ` (${f.accountHolder})` : ''}
+                                  </span>
+                                  {copiedId === `acc_${f.id}` ? (
+                                    <Check className="w-3 h-3 text-emerald-600 shrink-0" />
+                                  ) : (
+                                    <Copy className="w-3 h-3 text-emerald-500 group-hover:text-emerald-700 transition shrink-0" />
                                   )}
                                 </button>
                               )}
@@ -2823,6 +2930,84 @@ export const FriendCalendar: React.FC = () => {
 
             {/* Modal Body: Scrollable */}
             <div className="p-6 overflow-y-auto space-y-5 flex-1">
+              {/* 💳 정산 계좌 카드 (상시 확인 및 복사) */}
+              {selectedFriendForSchedule.accountNumber ? (
+                <div className="bg-gradient-to-r from-emerald-50/80 via-slate-50 to-indigo-50/50 border border-emerald-200/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                      <CreditCard className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full text-[10px]">정산 계좌</span>
+                        {selectedFriendForSchedule.accountHolder && (
+                          <span className="text-slate-600 font-medium">예금주: {selectedFriendForSchedule.accountHolder}</span>
+                        )}
+                      </div>
+                      <div className="text-sm sm:text-base font-extrabold text-slate-900 font-mono tracking-tight truncate mt-0.5">
+                        <span className="text-indigo-600 mr-1.5">{selectedFriendForSchedule.bank || '은행'}</span>
+                        {selectedFriendForSchedule.accountNumber}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyToClipboard(
+                          `${selectedFriendForSchedule.bank ? selectedFriendForSchedule.bank + ' ' : ''}${selectedFriendForSchedule.accountNumber}`,
+                          `schedule_acc_${selectedFriendForSchedule.id}`,
+                          `${selectedFriendForSchedule.name} 님의 계좌번호가`
+                        )
+                      }
+                      className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm shadow-emerald-600/20"
+                    >
+                      {copiedId === `schedule_acc_${selectedFriendForSchedule.id}` ? (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          <span>복사 완료!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>계좌번호 복사</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsFriendScheduleModalOpen(false);
+                        startEditProfile(selectedFriendForSchedule);
+                        setIsFriendProfileModalOpen(true);
+                      }}
+                      className="p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-xl border border-transparent hover:border-slate-200 transition"
+                      title="계좌 수정"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-3.5 flex items-center justify-between text-xs text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-slate-400" />
+                    <span>등록된 정산 계좌가 없습니다.</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsFriendScheduleModalOpen(false);
+                      startEditProfile(selectedFriendForSchedule);
+                      setIsFriendProfileModalOpen(true);
+                    }}
+                    className="text-indigo-600 hover:text-indigo-700 font-bold hover:underline"
+                  >
+                    + 계좌 등록하기
+                  </button>
+                </div>
+              )}
+
               {/* Schedules Section Header */}
               <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-2">
