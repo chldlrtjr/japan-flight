@@ -1208,7 +1208,7 @@ export const FriendCalendar: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full min-w-0">
       {/* 💾 이전 로컬스토리지 백업 데이터 복원 배너 */}
       {localBackupData && (
         <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md animate-in slide-in-from-top-2">
@@ -1245,8 +1245,8 @@ export const FriendCalendar: React.FC = () => {
       {/* Top Banner: Real-time Sync Status & Controls */}
       <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Navigation & Title */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-slate-100 rounded-lg p-1">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
+          <div className="flex items-center bg-slate-100 rounded-lg p-1 shrink-0">
             <button
               onClick={prevMonth}
               className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600 transition"
@@ -1268,7 +1268,7 @@ export const FriendCalendar: React.FC = () => {
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight min-w-[140px]">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
             {year}년 {month + 1}월
           </h2>
 
@@ -1591,7 +1591,7 @@ export const FriendCalendar: React.FC = () => {
       )}
 
       {/* Calendar Grid Container */}
-      <div id="calendar-container" className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div id="calendar-container" className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full min-w-0">
         {/* Day of Week Header */}
         <div className="grid grid-cols-7 text-center text-xs font-bold py-3 bg-slate-50 border-b border-slate-200 text-slate-500">
           <div className="text-rose-500">일</div>
@@ -1729,7 +1729,7 @@ export const FriendCalendar: React.FC = () => {
                                   style={{ backgroundColor: barColor }}
                                 />
                                 <span
-                                  className="font-bold shrink-0 text-slate-800 truncate max-w-[85px] sm:max-w-[120px]"
+                                  className="font-bold shrink-0 text-slate-800 truncate max-w-[42px] sm:max-w-[120px]"
                                   style={{ color: barColor }}
                                 >
                                   {seg.displayTitle}:

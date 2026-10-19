@@ -209,7 +209,7 @@ export default function Home() {
   }, [rawDisplayList, newsStatusFilter]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans w-full max-w-full overflow-x-hidden">
       {/* Refresh Toast Notification */}
       {refreshMessage && (
         <div className="fixed top-4 right-4 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -229,7 +229,7 @@ export default function Home() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full min-w-0">
         {/* Header Hero Banner: 캘린더 탭일 때는 친구 정산 계좌 퀵뷰 배너, 그 외에는 항공권 특가 통계 배너 */}
         {activeTab === 'calendar' ? (
           <FriendAccountBanner />
@@ -243,11 +243,11 @@ export default function Home() {
           />
         )}
 
-        {/* Tab Switcher: Airline Website Events vs Flight News */}
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 mb-6 border-b border-slate-200 pb-3">
+        {/* Tab Switcher: Airline Website Events vs Flight News vs Friend Calendar */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-6 border-b border-slate-200 w-full min-w-0">
           <button
             onClick={() => handleTabChange('promotions')}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
               activeTab === 'promotions'
                 ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20'
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
@@ -266,7 +266,7 @@ export default function Home() {
 
           <button
             onClick={() => handleTabChange('news')}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
               activeTab === 'news'
                 ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20'
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
@@ -285,7 +285,7 @@ export default function Home() {
 
           <button
             onClick={() => handleTabChange('calendar')}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
               activeTab === 'calendar'
                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'

@@ -31,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">
+    <html lang="ko" className="h-full antialiased bg-slate-50">
+      <body className="min-h-full flex flex-col bg-slate-50 overflow-x-hidden w-full">
         {children}
         <Script
           id="prevent-zoom"
