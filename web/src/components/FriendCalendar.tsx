@@ -25,7 +25,6 @@ import {
   History,
   ShieldCheck,
   RotateCcw,
-  CreditCard,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
@@ -34,9 +33,6 @@ interface Friend {
   id: string;
   name: string;
   color: string;
-  bank?: string;           // 은행명 (예: 카카오뱅크, 신한, 토스 등)
-  accountNumber?: string;  // 계좌번호 (예: 3333-01-xxxx)
-  accountHolder?: string;  // 예금주 (예: 김민수)
   birthDate?: string;      // 생년월일 (YYYY-MM-DD)
   gender?: 'M' | 'F' | ''; // 성별 (M: 남성, F: 여성)
   memo?: string;           // 메모
@@ -250,19 +246,15 @@ export const FriendCalendar: React.FC = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isFriendProfileModalOpen, setIsFriendProfileModalOpen] = useState(false);
   const [isFriendScheduleModalOpen, setIsFriendScheduleModalOpen] = useState(false);
-  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [selectedFriendForSchedule, setSelectedFriendForSchedule] = useState<Friend | null>(null);
 
-  // 친구 인적사항(생년월일, 정산 계좌 등) 프로필 폼 상태
+  // 친구 인적사항(생년월일 등) 프로필 폼 상태
   const [editingFriendId, setEditingFriendId] = useState<string | null>(null);
   const [isProfileFormOpen, setIsProfileFormOpen] = useState(false); // 수정/등록 버튼 클릭 시 최상단에 표시
   const profileModalBodyRef = useRef<HTMLDivElement>(null);
   const [profileName, setProfileName] = useState('');
   const [profileBirthDate, setProfileBirthDate] = useState('');
   const [profileGender, setProfileGender] = useState<'M' | 'F' | ''>('');
-  const [profileBank, setProfileBank] = useState('');
-  const [profileAccountNumber, setProfileAccountNumber] = useState('');
-  const [profileAccountHolder, setProfileAccountHolder] = useState('');
   const [profileColor, setProfileColor] = useState('#3b82f6');
 
   // 클립보드 복사 알림 상태
@@ -423,9 +415,6 @@ export const FriendCalendar: React.FC = () => {
                 id: f.id,
                 name: f.name,
                 color: f.color || '#3b82f6',
-                bank: f.bank || '',
-                accountNumber: f.accountNumber || '',
-                accountHolder: f.accountHolder || '',
                                 birthDate: f.birthDate || '',
                 gender: f.gender || '',
                                                 memo: f.memo || '',
@@ -836,15 +825,12 @@ export const FriendCalendar: React.FC = () => {
     await syncToFirestore(updatedFriends, events);
   };
 
-  // 친구 프로필 (생년월일, 정산 계좌 등) 폼 리셋
+  // 친구 프로필 (생년월일 등) 폼 리셋
   const resetProfileForm = () => {
     setEditingFriendId(null);
     setProfileName('');
     setProfileBirthDate('');
     setProfileGender('');
-    setProfileBank('');
-    setProfileAccountNumber('');
-    setProfileAccountHolder('');
     setProfileColor('#3b82f6');
   };
 
@@ -854,9 +840,6 @@ export const FriendCalendar: React.FC = () => {
     setProfileName(friend.name);
     setProfileBirthDate(friend.birthDate || '');
     setProfileGender(friend.gender || '');
-    setProfileBank(friend.bank || '');
-    setProfileAccountNumber(friend.accountNumber || '');
-    setProfileAccountHolder(friend.accountHolder || '');
     setProfileColor(friend.color || '#3b82f6');
     setIsProfileFormOpen(true);
     // 수정 폼이 위치한 최상단으로 부드럽게 스크롤
@@ -883,9 +866,6 @@ export const FriendCalendar: React.FC = () => {
               name: trimmedName,
               birthDate: profileBirthDate,
               gender: profileGender,
-              bank: profileBank.trim(),
-              accountNumber: profileAccountNumber.trim(),
-              accountHolder: profileAccountHolder.trim(),
               color: profileColor,
             }
           : f
@@ -896,9 +876,6 @@ export const FriendCalendar: React.FC = () => {
         name: trimmedName,
         birthDate: profileBirthDate,
         gender: profileGender,
-        bank: profileBank.trim(),
-        accountNumber: profileAccountNumber.trim(),
-        accountHolder: profileAccountHolder.trim(),
         color: profileColor,
       };
       updatedFriends = [...friends, newFriend];
@@ -932,7 +909,6 @@ export const FriendCalendar: React.FC = () => {
         const age = calculateAge(f.birthDate);
         parts.push(`생년월일: ${f.birthDate}${age ? ` (${age})` : ''}`);
       }
-      if (f.accountNumber) parts.push(`계좌: ${f.bank ? f.bank + ' ' : ''}${f.accountNumber}${f.accountHolder ? ` (${f.accountHolder})` : ''}`);
       return parts.join(' / ');
     });
     copyToClipboard(lines.join('\n'), 'ALL', '전체 친구 정보가');
@@ -1412,9 +1388,9 @@ export const FriendCalendar: React.FC = () => {
       <div id="calendar-container" className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full min-w-0">
         {/* Calendar Integrated Header Bar */}
         <div className="p-3.5 sm:p-5 border-b border-slate-200 flex flex-col gap-3 bg-white">
-          {/* Top Row: 인적사항, 정산 계좌, (안전 보관함) 및 새 일정 등록 버튼 (빨간 동그라미 위치) */}
+          {/* Top Row: 인적사항, (안전 보관함) 및 새 일정 등록 버튼 (빨간 동그라미 위치) */}
           <div className="flex items-center justify-between gap-2 w-full">
-            {/* 좌측: 인적사항 / 정산 계좌 / 안전 보관함 */}
+            {/* 좌측: 인적사항 / 안전 보관함 */}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               {/* 친구 인적사항 관리 버튼 */}
               <button
@@ -1427,17 +1403,6 @@ export const FriendCalendar: React.FC = () => {
               >
                 <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
                 <span className="hidden sm:inline">친구 인적사항</span>
-              </button>
-
-              {/* 💳 친구 정산 계좌 확인 및 원터치 복사 버튼 */}
-              <button
-                type="button"
-                onClick={() => setIsAccountModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
-                title="친구 정산 계좌 원터치 복사 및 확인"
-              >
-                <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="hidden sm:inline">친구 정산 계좌</span>
               </button>
 
               {/* 🛡️ 데이터 안전 보관함 및 복원 버튼 (관리자/본인 전용) */}
@@ -2373,47 +2338,6 @@ export const FriendCalendar: React.FC = () => {
                           </div>
                         </div>
                       </div>
-
-                      {/* 정산 계좌 정보 (선택) */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:col-span-2 pt-2 border-t border-indigo-100">
-                        <div>
-                          <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
-                            <span>정산 은행명</span>
-                            <span className="text-[10px] text-emerald-600 font-normal">송금용</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={profileBank}
-                            onChange={(e) => setProfileBank(e.target.value)}
-                            placeholder="예: 카카오뱅크, 토스, 신한"
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 text-xs"
-                          />
-                        </div>
-                        <div>
-                          <label className="block font-bold text-slate-700 mb-1">
-                            계좌번호
-                          </label>
-                          <input
-                            type="text"
-                            value={profileAccountNumber}
-                            onChange={(e) => setProfileAccountNumber(e.target.value)}
-                            placeholder="예: 3333-01-1234567"
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800 text-xs"
-                          />
-                        </div>
-                        <div>
-                          <label className="block font-bold text-slate-700 mb-1">
-                            예금주
-                          </label>
-                          <input
-                            type="text"
-                            value={profileAccountHolder}
-                            onChange={(e) => setProfileAccountHolder(e.target.value)}
-                            placeholder="예: 김민수"
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 text-xs"
-                          />
-                        </div>
-                      </div>
                     </div>
 
                     <div className="flex items-center justify-end gap-2 pt-2">
@@ -2499,33 +2423,6 @@ export const FriendCalendar: React.FC = () => {
                               ) : (
                                 <span className="text-[11px] text-slate-400 italic">생년월일 미입력</span>
                               )}
-
-                              {/* Account Number (if exists) */}
-                              {f.accountNumber && (
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    copyToClipboard(
-                                      `${f.bank ? f.bank + ' ' : ''}${f.accountNumber}`,
-                                      `acc_${f.id}`,
-                                      `${f.name}의 계좌번호가`
-                                    )
-                                  }
-                                  className="group flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 rounded-lg text-xs font-mono font-bold transition shadow-2xs"
-                                  title="클릭하여 계좌번호 복사"
-                                >
-                                  <CreditCard className="w-3 h-3 text-emerald-600 shrink-0" />
-                                  <span>
-                                    {f.bank ? `${f.bank} ` : ''}{f.accountNumber}
-                                    {f.accountHolder ? ` (${f.accountHolder})` : ''}
-                                  </span>
-                                  {copiedId === `acc_${f.id}` ? (
-                                    <Check className="w-3 h-3 text-emerald-600 shrink-0" />
-                                  ) : (
-                                    <Copy className="w-3 h-3 text-emerald-500 group-hover:text-emerald-700 transition shrink-0" />
-                                  )}
-                                </button>
-                              )}
                             </div>
                           </div>
 
@@ -2585,225 +2482,6 @@ export const FriendCalendar: React.FC = () => {
         </div>
       )}
 
-      {/* 💳 친구 정산 계좌 모달 */}
-      {isAccountModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
-          <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-700/80 max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden relative my-auto animate-in zoom-in-95 duration-150">
-            {/* Background decorative glows */}
-            <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute right-1/3 -top-12 w-56 h-56 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none" />
-
-            {/* Header */}
-            <div className="relative z-10 px-5 sm:px-6 py-4 sm:py-5 border-b border-white/10 flex items-center justify-between shrink-0 bg-slate-900/60 backdrop-blur-xs">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-500/20 shrink-0">
-                  <CreditCard className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-white flex items-center gap-1.5">
-                      💳 친구 정산 계좌 <span className="text-emerald-400 font-bold">원터치 복사</span>
-                    </h3>
-                    <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      토스·카카오뱅크 바로 송금
-                    </span>
-                  </div>
-                  <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5">
-                    카드를 터치하면 계좌번호가 즉시 복사되어 은행 앱에 바로 붙여넣기할 수 있습니다.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAccountModalOpen(false)}
-                className="text-slate-400 hover:text-white p-2 rounded-xl bg-white/5 hover:bg-white/10 transition shrink-0 ml-2"
-                title="닫기"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Subheader / Status Bar */}
-            <div className="relative z-10 px-5 sm:px-6 py-2.5 bg-white/5 border-b border-white/10 flex items-center justify-between gap-2 shrink-0 flex-wrap">
-              <div className="text-xs text-slate-300 flex items-center gap-2">
-                <span>
-                  등록된 친구: <strong className="text-white">{friends.length}명</strong>
-                </span>
-                {friends.filter((f) => f.accountNumber && f.accountNumber.trim() !== '').length > 0 && (
-                  <span className="text-emerald-400 font-bold">
-                    (계좌 등록 {friends.filter((f) => f.accountNumber && f.accountNumber.trim() !== '').length}명)
-                  </span>
-                )}
-              </div>
-              {copyToastMessage && (
-                <span className="text-xs font-bold text-emerald-300 bg-emerald-950/90 border border-emerald-500/50 px-2.5 py-0.5 rounded-full animate-in fade-in flex items-center gap-1 shadow-xs">
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{copyToastMessage}</span>
-                </span>
-              )}
-            </div>
-
-            {/* Body Content */}
-            <div className="relative z-10 p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
-              {friends.length === 0 ? (
-                <div className="p-8 text-center bg-white/5 rounded-2xl border border-dashed border-white/10 text-xs text-slate-400">
-                  등록된 친구가 없습니다. 친구 인적사항 관리에서 친구를 추가해주세요.
-                </div>
-              ) : (
-                <>
-                  {/* 1. 계좌 등록된 친구들 */}
-                  {friends.filter((f) => f.accountNumber && f.accountNumber.trim() !== '').length > 0 && (
-                    <div>
-                      <div className="text-xs font-bold text-emerald-400 mb-2.5 flex items-center gap-1.5">
-                        <span>계좌 등록 완료 ({friends.filter((f) => f.accountNumber && f.accountNumber.trim() !== '').length}명)</span>
-                        <span className="text-[10px] text-slate-400 font-normal">카드 클릭 시 복사</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {friends
-                          .filter((f) => f.accountNumber && f.accountNumber.trim() !== '')
-                          .map((f) => {
-                            const copyKey = `acc_modal_${f.id}`;
-                            const isCopied = copiedId === copyKey;
-                            const copyText = `${f.bank ? f.bank + ' ' : ''}${f.accountNumber}`;
-                            return (
-                              <div
-                                key={f.id}
-                                onClick={() => copyToClipboard(copyText, copyKey, `${f.name}의 계좌번호가`)}
-                                role="button"
-                                tabIndex={0}
-                                className={`group p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 text-left ${
-                                  isCopied
-                                    ? 'bg-emerald-500/25 border-emerald-400 ring-2 ring-emerald-400/50 shadow-lg scale-[1.01]'
-                                    : 'bg-white/10 hover:bg-white/15 border-white/10 hover:border-white/25 active:scale-[0.98]'
-                                }`}
-                                title="클릭하여 계좌번호 복사"
-                              >
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <div
-                                    className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm text-white shrink-0 shadow-xs"
-                                    style={{ backgroundColor: f.color }}
-                                  >
-                                    {f.name.slice(0, 1)}
-                                  </div>
-                                  <div className="min-w-0">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="font-extrabold text-sm text-white truncate">{f.name}</span>
-                                      {f.bank && (
-                                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-white/15 text-emerald-300 shrink-0">
-                                          {f.bank}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="text-xs font-mono font-medium text-slate-200 tracking-tight truncate mt-0.5">
-                                      {f.accountNumber}
-                                      {f.accountHolder && (
-                                        <span className="text-[11px] text-slate-400 ml-1 font-sans">
-                                          ({f.accountHolder})
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="shrink-0">
-                                  <span
-                                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition shadow-xs ${
-                                      isCopied
-                                        ? 'bg-emerald-500 text-white'
-                                        : 'bg-white/15 text-slate-200 group-hover:bg-white group-hover:text-slate-900'
-                                    }`}
-                                  >
-                                    {isCopied ? (
-                                      <>
-                                        <Check className="w-3.5 h-3.5" />
-                                        <span>복사됨!</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Copy className="w-3.5 h-3.5" />
-                                        <span>복사</span>
-                                      </>
-                                    )}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 2. 계좌 미등록 친구들 */}
-                  {friends.filter((f) => !f.accountNumber || f.accountNumber.trim() === '').length > 0 && (
-                    <div className={friends.filter((f) => f.accountNumber && f.accountNumber.trim() !== '').length > 0 ? "pt-3 border-t border-white/10" : ""}>
-                      <div className="text-xs font-bold text-slate-400 mb-2.5 flex items-center gap-1.5">
-                        <span>계좌 미등록 친구 ({friends.filter((f) => !f.accountNumber || f.accountNumber.trim() === '').length}명)</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        {friends
-                          .filter((f) => !f.accountNumber || f.accountNumber.trim() === '')
-                          .map((f) => (
-                            <div
-                              key={f.id}
-                              className="p-3 rounded-xl border border-dashed border-white/10 bg-white/5 flex items-center justify-between gap-2.5 text-xs text-slate-400"
-                            >
-                              <div className="flex items-center gap-2 min-w-0">
-                                <div
-                                  className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] text-white shrink-0 opacity-70"
-                                  style={{ backgroundColor: f.color }}
-                                >
-                                  {f.name.slice(0, 1)}
-                                </div>
-                                <div className="truncate">
-                                  <span className="font-bold text-slate-300">{f.name}</span>
-                                  <span className="text-[11px] text-slate-500 ml-1.5">계좌 미등록</span>
-                                </div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setIsAccountModalOpen(false);
-                                  resetProfileForm();
-                                  startEditProfile(f);
-                                  setIsFriendProfileModalOpen(true);
-                                }}
-                                className="text-[11px] font-bold text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1 rounded-lg border border-emerald-500/30 transition active:scale-95 shrink-0"
-                              >
-                                + 계좌 등록
-                              </button>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="relative z-10 px-5 sm:px-6 py-3.5 border-t border-white/10 bg-slate-950/70 flex items-center justify-between shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAccountModalOpen(false);
-                  resetProfileForm();
-                  setIsFriendProfileModalOpen(true);
-                }}
-                className="text-xs text-indigo-300 hover:text-indigo-200 font-medium underline underline-offset-4 flex items-center gap-1 transition"
-              >
-                <span>친구 인적사항 관리에서 계좌 수정하기 →</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsAccountModalOpen(false)}
-                className="px-4 py-2 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-bold transition shadow-xs active:scale-95"
-              >
-                닫기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 🛡️ 변경 이력 및 데이터 안전 금고 모달 */}
       {isHistoryModalOpen && (
@@ -3002,83 +2680,6 @@ export const FriendCalendar: React.FC = () => {
 
             {/* Modal Body: Scrollable */}
             <div className="p-6 overflow-y-auto space-y-5 flex-1">
-              {/* 💳 정산 계좌 카드 (상시 확인 및 복사) */}
-              {selectedFriendForSchedule.accountNumber ? (
-                <div className="bg-gradient-to-r from-emerald-50/80 via-slate-50 to-indigo-50/50 border border-emerald-200/60 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                      <CreditCard className="w-5 h-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-semibold text-slate-500 flex items-center gap-1.5 flex-wrap">
-                        <span className="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full text-[10px]">정산 계좌</span>
-                        {selectedFriendForSchedule.accountHolder && (
-                          <span className="text-slate-600 font-medium">예금주: {selectedFriendForSchedule.accountHolder}</span>
-                        )}
-                      </div>
-                      <div className="text-sm sm:text-base font-extrabold text-slate-900 font-mono tracking-tight truncate mt-0.5">
-                        <span className="text-indigo-600 mr-1.5">{selectedFriendForSchedule.bank || '은행'}</span>
-                        {selectedFriendForSchedule.accountNumber}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        copyToClipboard(
-                          `${selectedFriendForSchedule.bank ? selectedFriendForSchedule.bank + ' ' : ''}${selectedFriendForSchedule.accountNumber}`,
-                          `schedule_acc_${selectedFriendForSchedule.id}`,
-                          `${selectedFriendForSchedule.name} 님의 계좌번호가`
-                        )
-                      }
-                      className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm shadow-emerald-600/20"
-                    >
-                      {copiedId === `schedule_acc_${selectedFriendForSchedule.id}` ? (
-                        <>
-                          <Check className="w-3.5 h-3.5" />
-                          <span>복사 완료!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>계좌번호 복사</span>
-                        </>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsFriendScheduleModalOpen(false);
-                        startEditProfile(selectedFriendForSchedule);
-                        setIsFriendProfileModalOpen(true);
-                      }}
-                      className="p-2 text-slate-400 hover:text-slate-600 hover:bg-white rounded-xl border border-transparent hover:border-slate-200 transition"
-                      title="계좌 수정"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-3.5 flex items-center justify-between text-xs text-slate-500">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-slate-400" />
-                    <span>등록된 정산 계좌가 없습니다.</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsFriendScheduleModalOpen(false);
-                      startEditProfile(selectedFriendForSchedule);
-                      setIsFriendProfileModalOpen(true);
-                    }}
-                    className="text-indigo-600 hover:text-indigo-700 font-bold hover:underline"
-                  >
-                    + 계좌 등록하기
-                  </button>
-                </div>
-              )}
 
               {/* Schedules Section Header */}
               <div className="flex items-center justify-between pt-1">
