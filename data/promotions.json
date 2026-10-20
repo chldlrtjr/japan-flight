@@ -18,28 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-14T02:29:10.448829",
-    "updated_at": "2026-10-20T14:30:05.282838+09:00"
-  },
-  {
-    "id": "tway_2433",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "국제선 얼리버드 특가",
-    "subtitle": "유럽부터 일본까지 최대 24% 추가 할인",
-    "badge_text": "얼리버드",
-    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/lpJCX4P079MqpkYQZ_4Nuw==/being/n",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/1006/60af6156-769a-4b71-85f6-89cbfee4d46e.png",
-    "promo_start": "2026-10-10",
-    "promo_end": "2026-10-20",
-    "travel_period": "2026-10-10 ~ 2026-10-20",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "일본 전역",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-11T21:55:22.091972",
-    "updated_at": "2026-10-20T14:30:06.340499+09:00"
+    "updated_at": "2026-10-21T00:26:12.072605+09:00"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -60,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-16T08:34:03.998348",
-    "updated_at": "2026-10-20T14:30:16.248041+09:00"
+    "updated_at": "2026-10-21T00:26:24.905624+09:00"
   },
   {
     "id": "airbusan_october_coupon",
@@ -81,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-20T14:30:16.253993+09:00"
+    "updated_at": "2026-10-21T00:26:24.908724+09:00"
   },
   {
     "id": "eastar_2645",
@@ -123,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-20T14:30:16.252903+09:00"
+    "updated_at": "2026-10-21T00:26:24.907981+09:00"
   },
   {
     "id": "airpremia_sapporo_inauguration",
@@ -144,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-20T14:30:16.255113+09:00"
+    "updated_at": "2026-10-21T00:26:24.909535+09:00"
   },
   {
     "id": "eastar_2505",
@@ -165,6 +144,6 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T00:18:06.121932",
-    "updated_at": "2026-09-29T12:04:37.512390"
+    "updated_at": "2026-10-21T00:26:20.288052+09:00"
   }
 ]
