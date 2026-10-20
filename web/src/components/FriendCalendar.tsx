@@ -60,6 +60,19 @@ interface CalendarBackupSnapshot {
 
 // 🚫 가상/예시 데이터 완전 배제 (Zero Fake Data 원칙)
 // 기본 상태는 비어 있는 깨끗한 상태로 시작하여 가상 인물이 실제 입력을 오염시키지 않도록 보장합니다.
+// 🛡️ 친구 목록 데이터 정제 헬퍼 (여권, 계좌, 영문명 등 민감 필드 원천 차단)
+const sanitizeFriendsList = (rawFriends: any[]): Friend[] => {
+  if (!Array.isArray(rawFriends)) return [];
+  return rawFriends.map((f: any) => ({
+    id: f.id || 'f_' + Date.now(),
+    name: f.name || '',
+    color: f.color || '#3b82f6',
+    birthDate: f.birthDate || '',
+    gender: f.gender || '',
+    memo: f.memo || '',
+  }));
+};
+
 const DEFAULT_FRIENDS: Friend[] = [];
 const INITIAL_EVENTS: CalendarEvent[] = [];
 
@@ -440,9 +453,25 @@ export const FriendCalendar: React.FC = () => {
             setEvents(loadedEvents);
           }
 
-          // 🛡️ 백업 히스토리 로드
+          // 🛡️ 백업 히스토리 로드 (여권, 계좌 등 과거 민감 필드 완전 소거)
           if (data.backupHistory && Array.isArray(data.backupHistory)) {
-            setBackupHistory(data.backupHistory);
+            const sanitizedHistory: CalendarBackupSnapshot[] = data.backupHistory.map((snap: any) => ({
+              savedAt: snap.savedAt || new Date().toISOString(),
+              summary: snap.summary || '',
+              friends: sanitizeFriendsList(snap.friends || []),
+              events: (snap.events || []).map((ev: any) => ({
+                id: ev.id,
+                friendId: ev.friendId,
+                friendIds: ev.friendIds,
+                title: ev.title,
+                startDate: ev.startDate || ev.date || getFormattedDate(new Date()),
+                endDate: ev.endDate || ev.startDate || ev.date || getFormattedDate(new Date()),
+                time: ev.time || '',
+                location: ev.location || '',
+                memo: ev.memo || '',
+              })),
+            }));
+            setBackupHistory(sanitizedHistory);
           }
 
           // 🛡️ 불러온 실제 데이터를 즉시 브라우저 로컬 안전 금고에도 이중 보관!
@@ -505,15 +534,40 @@ export const FriendCalendar: React.FC = () => {
     }
   };
 
-  // 🛡️ 과거 스냅샷 시점으로 즉시 되돌리기 (원클릭 롤백)
+  // 🛡️ 과거 스냅샷 시점으로 즉시 되돌리기 (원클릭 롤백 - 여권/계좌 등은 절대 복원되지 않음)
   const restoreSnapshot = async (snapshot: CalendarBackupSnapshot) => {
     const timeStr = new Date(snapshot.savedAt).toLocaleString();
-    if (confirm(`'${timeStr}' 시점 (${snapshot.summary})으로 데이터를 복원하시겠습니까?`)) {
-      setFriends(snapshot.friends);
+    if (confirm(`'${timeStr}' 시점 (${snapshot.summary})으로 데이터를 복원하시겠습니까?\n(과거에 입력했던 여권이나 계좌 정보는 복원되지 않고 안전하게 제외됩니다)`)) {
+      const cleanFriends = sanitizeFriendsList(snapshot.friends);
+      setFriends(cleanFriends);
       setEvents(snapshot.events);
       setIsHistoryModalOpen(false);
-      await syncToFirestore(snapshot.friends, snapshot.events, `과거 시점 복원 (${timeStr})`);
+      await syncToFirestore(cleanFriends, snapshot.events, `과거 시점 복원 (${timeStr})`);
       alert('성공적으로 이전 시점 데이터로 복원되었습니다!');
+    }
+  };
+
+  // 🛡️ 과거 변경 이력 전체 영구 삭제 (민감정보 완전 소거)
+  const clearAllBackupHistory = async () => {
+    if (confirm('저장된 과거 변경 이력 스냅샷을 모두 삭제하시겠습니까?\n(현재 등록된 친구 목록과 일정은 유지되며, 과거 시점 기록만 영구 소거됩니다)')) {
+      setBackupHistory([]);
+      try {
+        const docRef = doc(db, 'calendar_data', 'shared');
+        await setDoc(
+          docRef,
+          {
+            friends,
+            events,
+            backupHistory: [],
+            updatedAt: new Date().toISOString(),
+          },
+          { merge: true }
+        );
+        alert('과거 변경 이력 스냅샷이 모두 영구 삭제되었습니다.');
+      } catch (err) {
+        console.error('Failed to clear backup history:', err);
+        alert('이력 삭제 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -2554,7 +2608,20 @@ export const FriendCalendar: React.FC = () => {
                     <History className="w-4 h-4 text-indigo-600" />
                     <span>자동 저장된 변경 이력 스냅샷 ({backupHistory.length}/15)</span>
                   </h4>
-                  <span className="text-[11px] text-slate-400">클릭 시 해당 시점으로 원클릭 복원</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[11px] text-slate-400 hidden sm:inline">클릭 시 해당 시점으로 원클릭 복원</span>
+                    {backupHistory.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={clearAllBackupHistory}
+                        className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 transition"
+                        title="과거 모든 변경 이력 스냅샷 영구 삭제"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>이력 전체 비우기</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {backupHistory.length === 0 ? (
