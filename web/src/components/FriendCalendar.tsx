@@ -37,11 +37,8 @@ interface Friend {
   bank?: string;           // 은행명 (예: 카카오뱅크, 신한, 토스 등)
   accountNumber?: string;  // 계좌번호 (예: 3333-01-xxxx)
   accountHolder?: string;  // 예금주 (예: 김민수)
-  englishName?: string;    // 인적사항상 영문 이름 (예: KIM MINSU)
   birthDate?: string;      // 생년월일 (YYYY-MM-DD)
   gender?: 'M' | 'F' | ''; // 성별 (M: 남성, F: 여성)
-  profileNumber?: string; // 인적사항번호 (선택)
-  profileExpiry?: string; // 인적사항 만료일 (YYYY-MM-DD) (선택)
   memo?: string;           // 메모
 }
 
@@ -256,16 +253,13 @@ export const FriendCalendar: React.FC = () => {
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [selectedFriendForSchedule, setSelectedFriendForSchedule] = useState<Friend | null>(null);
 
-  // 친구 인적사항 및 생년월일 프로필 폼 상태
+  // 친구 인적사항(생년월일, 정산 계좌 등) 프로필 폼 상태
   const [editingFriendId, setEditingFriendId] = useState<string | null>(null);
   const [isProfileFormOpen, setIsProfileFormOpen] = useState(false); // 수정/등록 버튼 클릭 시 최상단에 표시
   const profileModalBodyRef = useRef<HTMLDivElement>(null);
   const [profileName, setProfileName] = useState('');
-  const [profileEnglishName, setProfileEnglishName] = useState('');
   const [profileBirthDate, setProfileBirthDate] = useState('');
   const [profileGender, setProfileGender] = useState<'M' | 'F' | ''>('');
-  const [profileprofileNumber, setProfileprofileNumber] = useState('');
-  const [profileprofileExpiry, setProfileprofileExpiry] = useState('');
   const [profileBank, setProfileBank] = useState('');
   const [profileAccountNumber, setProfileAccountNumber] = useState('');
   const [profileAccountHolder, setProfileAccountHolder] = useState('');
@@ -432,12 +426,9 @@ export const FriendCalendar: React.FC = () => {
                 bank: f.bank || '',
                 accountNumber: f.accountNumber || '',
                 accountHolder: f.accountHolder || '',
-                englishName: f.englishName || '',
-                birthDate: f.birthDate || '',
+                                birthDate: f.birthDate || '',
                 gender: f.gender || '',
-                profileNumber: f.profileNumber || '',
-                profileExpiry: f.profileExpiry || '',
-                memo: f.memo || '',
+                                                memo: f.memo || '',
               }));
             setFriends(loadedFriends);
           }
@@ -552,7 +543,7 @@ export const FriendCalendar: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `친구인적사항_일정백업_${getFormattedDate(new Date())}.json`;
+    a.download = `친구일정_백업_${getFormattedDate(new Date())}.json`;
     a.click();
     URL.revokeObjectURL(url);
     alert('친구 정보 백업 파일이 다운로드되었습니다. 스마트폰이나 PC에 소장해두시면 언제든 복원할 수 있습니다!');
@@ -687,26 +678,7 @@ export const FriendCalendar: React.FC = () => {
     return { label: `D-${diffDays}`, color: 'bg-indigo-600 text-white' };
   };
 
-  // 인적사항 만료일 계산
-  const getprofileExpiryInfo = (expiryStr?: string) => {
-    if (!expiryStr) return null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const exp = new Date(expiryStr);
-    exp.setHours(0, 0, 0, 0);
-    if (isNaN(exp.getTime())) return null;
-    const diffTime = exp.getTime() - today.getTime();
-    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-    const isExpired = diffDays <= 0;
-    const isImminent = diffDays > 0 && diffDays <= 180;
-    return {
-      diffDays,
-      isExpired,
-      isImminent,
-      yearsRemaining: (diffDays / 365).toFixed(1),
-    };
-  };
-
+  
   // Open Event Modal
   const openAddEventModal = (defaultDate?: string, defaultFriendId?: string) => {
     const initialDate = defaultDate || getFormattedDate(new Date());
@@ -864,15 +836,12 @@ export const FriendCalendar: React.FC = () => {
     await syncToFirestore(updatedFriends, events);
   };
 
-  // 친구 프로필 (인적사항 영문명, 생년월일, 정산 계좌 등) 폼 리셋
+  // 친구 프로필 (생년월일, 정산 계좌 등) 폼 리셋
   const resetProfileForm = () => {
     setEditingFriendId(null);
     setProfileName('');
-    setProfileEnglishName('');
     setProfileBirthDate('');
     setProfileGender('');
-    setProfileprofileNumber('');
-    setProfileprofileExpiry('');
     setProfileBank('');
     setProfileAccountNumber('');
     setProfileAccountHolder('');
@@ -883,11 +852,8 @@ export const FriendCalendar: React.FC = () => {
   const startEditProfile = (friend: Friend) => {
     setEditingFriendId(friend.id);
     setProfileName(friend.name);
-    setProfileEnglishName(friend.englishName || '');
     setProfileBirthDate(friend.birthDate || '');
     setProfileGender(friend.gender || '');
-    setProfileprofileNumber(friend.profileNumber || '');
-    setProfileprofileExpiry(friend.profileExpiry || '');
     setProfileBank(friend.bank || '');
     setProfileAccountNumber(friend.accountNumber || '');
     setProfileAccountHolder(friend.accountHolder || '');
@@ -915,11 +881,8 @@ export const FriendCalendar: React.FC = () => {
           ? {
               ...f,
               name: trimmedName,
-              englishName: profileEnglishName.trim().toUpperCase(),
               birthDate: profileBirthDate,
               gender: profileGender,
-              profileNumber: profileprofileNumber.trim().toUpperCase(),
-              profileExpiry: profileprofileExpiry,
               bank: profileBank.trim(),
               accountNumber: profileAccountNumber.trim(),
               accountHolder: profileAccountHolder.trim(),
@@ -931,11 +894,8 @@ export const FriendCalendar: React.FC = () => {
       const newFriend: Friend = {
         id: 'f_' + Date.now(),
         name: trimmedName,
-        englishName: profileEnglishName.trim().toUpperCase(),
         birthDate: profileBirthDate,
         gender: profileGender,
-        profileNumber: profileprofileNumber.trim().toUpperCase(),
-        profileExpiry: profileprofileExpiry,
         bank: profileBank.trim(),
         accountNumber: profileAccountNumber.trim(),
         accountHolder: profileAccountHolder.trim(),
@@ -968,13 +928,10 @@ export const FriendCalendar: React.FC = () => {
     if (friends.length === 0) return;
     const lines = friends.map((f) => {
       const parts = [`${f.name}`];
-      if (f.englishName) parts.push(`인적사항명: ${f.englishName}`);
       if (f.birthDate) {
         const age = calculateAge(f.birthDate);
         parts.push(`생년월일: ${f.birthDate}${age ? ` (${age})` : ''}`);
       }
-      if (f.profileNumber) parts.push(`인적사항번호: ${f.profileNumber}`);
-      if (f.profileExpiry) parts.push(`인적사항만료: ${f.profileExpiry}`);
       if (f.accountNumber) parts.push(`계좌: ${f.bank ? f.bank + ' ' : ''}${f.accountNumber}${f.accountHolder ? ` (${f.accountHolder})` : ''}`);
       return parts.join(' / ');
     });
@@ -1388,11 +1345,6 @@ export const FriendCalendar: React.FC = () => {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-bold text-slate-900">{curFriend.name}</span>
-                        {curFriend.englishName && (
-                          <span className="text-xs font-mono font-medium text-slate-500">
-                            ({curFriend.englishName})
-                          </span>
-                        )}
                         <span
                           className={`px-2 py-0.5 text-[11px] font-extrabold rounded-full ${
                             fEvents.length > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'
@@ -1464,18 +1416,17 @@ export const FriendCalendar: React.FC = () => {
           <div className="flex items-center justify-between gap-2 w-full">
             {/* 좌측: 인적사항 / 정산 계좌 / 안전 보관함 */}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              {/* 친구 인적사항 정보 / 생년월일 관리 버튼 */}
+              {/* 친구 인적사항 관리 버튼 */}
               <button
                 onClick={() => {
                   resetProfileForm();
                   setIsFriendProfileModalOpen(true);
                 }}
                 className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 text-indigo-700 border border-indigo-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
-                title="친구 영문 이름(인적사항명) 및 생년월일 관리"
+                title="친구 인적사항 및 생년월일 관리"
               >
                 <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
                 <span className="hidden sm:inline">친구 인적사항</span>
-                <span className="sm:hidden">인적사항</span>
               </button>
 
               {/* 💳 친구 정산 계좌 확인 및 원터치 복사 버튼 */}
@@ -1487,7 +1438,6 @@ export const FriendCalendar: React.FC = () => {
               >
                 <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
                 <span className="hidden sm:inline">친구 정산 계좌</span>
-                <span className="sm:hidden">정산 계좌</span>
               </button>
 
               {/* 🛡️ 데이터 안전 보관함 및 복원 버튼 (관리자/본인 전용) */}
@@ -1499,9 +1449,8 @@ export const FriendCalendar: React.FC = () => {
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                   <span className="hidden sm:inline">안전 보관함 & 이력 복원</span>
-                  <span className="sm:hidden">백업·복원</span>
                   {backupHistory.length > 0 && (
-                    <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                    <span className="hidden sm:inline-block bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
                       {backupHistory.length}
                     </span>
                   )}
@@ -1509,17 +1458,31 @@ export const FriendCalendar: React.FC = () => {
               )}
             </div>
 
-            {/* 우측: 새 일정 등록 버튼 (사용자 지정 빨간 동그라미 위치) */}
-            <button
-              onClick={() => openAddEventModal()}
-              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition active:scale-95 shrink-0"
-            >
-              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span>새 일정 등록</span>
-            </button>
+            {/* 우측: 친구 관리 & 새 일정 등록 버튼 */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {isAdmin && (
+                <button
+                  onClick={() => setIsFriendModalOpen(true)}
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs sm:text-sm font-semibold rounded-xl shadow-2xs transition active:scale-95 shrink-0"
+                  title="친구 목록 및 색상 관리"
+                >
+                  <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />
+                  <span className="hidden sm:inline">친구 관리</span>
+                  <span className="sm:hidden">친구 관리</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => openAddEventModal()}
+                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition active:scale-95 shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>새 일정 등록</span>
+              </button>
+            </div>
           </div>
 
-          {/* Bottom Row: 달력 네비게이션(< 오늘 > & 2026년 10월) 및 작은 검색창 */}
+          {/* Bottom Row: 달력 네비게이션(< 오늘 > & 2026년 10월) 및 검색창 */}
           <div className="flex items-center justify-between gap-2 w-full pt-1 sm:pt-2 border-t border-slate-100">
             {/* Navigation & Title (< 오늘 > 및 2026년 10월) */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -1550,37 +1513,24 @@ export const FriendCalendar: React.FC = () => {
               </h2>
             </div>
 
-            {/* 우측: 원래 새 일정 등록 위치에 작게 배치된 검색창 & 관리자 친구관리 */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <div className="relative w-28 sm:w-44">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                <input
-                  type="text"
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  placeholder="일정 검색..."
-                  className="w-full pl-8 pr-6 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-                />
-                {searchKeyword && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchKeyword('')}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
-                    title="검색어 지우기"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-
-              {/* Manage Friends (관리자 전용) */}
-              {isAdmin && (
+            {/* 우측: 검색창 */}
+            <div className="relative w-32 sm:w-48 shrink-0">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="일정 검색..."
+                className="w-full pl-8 pr-6 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+              />
+              {searchKeyword && (
                 <button
-                  onClick={() => setIsFriendModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold rounded-lg transition shrink-0"
+                  type="button"
+                  onClick={() => setSearchKeyword('')}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  title="검색어 지우기"
                 >
-                  <Users className="w-3.5 h-3.5 text-slate-500" />
-                  <span className="hidden sm:inline">친구 관리</span>
+                  <X className="w-3 h-3" />
                 </button>
               )}
             </div>
@@ -2239,7 +2189,7 @@ export const FriendCalendar: React.FC = () => {
         );
       })()}
 
-      {/* 4. Friend Travel Profile (profile English Name & Birth Date) Modal */}
+      {/* 4. Friend Profile Modal */}
       {isFriendProfileModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-100 flex flex-col max-h-[90vh]">
@@ -2251,13 +2201,11 @@ export const FriendCalendar: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-                    친구 인적사항 & 인적사항 정보
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
-                      항공권 예약용
-                    </span>
+                    친구 인적사항 관리
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">인적사항</span>
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    인적사항상 영문 이름과 생년월일을 관리하고 한 번에 복사할 수 있습니다.
+                    친구의 생년월일과 기본 인적사항을 관리합니다.
                   </p>
                 </div>
               </div>
@@ -2387,21 +2335,6 @@ export const FriendCalendar: React.FC = () => {
                         />
                       </div>
 
-                      {/* 인적사항 영문명 */}
-                      <div>
-                        <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
-                          <span>인적사항 영문명 (profile Name)</span>
-                          <span className="text-[10px] text-indigo-600 font-normal">자동 대문자 변환</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={profileEnglishName}
-                          onChange={(e) => setProfileEnglishName(e.target.value.toUpperCase())}
-                          placeholder="예: KIM MINSU"
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800"
-                        />
-                      </div>
-
                       {/* 생년월일 */}
                       <div>
                         <label className="block font-bold text-slate-700 mb-1">생년월일</label>
@@ -2438,35 +2371,6 @@ export const FriendCalendar: React.FC = () => {
                               className="w-full h-9 p-0.5 border border-slate-200 rounded-xl cursor-pointer bg-white"
                             />
                           </div>
-                        </div>
-                      </div>
-
-                      {/* 인적사항번호 & 인적사항 만료일 (선택) */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:col-span-2">
-                        <div>
-                          <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
-                            <span>인적사항번호 (선택사항)</span>
-                            <span className="text-[10px] text-slate-400">발권 시 빠른 복사 지원</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={profileprofileNumber}
-                            onChange={(e) => setProfileprofileNumber(e.target.value.toUpperCase())}
-                            placeholder="예: M12345678"
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800 text-xs"
-                          />
-                        </div>
-                        <div>
-                          <label className="block font-bold text-slate-700 mb-1 flex items-center justify-between">
-                            <span>인적사항 만료일 (선택사항)</span>
-                            <span className="text-[10px] text-indigo-600 font-normal">6개월 이상 유효 확인</span>
-                          </label>
-                          <input
-                            type="date"
-                            value={profileprofileExpiry}
-                            onChange={(e) => setProfileprofileExpiry(e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 text-xs"
-                          />
                         </div>
                       </div>
 
@@ -2574,24 +2478,7 @@ export const FriendCalendar: React.FC = () => {
 
                             {/* Info Badges */}
                             <div className="flex flex-wrap items-center gap-2 flex-1">
-                              {/* English Name Badge */}
-                              {f.englishName ? (
-                                <button
-                                  type="button"
-                                  onClick={() => copyToClipboard(f.englishName!, `eng_${f.id}`, `${f.name}의 인적사항 영문명이`)}
-                                  className="group flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200/80 rounded-lg text-xs font-mono font-bold transition"
-                                  title="클릭하여 영문명 복사"
-                                >
-                                  <span>{f.englishName}</span>
-                                  {copiedId === `eng_${f.id}` ? (
-                                    <Check className="w-3 h-3 text-emerald-600" />
-                                  ) : (
-                                    <Copy className="w-3 h-3 text-indigo-400 group-hover:text-indigo-600 transition" />
-                                  )}
-                                </button>
-                              ) : (
-                                <span className="text-[11px] text-slate-400 italic">영문명 미입력</span>
-                              )}
+                              
 
                               {/* Birth Date Badge */}
                               {f.birthDate ? (
@@ -2611,40 +2498,6 @@ export const FriendCalendar: React.FC = () => {
                                 </button>
                               ) : (
                                 <span className="text-[11px] text-slate-400 italic">생년월일 미입력</span>
-                              )}
-
-                              {/* profile Number (if exists) */}
-                              {f.profileNumber && (
-                                <button
-                                  type="button"
-                                  onClick={() => copyToClipboard(f.profileNumber!, `pass_${f.id}`, `${f.name}의 인적사항번호가`)}
-                                  className="group flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 rounded-lg text-xs font-mono font-semibold transition"
-                                  title="클릭하여 인적사항번호 복사"
-                                >
-                                  <span>인적사항: {f.profileNumber}</span>
-                                  {copiedId === `pass_${f.id}` ? (
-                                    <Check className="w-3 h-3 text-emerald-600" />
-                                  ) : (
-                                    <Copy className="w-3 h-3 text-amber-500 group-hover:text-amber-700 transition" />
-                                  )}
-                                </button>
-                              )}
-
-                              {/* profile Expiry (if exists) */}
-                              {f.profileExpiry && (
-                                <button
-                                  type="button"
-                                  onClick={() => copyToClipboard(f.profileExpiry!, `pass_exp_${f.id}`, `${f.name}의 인적사항 만료일이`)}
-                                  className="group flex items-center gap-1 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200/80 rounded-lg text-xs font-mono font-semibold transition"
-                                  title="클릭하여 인적사항 만료일 복사"
-                                >
-                                  <span>만료: {f.profileExpiry}</span>
-                                  {copiedId === `pass_exp_${f.id}` ? (
-                                    <Check className="w-3 h-3 text-emerald-600" />
-                                  ) : (
-                                    <Copy className="w-3 h-3 text-rose-400 group-hover:text-rose-600 transition" />
-                                  )}
-                                </button>
                               )}
 
                               {/* Account Number (if exists) */}
@@ -3118,8 +2971,7 @@ export const FriendCalendar: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-xs text-slate-500">
-                    {selectedFriendForSchedule.englishName || '영문명 미등록'}
-                    {selectedFriendForSchedule.birthDate && ` · ${selectedFriendForSchedule.birthDate}`}
+                    {selectedFriendForSchedule.birthDate ? selectedFriendForSchedule.birthDate : '생년월일 미등록'}
                     {selectedFriendForSchedule.birthDate && calculateAge(selectedFriendForSchedule.birthDate) && ` (${calculateAge(selectedFriendForSchedule.birthDate)})`}
                   </p>
                 </div>
