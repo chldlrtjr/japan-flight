@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-14T02:29:10.448829",
-    "updated_at": "2026-10-21T07:46:37.889703+09:00"
+    "updated_at": "2026-10-21T10:05:22.960018+09:00"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-16T08:34:03.998348",
-    "updated_at": "2026-10-21T07:46:50.733104+09:00"
+    "updated_at": "2026-10-21T10:05:34.617970+09:00"
   },
   {
     "id": "airbusan_october_coupon",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-21T07:46:50.736783+09:00"
+    "updated_at": "2026-10-21T10:05:34.621258+09:00"
   },
   {
     "id": "eastar_2645",
@@ -102,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-21T07:46:50.735794+09:00"
+    "updated_at": "2026-10-21T10:05:34.620406+09:00"
   },
   {
     "id": "airpremia_sapporo_inauguration",
@@ -123,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-21T07:46:50.737684+09:00"
+    "updated_at": "2026-10-21T10:05:34.622165+09:00"
   },
   {
     "id": "eastar_2505",
@@ -144,6 +144,6 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T00:18:06.121932",
-    "updated_at": "2026-10-21T07:46:46.033717+09:00"
+    "updated_at": "2026-10-21T10:05:30.146798+09:00"
   }
 ]
