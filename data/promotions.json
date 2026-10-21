@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-14T02:29:10.448829",
-    "updated_at": "2026-10-21T21:32:01.440744+09:00"
+    "updated_at": "2026-10-22T02:44:27.293353+09:00"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-16T08:34:03.998348",
-    "updated_at": "2026-10-21T21:32:13.059704+09:00"
+    "updated_at": "2026-10-22T02:44:39.781528+09:00"
   },
   {
     "id": "airbusan_october_coupon",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-21T21:32:13.063444+09:00"
+    "updated_at": "2026-10-22T02:44:39.785205+09:00"
   },
   {
     "id": "eastar_2645",
@@ -84,27 +84,6 @@
     "updated_at": "2026-10-03T18:00:44.137009"
   },
   {
-    "id": "airseoul_takamatsu_10th",
-    "airline": "에어서울",
-    "airline_code": "AIR_SEOUL",
-    "title": "에어서울 함께한 다카마쓰 10년, 취향 발견 & 10주년 특별 혜택 프로모션",
-    "subtitle": "나만의 다카마쓰 여행성향 확인하고 10주년 기념 특별 혜택 받기",
-    "badge_text": "10주년기념",
-    "detail_url": "https://flyairseoul.com/CW/ko/eventView.do?seq=2240&type=I",
-    "image_url": "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80",
-    "promo_start": "2026-09-22",
-    "promo_end": "2026-10-21",
-    "travel_period": "2026-09-22 ~ 2026-11-30",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "다카마쓰",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-03T20:20:56.147220",
-    "updated_at": "2026-10-21T21:32:13.062422+09:00"
-  },
-  {
     "id": "airpremia_sapporo_inauguration",
     "airline": "에어프레미아",
     "airline_code": "AIR_PREMIA",
@@ -123,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-21T21:32:13.064475+09:00"
+    "updated_at": "2026-10-22T02:44:39.786889+09:00"
   },
   {
     "id": "eastar_2505",
@@ -144,6 +123,6 @@
     "is_featured": 0,
     "view_count": 0,
     "created_at": "2026-09-29T00:18:06.121932",
-    "updated_at": "2026-10-21T21:32:08.333670+09:00"
+    "updated_at": "2026-10-22T02:44:35.057291+09:00"
   }
 ]
