@@ -25,6 +25,9 @@ import {
   History,
   ShieldCheck,
   RotateCcw,
+  ChevronDown,
+  ChevronUp,
+  Flame,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
@@ -152,6 +155,19 @@ const calculateDuration = (startStr: string, endStr: string) => {
   if (diffDays === 1) return '당일 (1일)';
   const nights = diffDays - 1;
   return `총 ${diffDays}일간 (${nights}박 ${diffDays}일)`;
+};
+
+// 콤팩트한 M.D(요일) 날짜 문자열 포맷팅 헬퍼
+const formatShortDateWithDay = (dateStr: string) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  const m = parseInt(parts[1], 10);
+  const d = parseInt(parts[2], 10);
+  const date = new Date(parseInt(parts[0], 10), m - 1, d);
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  const dayName = days[date.getDay()] || '';
+  return `${m}.${d}(${dayName})`;
 };
 
 // 🇰🇷 대한민국 법정 공휴일 및 대체공휴일 매핑 데이터 (2024~2028년)
@@ -317,6 +333,8 @@ export const FriendCalendar: React.FC = () => {
   const [isFriendProfileModalOpen, setIsFriendProfileModalOpen] = useState(false);
   const [isFriendScheduleModalOpen, setIsFriendScheduleModalOpen] = useState(false);
   const [selectedFriendForSchedule, setSelectedFriendForSchedule] = useState<Friend | null>(null);
+  // ⏰ 다가오는 약속 위젯 접기/펼치기 상태
+  const [isCountdownCollapsed, setIsCountdownCollapsed] = useState<boolean>(false);
 
   // 친구 인적사항(생년월일 등) 프로필 폼 상태
   const [editingFriendId, setEditingFriendId] = useState<string | null>(null);
@@ -749,6 +767,140 @@ export const FriendCalendar: React.FC = () => {
     const diffDays = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     return { label: `D-${diffDays}`, color: 'bg-indigo-600 text-white' };
   };
+
+  // ⏰ 다가오는 약속 위젯용 정밀 카운트다운 및 상태 계산
+  const getEventCountdownDetail = (event: CalendarEvent) => {
+    const now = new Date();
+    const todayStr = getFormattedDate(now);
+    const endStr = event.endDate || event.startDate;
+    const isOngoing = todayStr >= event.startDate && todayStr <= endStr;
+
+    // 1. 이미 종료된 과거 일정
+    if (todayStr > endStr) {
+      return {
+        type: 'past',
+        badge: '종료됨',
+        badgeColor: 'bg-slate-100 text-slate-500 border border-slate-200',
+        subText: '완료된 일정',
+        isUrgent: false,
+      };
+    }
+
+    // 2. 현재 진행 중인 다일정 (시작일이 오늘 이전이고 아직 종료일 이전)
+    if (isOngoing && event.startDate !== todayStr) {
+      const start = new Date(event.startDate);
+      const diffTime = now.getTime() - start.getTime();
+      const currentDayNum = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      return {
+        type: 'ongoing',
+        badge: '🔥 진행 중',
+        badgeColor: 'bg-emerald-600 text-white animate-pulse shadow-2xs',
+        subText: `${currentDayNum}일차 진행 중`,
+        isUrgent: true,
+      };
+    }
+
+    // 3. 오늘 당일 (D-Day)
+    if (event.startDate === todayStr) {
+      let timeDetail = '오늘 일정';
+      if (event.time) {
+        const [h, m] = event.time.split(':').map(Number);
+        if (!isNaN(h) && !isNaN(m)) {
+          const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+          const diffMinutes = Math.round((targetTime.getTime() - now.getTime()) / (1000 * 60));
+          if (diffMinutes > 60) {
+            const remH = Math.floor(diffMinutes / 60);
+            const remM = diffMinutes % 60;
+            timeDetail = remM > 0 ? `약 ${remH}시간 ${remM}분 후` : `약 ${remH}시간 후`;
+          } else if (diffMinutes > 0) {
+            timeDetail = `${diffMinutes}분 후 시작`;
+          } else if (diffMinutes >= -180) {
+            timeDetail = '지금 약속 진행 중';
+          } else {
+            timeDetail = '오늘 완료';
+          }
+        }
+      }
+      return {
+        type: 'today',
+        badge: '🚨 D-Day 오늘',
+        badgeColor: 'bg-rose-500 text-white font-extrabold animate-pulse shadow-xs',
+        subText: timeDetail,
+        isUrgent: true,
+      };
+    }
+
+    // 4. 미래 다가오는 일정
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(event.startDate);
+    target.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      return {
+        type: 'tomorrow',
+        badge: '⚡ D-1 내일',
+        badgeColor: 'bg-amber-500 text-white font-extrabold shadow-xs',
+        subText: event.time ? `내일 ${event.time}` : '내일 예정',
+        isUrgent: true,
+      };
+    }
+
+    if (diffDays <= 7) {
+      return {
+        type: 'thisWeek',
+        badge: `D-${diffDays}`,
+        badgeColor: 'bg-indigo-600 text-white font-extrabold shadow-xs',
+        subText: `${diffDays}일 남음`,
+        isUrgent: false,
+      };
+    }
+
+    return {
+      type: 'upcoming',
+      badge: `D-${diffDays}`,
+      badgeColor: 'bg-slate-700 text-white font-semibold',
+      subText: `${diffDays}일 남음`,
+      isUrgent: false,
+    };
+  };
+
+  // ⏰ 다가오는 약속 위젯 접기/펼치기 토글
+  const toggleCountdownCollapse = () => {
+    setIsCountdownCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('flypromo_countdown_collapsed', String(next));
+      } catch (e) {}
+      return next;
+    });
+  };
+
+  // ⏰ 다가오는 약속 목록 (오늘 진행 중이거나 앞으로 남은 일정, 시작일 빠른 순)
+  const upcomingEvents = useMemo(() => {
+    const todayStr = getFormattedDate(new Date());
+    return events
+      .filter((ev) => {
+        const endStr = ev.endDate || ev.startDate;
+        if (endStr < todayStr) return false; // 완전히 지난 과거 일정 제외
+
+        const evFriendIds = getEventFriendIds(ev);
+        if (activeFilterFriendId === 'UNASSIGNED') {
+          return evFriendIds.length === 0;
+        }
+        if (activeFilterFriendId !== 'ALL') {
+          return evFriendIds.includes(activeFilterFriendId) || ev.friendId === activeFilterFriendId;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        if (a.startDate !== b.startDate) {
+          return a.startDate.localeCompare(b.startDate);
+        }
+        return (a.time || '').localeCompare(b.time || '');
+      });
+  }, [events, activeFilterFriendId]);
 
   
   // Open Event Modal
@@ -1468,6 +1620,192 @@ export const FriendCalendar: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* ⏰ 다가오는 약속 (D-Day 카운트다운) 위젯 */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden transition-all duration-200">
+        {/* 위젯 헤더 */}
+        <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-slate-50 via-white to-indigo-50/30 border-b border-slate-100 flex items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+              <Clock className="w-3.5 h-3.5" />
+            </div>
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                {activeFilterFriendId === 'ALL'
+                  ? '다가오는 약속'
+                  : activeFilterFriendId === 'UNASSIGNED'
+                  ? '다가오는 오픈 약속'
+                  : `${friends.find((f) => f.id === activeFilterFriendId)?.name || '친구'} 님과의 약속`}
+              </h3>
+              <span className="px-2 py-0.2 sm:py-0.5 bg-indigo-100 text-indigo-700 text-[10px] sm:text-[11px] font-extrabold rounded-full shrink-0">
+                {upcomingEvents.length}건
+              </span>
+            </div>
+          </div>
+
+          {/* 헤더 우측: 다음 일정 간략 힌트 및 접기/펼치기 */}
+          <div className="flex items-center gap-2 shrink-0">
+            {upcomingEvents.length > 0 && isCountdownCollapsed && (
+              <span className="text-[11px] text-indigo-700 font-bold bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200/60 hidden md:inline-block truncate max-w-[280px]">
+                다음: {upcomingEvents[0].title} ({getEventCountdownDetail(upcomingEvents[0]).badge})
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={toggleCountdownCollapse}
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition"
+              title={isCountdownCollapsed ? '다가오는 약속 펼치기' : '다가오는 약속 접기'}
+            >
+              <span className="hidden sm:inline">{isCountdownCollapsed ? '펼치기' : '접기'}</span>
+              {isCountdownCollapsed ? (
+                <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+              ) : (
+                <ChevronUp className="w-3.5 h-3.5 text-slate-500" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* 위젯 본문: 카드 슬라이더 또는 빈 안내 */}
+        {!isCountdownCollapsed && (
+          <div className="p-3 sm:p-4">
+            {upcomingEvents.length === 0 ? (
+              <div className="py-5 px-4 text-center rounded-xl bg-slate-50/70 border border-dashed border-slate-200 flex flex-col items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-1.5">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <p className="text-xs font-bold text-slate-700 mb-0.5">
+                  {activeFilterFriendId === 'ALL'
+                    ? '예정된 다가오는 약속이 없습니다.'
+                    : '해당 조건의 다가오는 약속이 없습니다.'}
+                </p>
+                <p className="text-[11px] text-slate-400 mb-2.5">
+                  새 일정을 등록하여 다가오는 약속의 D-Day를 확인해 보세요!
+                </p>
+                <button
+                  type="button"
+                  onClick={() => openAddEventModal()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition shadow-2xs active:scale-95"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>새 일정 등록</span>
+                </button>
+              </div>
+            ) : (
+              <div
+                className="flex items-stretch gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar pb-1 pt-0.5"
+                onWheel={(e) => {
+                  if (e.deltaY !== 0) {
+                    e.currentTarget.scrollLeft += e.deltaY;
+                  }
+                }}
+              >
+                {upcomingEvents.map((ev, idx) => {
+                  const detail = getEventCountdownDetail(ev);
+                  const evFriends = getEventFriends(ev);
+                  const isFirst = idx === 0;
+
+                  return (
+                    <div
+                      key={ev.id}
+                      onClick={() => {
+                        jumpToDate(ev.startDate);
+                        setSelectedEvent(ev);
+                      }}
+                      className={`min-w-[230px] max-w-[260px] sm:min-w-[250px] sm:max-w-[280px] shrink-0 rounded-xl p-3 sm:p-3.5 border transition cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
+                        isFirst
+                          ? 'bg-gradient-to-br from-indigo-50/60 via-white to-white border-indigo-300 ring-2 ring-indigo-500/10'
+                          : 'bg-white hover:bg-slate-50/80 border-slate-200 hover:border-indigo-200'
+                      }`}
+                    >
+                      {/* 카드 상단: D-Day 뱃지 & 보조 힌트 */}
+                      <div>
+                        <div className="flex items-center justify-between gap-1.5 mb-2">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold flex items-center gap-1 shrink-0 ${detail.badgeColor}`}
+                          >
+                            {detail.badge}
+                          </span>
+                          <span className="text-[11px] font-bold text-slate-500 truncate text-right">
+                            {detail.subText}
+                          </span>
+                        </div>
+
+                        {/* 카드 제목 */}
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition line-clamp-1 mb-1.5">
+                          {ev.title}
+                        </h4>
+
+                        {/* 날짜 / 시간 정보 */}
+                        <div className="space-y-1 text-[11px] text-slate-500">
+                          <div className="flex items-center gap-1.5">
+                            <CalendarIcon className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span className="font-semibold text-slate-700">
+                              {formatShortDateWithDay(ev.startDate)}
+                              {ev.endDate && ev.endDate !== ev.startDate
+                                ? ` ~ ${formatShortDateWithDay(ev.endDate)}`
+                                : ''}
+                            </span>
+                            {ev.time && (
+                              <span className="text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.2 rounded text-[10px]">
+                                {ev.time}
+                              </span>
+                            )}
+                          </div>
+
+                          {ev.location && (
+                            <div className="flex items-center gap-1.5 truncate text-slate-500">
+                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span className="truncate">{ev.location}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 카드 하단: 참여 친구 아바타 & 바로가기 화살표 */}
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1 overflow-hidden min-w-0">
+                          {evFriends.length === 0 ? (
+                            <span className="text-[10px] text-slate-400 font-medium">🤝 참여자 미정</span>
+                          ) : (
+                            <div className="flex items-center gap-1 flex-wrap">
+                              {evFriends.slice(0, 3).map((f) => (
+                                <span
+                                  key={f.id}
+                                  className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                                  style={{
+                                    backgroundColor: `${f.color}15`,
+                                    color: f.color,
+                                  }}
+                                >
+                                  <span
+                                    className="w-1.5 h-1.5 rounded-full"
+                                    style={{ backgroundColor: f.color }}
+                                  />
+                                  <span className="truncate max-w-[45px]">{f.name}</span>
+                                </span>
+                              ))}
+                              {evFriends.length > 3 && (
+                                <span className="text-[10px] text-slate-400 font-bold">
+                                  +{evFriends.length - 3}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <span className="w-5 h-5 rounded-full bg-slate-100 group-hover:bg-indigo-600 text-slate-400 group-hover:text-white flex items-center justify-center transition shrink-0">
+                          <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Calendar Grid Container (상단 컨트롤 바와 달력 그리드가 일체형으로 통합) */}
       <div id="calendar-container" className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full min-w-0">
