@@ -1802,15 +1802,7 @@ export const FriendCalendar: React.FC = () => {
                       <CalendarIcon className="w-3.5 h-3.5" />
                       <span>전체 일정 보기 ({fEvents.length})</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => openAddEventModal(undefined, curFriend.id)}
-                      className="px-2.5 sm:px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition flex items-center gap-1 shadow-2xs active:scale-95 cursor-pointer"
-                      title="해당 친구 일정 등록 모달"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>+ 일정 등록</span>
-                    </button>
+
                     <button
                       type="button"
                       onClick={() => setActiveFilterFriendId('ALL')}
