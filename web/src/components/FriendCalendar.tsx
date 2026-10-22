@@ -1959,8 +1959,8 @@ export const FriendCalendar: React.FC = () => {
                             key={f.id}
                             type="button"
                             onClick={() => {
-                              setActiveFilterFriendId(f.id);
                               setIsFriendFilterDropdownOpen(false);
+                              openFriendSchedule(f);
                             }}
                             className={`w-full px-2.5 py-1.5 text-xs rounded-xl flex items-center justify-between transition cursor-pointer ${
                               isSelected
