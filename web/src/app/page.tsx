@@ -22,7 +22,7 @@ export default function Home() {
   const [selectedPromo, setSelectedPromo] = useState<Promotion | null>(null);
 
   // Tab: 'promotions' (공식 특가) | 'news' (특가 기사) | 'calendar' (친구 일정 달력)
-  const [activeTab, setActiveTab] = useState<'promotions' | 'news' | 'calendar'>('promotions');
+  const [activeTab, setActiveTab] = useState<'promotions' | 'news' | 'calendar'>('calendar');
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
   // 탭 변경 시 URL Hash 및 LocalStorage에 저장
@@ -40,7 +40,7 @@ export default function Home() {
 
   // 새로고침 시 탭 복원 및 클라이언트 마운트 완료 처리 (Hydration 에러 방지)
   useEffect(() => {
-    let initialTab: 'promotions' | 'news' | 'calendar' = 'promotions';
+    let initialTab: 'promotions' | 'news' | 'calendar' = 'calendar';
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.replace('#', '');
       if (hash === 'calendar' || hash === 'news' || hash === 'promotions') {
@@ -216,9 +216,9 @@ export default function Home() {
         </div>
       )}
 
-      {/* Global Navbar (친구 일정 캘린더 탭에서는 모바일 화면에서 숨김 처리) */}
+      {/* Global Navbar (모바일 화면에서는 모든 카테고리에서 상단 헤더 숨김 처리) */}
       <Navbar
-        className={activeTab === 'calendar' ? 'hidden sm:block' : ''}
+        className="hidden sm:block"
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
         bookmarkCount={bookmarkedIds.length}
@@ -231,6 +231,18 @@ export default function Home() {
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full min-w-0">
         {/* Tab Switcher: Airline Website Events vs Flight News vs Friend Calendar */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-6 border-b border-slate-200 w-full min-w-0">
+          <button
+            onClick={() => handleTabChange('calendar')}
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
+              activeTab === 'calendar'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Calendar className="w-4 h-4 shrink-0" />
+            <span className="truncate">📅 친구 일정 캘린더</span>
+          </button>
+
           <button
             onClick={() => handleTabChange('promotions')}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
@@ -267,18 +279,6 @@ export default function Home() {
             >
               {totalNewsCount}
             </span>
-          </button>
-
-          <button
-            onClick={() => handleTabChange('calendar')}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
-              activeTab === 'calendar'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
-          >
-            <Calendar className="w-4 h-4 shrink-0" />
-            <span className="truncate">📅 친구 일정 캘린더</span>
           </button>
         </div>
 
@@ -433,7 +433,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 mt-16 py-8 text-center text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 일본특가모아 (JapanFlight). 한일 전 노선 항공권 프로모션 애그리게이터.</p>
+          <p>© 2026 모임 수첩. 모임 일정 및 프로모션 애그리게이터.</p>
           <p className="text-slate-400">
             각 프로모션의 세부 운임 규정 및 예약은 해당 항공사 공식 사이트를 기준으로 합니다.
           </p>

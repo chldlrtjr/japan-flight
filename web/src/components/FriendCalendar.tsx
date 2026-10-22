@@ -58,21 +58,6 @@ interface CalendarBackupSnapshot {
   events: CalendarEvent[];
 }
 
-// 🚫 가상/예시 데이터 완전 배제 (Zero Fake Data 원칙)
-// 기본 상태는 비어 있는 깨끗한 상태로 시작하여 가상 인물이 실제 입력을 오염시키지 않도록 보장합니다.
-// 🛡️ 친구 목록 데이터 정제 헬퍼 (여권, 계좌, 영문명 등 민감 필드 원천 차단)
-const sanitizeFriendsList = (rawFriends: any[]): Friend[] => {
-  if (!Array.isArray(rawFriends)) return [];
-  return rawFriends.map((f: any) => ({
-    id: f.id || 'f_' + Date.now(),
-    name: f.name || '',
-    color: f.color || '#3b82f6',
-    birthDate: f.birthDate || '',
-    gender: f.gender || '',
-    memo: f.memo || '',
-  }));
-};
-
 const DEFAULT_FRIENDS: Friend[] = [];
 const INITIAL_EVENTS: CalendarEvent[] = [];
 
@@ -81,6 +66,78 @@ const getFormattedDate = (date: Date) => {
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
+};
+
+// 🚫 가상/예시 데이터 완전 배제 (Zero Fake Data 원칙)
+// 기본 상태는 비어 있는 깨끗한 상태로 시작하여 가상 인물이 실제 입력을 오염시키지 않도록 보장합니다.
+// 🛡️ 친구 데이터 무결성 보장 헬퍼 (undefined 원천 차단 및 필수 필드 정규화)
+const sanitizeFriend = (f: any): Friend => ({
+  id: String(f?.id || 'f_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7)),
+  name: String(f?.name || '').trim(),
+  color: String(f?.color || '#3b82f6'),
+  birthDate: String(f?.birthDate || ''),
+  gender: f?.gender === 'M' || f?.gender === 'F' ? f.gender : '',
+  memo: String(f?.memo || ''),
+});
+
+const sanitizeFriendsList = (rawFriends: any[]): Friend[] => {
+  if (!Array.isArray(rawFriends)) return [];
+  return rawFriends.map(sanitizeFriend);
+};
+
+// 🛡️ 일정 데이터 무결성 보장 헬퍼 (undefined 원천 차단 및 복수 참여자/하위 호환 완벽 정규화)
+const sanitizeEvent = (ev: any): CalendarEvent => {
+  const friendIds: string[] = Array.isArray(ev?.friendIds)
+    ? ev.friendIds.map((id: any) => String(id || '').trim()).filter(Boolean)
+    : ev?.friendId
+    ? [String(ev.friendId).trim()].filter(Boolean)
+    : [];
+
+  const primaryFriendId = ev?.friendId ? String(ev.friendId).trim() : (friendIds[0] || '');
+  const fallbackDate = getFormattedDate(new Date());
+
+  return {
+    id: String(ev?.id || 'ev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7)),
+    friendId: primaryFriendId,
+    friendIds: friendIds,
+    title: String(ev?.title || '').trim(),
+    startDate: String(ev?.startDate || ev?.date || fallbackDate),
+    endDate: String(ev?.endDate || ev?.startDate || ev?.date || fallbackDate),
+    time: String(ev?.time || ''),
+    location: String(ev?.location || ''),
+    memo: String(ev?.memo || ''),
+  };
+};
+
+const sanitizeEventsList = (rawEvents: any[]): CalendarEvent[] => {
+  if (!Array.isArray(rawEvents)) return [];
+  return rawEvents.map(sanitizeEvent);
+};
+
+// 🛡️ 변경 이력 스냅샷 정제 헬퍼 (스냅샷 내부의 과거 일정/친구 undefined 방지)
+const sanitizeBackupSnapshot = (snap: any): CalendarBackupSnapshot => ({
+  savedAt: String(snap?.savedAt || new Date().toISOString()),
+  summary: String(snap?.summary || ''),
+  friends: sanitizeFriendsList(snap?.friends || []),
+  events: sanitizeEventsList(snap?.events || []),
+});
+
+// 🛡️ Firestore 직렬화 시 undefined 값 완전 박멸 헬퍼 (Deep Recursive Cleanser)
+const stripUndefinedDeep = (obj: any): any => {
+  if (obj === undefined) return null;
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) {
+    return obj
+      .filter((item) => item !== undefined)
+      .map((item) => stripUndefinedDeep(item));
+  }
+  const cleaned: Record<string, any> = {};
+  for (const [key, val] of Object.entries(obj)) {
+    if (val !== undefined) {
+      cleaned[key] = stripUndefinedDeep(val);
+    }
+  }
+  return cleaned;
 };
 
 // 두 날짜 사이의 일수 및 박수 계산 헬퍼
@@ -423,15 +480,8 @@ export const FriendCalendar: React.FC = () => {
           const sampleNames = ['민수', '지은', '태호', '수빈', '동현'];
           if (data.friends && Array.isArray(data.friends)) {
             loadedFriends = data.friends
-              .filter((f: any) => !sampleNames.includes(f.name))
-              .map((f: any) => ({
-                id: f.id,
-                name: f.name,
-                color: f.color || '#3b82f6',
-                                birthDate: f.birthDate || '',
-                gender: f.gender || '',
-                                                memo: f.memo || '',
-              }));
+              .filter((f: any) => !sampleNames.includes(f?.name))
+              .map(sanitizeFriend);
             setFriends(loadedFriends);
           }
 
@@ -439,38 +489,14 @@ export const FriendCalendar: React.FC = () => {
             // 과거 데이터(date 단일 필드) 호환성 보정 및 예시 일정 제거
             const sampleKeywords = ['민수', '지은', '태호', '수빈', '동현', '오사카 특가 여행 계획 회의', '후쿠오카 주말 특가', '도쿄 시부야 모임'];
             loadedEvents = data.events
-              .filter((ev: any) => !sampleKeywords.some((k) => (ev.title || '').includes(k)))
-              .map((ev: any) => ({
-                id: ev.id,
-                friendId: ev.friendId,
-                title: ev.title,
-                startDate: ev.startDate || ev.date || getFormattedDate(new Date()),
-                endDate: ev.endDate || ev.startDate || ev.date || getFormattedDate(new Date()),
-                time: ev.time || '',
-                location: ev.location || '',
-                memo: ev.memo || '',
-              }));
+              .filter((ev: any) => !sampleKeywords.some((k) => (ev?.title || '').includes(k)))
+              .map(sanitizeEvent);
             setEvents(loadedEvents);
           }
 
-          // 🛡️ 백업 히스토리 로드 (여권, 계좌 등 과거 민감 필드 완전 소거)
+          // 🛡️ 백업 히스토리 로드 (여권, 계좌 등 과거 민감 필드 완전 소거 및 undefined 원천 방지)
           if (data.backupHistory && Array.isArray(data.backupHistory)) {
-            const sanitizedHistory: CalendarBackupSnapshot[] = data.backupHistory.map((snap: any) => ({
-              savedAt: snap.savedAt || new Date().toISOString(),
-              summary: snap.summary || '',
-              friends: sanitizeFriendsList(snap.friends || []),
-              events: (snap.events || []).map((ev: any) => ({
-                id: ev.id,
-                friendId: ev.friendId,
-                friendIds: ev.friendIds,
-                title: ev.title,
-                startDate: ev.startDate || ev.date || getFormattedDate(new Date()),
-                endDate: ev.endDate || ev.startDate || ev.date || getFormattedDate(new Date()),
-                time: ev.time || '',
-                location: ev.location || '',
-                memo: ev.memo || '',
-              })),
-            }));
+            const sanitizedHistory: CalendarBackupSnapshot[] = data.backupHistory.map(sanitizeBackupSnapshot);
             setBackupHistory(sanitizedHistory);
           }
 
@@ -501,7 +527,9 @@ export const FriendCalendar: React.FC = () => {
   // Update Firestore helper (3중 보호 안전 가드 & 자동 히스토리 누적 적용)
   const syncToFirestore = async (newFriends: Friend[], newEvents: CalendarEvent[], actionNote = '정보 업데이트') => {
     // 🛡️ 1단계: 브라우저 로컬 안전 금고에 즉시 0.001초 만에 1차 영구 보관!
-    saveToLocalVault(newFriends, newEvents);
+    const cleanFriends = sanitizeFriendsList(newFriends);
+    const cleanEvents = sanitizeEventsList(newEvents);
+    saveToLocalVault(cleanFriends, cleanEvents);
 
     if (!hasLoadedFromFirestore) {
       console.warn('초기 데이터 로딩 완료 전에 클라우드 덮어쓰기 방지 작동됨');
@@ -514,20 +542,23 @@ export const FriendCalendar: React.FC = () => {
       // 🛡️ 2단계: 과거 15개 시점 변경 이력 자동 스냅샷 생성!
       const newSnapshot: CalendarBackupSnapshot = {
         savedAt: new Date().toISOString(),
-        summary: `${actionNote} (친구 ${newFriends.length}명, 일정 ${newEvents.length}개)`,
-        friends: newFriends,
-        events: newEvents,
+        summary: `${actionNote} (친구 ${cleanFriends.length}명, 일정 ${cleanEvents.length}개)`,
+        friends: cleanFriends,
+        events: cleanEvents,
       };
-      const updatedHistory = [newSnapshot, ...(backupHistory || []).slice(0, 14)];
+      const rawHistory = [newSnapshot, ...(backupHistory || []).slice(0, 14)];
+      const updatedHistory = rawHistory.map(sanitizeBackupSnapshot);
       setBackupHistory(updatedHistory);
 
-      // 🛡️ 3단계: 클라우드 Firestore 영구 저장
-      await setDoc(docRef, {
-        friends: newFriends,
-        events: newEvents,
+      // 🛡️ 3단계: 클라우드 Firestore 영구 저장 (undefined 완전 제거 보장)
+      const payload = stripUndefinedDeep({
+        friends: cleanFriends,
+        events: cleanEvents,
         backupHistory: updatedHistory,
         updatedAt: new Date().toISOString(),
       });
+
+      await setDoc(docRef, payload);
     } catch (err) {
       console.error('Failed to sync to Firestore:', err);
       alert('클라우드 저장 실패! 하지만 브라우저 영구 안전 금고에 안전하게 보관되었습니다.');
@@ -539,10 +570,11 @@ export const FriendCalendar: React.FC = () => {
     const timeStr = new Date(snapshot.savedAt).toLocaleString();
     if (confirm(`'${timeStr}' 시점 (${snapshot.summary})으로 데이터를 복원하시겠습니까?\n(과거에 입력했던 여권이나 계좌 정보는 복원되지 않고 안전하게 제외됩니다)`)) {
       const cleanFriends = sanitizeFriendsList(snapshot.friends);
+      const cleanEvents = sanitizeEventsList(snapshot.events);
       setFriends(cleanFriends);
-      setEvents(snapshot.events);
+      setEvents(cleanEvents);
       setIsHistoryModalOpen(false);
-      await syncToFirestore(cleanFriends, snapshot.events, `과거 시점 복원 (${timeStr})`);
+      await syncToFirestore(cleanFriends, cleanEvents, `과거 시점 복원 (${timeStr})`);
       alert('성공적으로 이전 시점 데이터로 복원되었습니다!');
     }
   };
@@ -553,16 +585,13 @@ export const FriendCalendar: React.FC = () => {
       setBackupHistory([]);
       try {
         const docRef = doc(db, 'calendar_data', 'shared');
-        await setDoc(
-          docRef,
-          {
-            friends,
-            events,
-            backupHistory: [],
-            updatedAt: new Date().toISOString(),
-          },
-          { merge: true }
-        );
+        const payload = stripUndefinedDeep({
+          friends: sanitizeFriendsList(friends),
+          events: sanitizeEventsList(events),
+          backupHistory: [],
+          updatedAt: new Date().toISOString(),
+        });
+        await setDoc(docRef, payload, { merge: true });
         alert('과거 변경 이력 스냅샷이 모두 영구 삭제되었습니다.');
       } catch (err) {
         console.error('Failed to clear backup history:', err);
@@ -574,7 +603,7 @@ export const FriendCalendar: React.FC = () => {
   // 📥 [파일 내보내기] 전체 친구 정보 백업 파일(JSON) 다운로드
   const exportFriendsAsJsonFile = () => {
     const backupData = {
-      title: 'JapanFlight Friends Calendar Safe Backup',
+      title: '모임 수첩 Friends Calendar Safe Backup',
       version: '2.0',
       exportedAt: new Date().toISOString(),
       friendsCount: friends.length,
@@ -602,8 +631,8 @@ export const FriendCalendar: React.FC = () => {
         const parsed = JSON.parse(evt.target?.result as string);
         if (parsed.friends && Array.isArray(parsed.friends)) {
           if (confirm(`백업 파일에서 친구 ${parsed.friends.length}명의 정보를 복원하시겠습니까?`)) {
-            const impFriends: Friend[] = parsed.friends;
-            const impEvents: CalendarEvent[] = Array.isArray(parsed.events) ? parsed.events : events;
+            const impFriends: Friend[] = sanitizeFriendsList(parsed.friends);
+            const impEvents: CalendarEvent[] = sanitizeEventsList(Array.isArray(parsed.events) ? parsed.events : events);
             setFriends(impFriends);
             setEvents(impEvents);
             await syncToFirestore(impFriends, impEvents, 'JSON 백업 파일 복원');
@@ -769,23 +798,25 @@ export const FriendCalendar: React.FC = () => {
 
     const updatedEvents = events.map((ev) =>
       ev.id === eventId
-        ? {
+        ? sanitizeEvent({
             ...ev,
             friendId: newIds[0] || '',
             friendIds: newIds,
-          }
-        : ev
+          })
+        : sanitizeEvent(ev)
     );
 
     setEvents(updatedEvents);
 
     // 열려 있는 상세 모달 데이터도 실시간 동기화
     if (selectedEvent && selectedEvent.id === eventId) {
-      setSelectedEvent({
-        ...selectedEvent,
-        friendId: newIds[0] || '',
-        friendIds: newIds,
-      });
+      setSelectedEvent(
+        sanitizeEvent({
+          ...selectedEvent,
+          friendId: newIds[0] || '',
+          friendIds: newIds,
+        })
+      );
     }
 
     await syncToFirestore(friends, updatedEvents, actionDesc);
@@ -811,7 +842,7 @@ export const FriendCalendar: React.FC = () => {
     if (editingEventId) {
       updatedEvents = events.map((ev) =>
         ev.id === editingEventId
-          ? {
+          ? sanitizeEvent({
               ...ev,
               friendId: primaryFriendId,
               friendIds: formFriendIds,
@@ -821,11 +852,11 @@ export const FriendCalendar: React.FC = () => {
               time: formTime,
               location: formLocation,
               memo: formMemo,
-            }
-          : ev
+            })
+          : sanitizeEvent(ev)
       );
     } else {
-      const newEv: CalendarEvent = {
+      const newEv: CalendarEvent = sanitizeEvent({
         id: 'ev_' + Date.now(),
         friendId: primaryFriendId,
         friendIds: formFriendIds,
@@ -835,7 +866,7 @@ export const FriendCalendar: React.FC = () => {
         time: formTime,
         location: formLocation,
         memo: formMemo,
-      };
+      });
       updatedEvents = [...events, newEv];
     }
 
