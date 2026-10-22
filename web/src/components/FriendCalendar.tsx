@@ -886,13 +886,8 @@ export const FriendCalendar: React.FC = () => {
         if (endStr < todayStr) return false; // 완전히 지난 과거 일정 제외
 
         const evFriendIds = getEventFriendIds(ev);
-        if (activeFilterFriendId === 'UNASSIGNED') {
-          return evFriendIds.length === 0;
-        }
-        if (activeFilterFriendId !== 'ALL') {
-          return evFriendIds.includes(activeFilterFriendId) || ev.friendId === activeFilterFriendId;
-        }
-        return true;
+        // 🤝 '약속' (참여자 미정 오픈 약속)만 표시 (친구 개인 일정 제외)
+        return evFriendIds.length === 0;
       })
       .sort((a, b) => {
         if (a.startDate !== b.startDate) {
@@ -900,7 +895,7 @@ export const FriendCalendar: React.FC = () => {
         }
         return (a.time || '').localeCompare(b.time || '');
       });
-  }, [events, activeFilterFriendId]);
+  }, [events]);
 
   
   // Open Event Modal
@@ -1631,11 +1626,7 @@ export const FriendCalendar: React.FC = () => {
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
               <h3 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                {activeFilterFriendId === 'ALL'
-                  ? '다가오는 약속'
-                  : activeFilterFriendId === 'UNASSIGNED'
-                  ? '다가오는 오픈 약속'
-                  : `${friends.find((f) => f.id === activeFilterFriendId)?.name || '친구'} 님과의 약속`}
+                🤝 다가오는 약속
               </h3>
               <span className="px-2 py-0.2 sm:py-0.5 bg-indigo-100 text-indigo-700 text-[10px] sm:text-[11px] font-extrabold rounded-full shrink-0">
                 {upcomingEvents.length}건
