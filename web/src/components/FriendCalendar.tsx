@@ -1459,18 +1459,18 @@ export const FriendCalendar: React.FC = () => {
       )}
 
       {/* 다가오는 약속 (D-Day 카운트다운) 위젯 */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden transition-all duration-200">
+      <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-200/70 dark:border-white/[0.08] shadow-xs overflow-hidden transition-all duration-200">
         {/* 위젯 헤더 */}
-        <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2.5">
+        <div className="px-3.5 sm:px-5 py-2.5 sm:py-3.5 bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-950 flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
               <Clock className="w-3.5 h-3.5" />
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
               <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                 다가오는 약속
               </h3>
-              <span className="px-2 py-0.2 sm:py-0.5 bg-indigo-100 text-indigo-700 text-[10px] sm:text-[11px] font-extrabold rounded-full shrink-0">
+              <span className="px-2.5 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-full shrink-0">
                 {upcomingEvents.length}건
               </span>
             </div>
@@ -1554,10 +1554,10 @@ export const FriendCalendar: React.FC = () => {
                         setSelectedEvent(ev);
                         setIsViewModalOpen(true);
                       }}
-                      className={`min-w-[240px] max-w-[320px] sm:min-w-[260px] sm:max-w-[350px] shrink-0 rounded-xl p-3 sm:p-3.5 border transition cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-md hover:-translate-y-0.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 ${
+                      className={`min-w-[240px] max-w-[320px] sm:min-w-[260px] sm:max-w-[350px] shrink-0 rounded-2xl p-3.5 sm:p-4 border transition-all cursor-pointer flex flex-col justify-between group shadow-xs hover:shadow-md hover:-translate-y-0.5 bg-white dark:bg-white/[0.02] border-slate-200/80 dark:border-white/[0.08] ${
                         isFirst
-                          ? 'ring-2 ring-indigo-500/20 border-indigo-300 dark:border-indigo-600/50'
-                          : 'hover:border-slate-300 dark:hover:border-slate-700'
+                          ? 'ring-1 ring-slate-900/15 dark:ring-white/20 border-slate-400 dark:border-white/20'
+                          : 'hover:border-slate-400 dark:hover:border-white/20'
                       }`}
                     >
                       {/* 카드 상단: D-Day 뱃지 & 날짜 */}
@@ -1655,9 +1655,9 @@ export const FriendCalendar: React.FC = () => {
       </div>
 
       {/* Calendar Grid Container (상단 컨트롤 바와 달력 그리드가 일체형으로 통합) */}
-      <div id="calendar-container" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden w-full min-w-0">
+      <div id="calendar-container" className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-200/70 dark:border-white/[0.08] shadow-xs overflow-hidden w-full min-w-0">
         {/* Calendar Integrated Header Bar */}
-        <div className="p-3.5 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-white dark:bg-slate-900">
+        <div className="p-3.5 sm:p-5 border-b border-slate-200/60 dark:border-white/[0.06] flex flex-col gap-3 bg-white/40 dark:bg-white/[0.01]">
           {/* Top Row: 인적사항, (안전 보관함) 및 새 일정 등록 버튼 (빨간 동그라미 위치) */}
           <div className="flex items-center justify-between gap-2 w-full">
             {/* 좌측: 인적사항 / 안전 보관함 */}
@@ -1668,7 +1668,7 @@ export const FriendCalendar: React.FC = () => {
                   resetProfileForm();
                   setIsFriendProfileModalOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/[0.08] rounded-full text-xs font-semibold transition-all shadow-2xs active:scale-95 shrink-0 cursor-pointer"
                 title="친구 인적사항 및 생년월일 관리"
               >
                 <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
@@ -1679,7 +1679,7 @@ export const FriendCalendar: React.FC = () => {
               {isAdmin && (
                 <button
                   onClick={() => setIsHistoryModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/[0.08] rounded-full text-xs font-semibold transition-all shadow-2xs active:scale-95 shrink-0 cursor-pointer"
                   title="친구 정보 백업 다운로드 및 과거 변경 이력 복원 (관리자 전용)"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -1698,7 +1698,7 @@ export const FriendCalendar: React.FC = () => {
               {isAdmin && (
                 <button
                   onClick={() => setIsFriendModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-semibold rounded-xl shadow-2xs transition active:scale-95 shrink-0"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold rounded-full shadow-2xs transition-all active:scale-95 shrink-0 cursor-pointer"
                   title="친구 목록 및 색상 관리"
                 >
                   <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />
@@ -1709,7 +1709,7 @@ export const FriendCalendar: React.FC = () => {
 
               <button
                 onClick={() => openAddEventModal()}
-                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition active:scale-95 shrink-0"
+                className="flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-950 text-xs sm:text-sm font-bold rounded-full shadow-xs transition-all active:scale-95 shrink-0 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>새 일정 등록</span>
@@ -1718,32 +1718,32 @@ export const FriendCalendar: React.FC = () => {
           </div>
 
           {/* Bottom Row: 달력 네비게이션(< 오늘 > & 2026년 10월) 및 검색창 */}
-          <div className="flex items-center justify-between gap-2 w-full pt-1 sm:pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-between gap-2 w-full pt-1 sm:pt-2 border-t border-slate-100 dark:border-white/[0.06]">
             {/* Navigation & Title (< 오늘 > 및 2026년 10월) */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 sm:p-1 shrink-0">
+              <div className="flex items-center bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/50 dark:border-white/[0.06] rounded-full p-0.5 sm:p-1 shrink-0">
                 <button
                   onClick={prevMonth}
-                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
+                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition cursor-pointer"
                   title="이전달"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={goToday}
-                  className="px-2 sm:px-3 h-7 sm:h-8 text-xs font-semibold rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition"
+                  className="px-2.5 sm:px-3 h-7 sm:h-8 text-xs font-bold rounded-full hover:bg-white dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 transition cursor-pointer"
                 >
                   오늘
                 </button>
                 <button
                   onClick={nextMonth}
-                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
+                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition cursor-pointer"
                   title="다음달"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-              <h2 className="text-sm sm:text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight whitespace-nowrap">
+              <h2 className="text-sm sm:text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight whitespace-nowrap">
                 {year}년 {month + 1}월
               </h2>
             </div>
@@ -1755,9 +1755,9 @@ export const FriendCalendar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsFriendFilterDropdownOpen((prev) => !prev)}
-                  className={`h-7 sm:h-8 px-2 sm:px-2.5 text-xs font-semibold rounded-lg sm:rounded-xl border transition flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer ${
+                  className={`h-7 sm:h-8 px-2.5 sm:px-3 text-xs font-semibold rounded-full border transition-all flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer ${
                     activeFilterFriendId === 'ALL'
-                      ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                      ? 'bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-white/[0.08]'
                       : activeFilterFriendId === 'UNASSIGNED'
                       ? 'bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 font-bold'
                       : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 font-bold'
@@ -1925,7 +1925,7 @@ export const FriendCalendar: React.FC = () => {
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
                 placeholder="일정 검색..."
-                className="w-full pl-8 pr-6 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition"
+                className="w-full pl-8 pr-6 py-1 bg-white/60 dark:bg-slate-950/50 border border-slate-200/80 dark:border-white/[0.08] rounded-full text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 transition"
               />
               {searchKeyword && (
                 <button
@@ -1943,7 +1943,7 @@ export const FriendCalendar: React.FC = () => {
         </div>
 
         {/* Day of Week Header */}
-        <div className="grid grid-cols-7 text-center text-xs font-bold py-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400">
+        <div className="grid grid-cols-7 text-center text-xs font-bold py-2.5 sm:py-3 bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-200/60 dark:border-white/[0.06] text-slate-500 dark:text-slate-400">
           <div className="text-rose-500">일</div>
           <div>월</div>
           <div>화</div>
@@ -1954,7 +1954,7 @@ export const FriendCalendar: React.FC = () => {
         </div>
 
         {/* Days Matrix (주 단위로 연속 막대 렌더링) */}
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="divide-y divide-slate-100 dark:divide-white/[0.05]">
           {weeks.map((week, weekIdx) => {
             const slots = getWeekSlots(week);
 
@@ -1964,7 +1964,7 @@ export const FriendCalendar: React.FC = () => {
                 className="relative min-h-[115px] sm:min-h-[125px] flex flex-col"
               >
                 {/* 1. 배경 날짜 셀 그리드 (7열) */}
-                <div className="absolute inset-0 grid grid-cols-7 divide-x divide-slate-100 dark:divide-slate-800 pointer-events-none">
+                <div className="absolute inset-0 grid grid-cols-7 divide-x divide-slate-100 dark:divide-white/[0.05] pointer-events-none">
                   {week.map((cDay, colIdx) => {
                     const holidayName = getHolidayName(cDay.dateStr);
                     const isHoliday = !!holidayName;
@@ -1998,7 +1998,7 @@ export const FriendCalendar: React.FC = () => {
                                 cDay.isToday
                                   ? isHoliday || cDay.dayOfWeek === 0
                                     ? 'bg-rose-500 text-white font-bold shadow-xs'
-                                    : 'bg-indigo-600 text-white font-bold shadow-xs'
+                                    : 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
                                   : dayColorClass
                               }`}
                             >
@@ -2129,7 +2129,7 @@ export const FriendCalendar: React.FC = () => {
 
       {/* 1. Add / Edit Event Modal (기간: 몇일부터 몇일까지) */}
       {isEventModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden text-slate-900 dark:text-slate-100">
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">{editingEventId ? '일정 수정' : '새 일정 / 약속 등록'}</h3>
@@ -2333,7 +2333,7 @@ export const FriendCalendar: React.FC = () => {
 
       {/* 2. Friend Management Modal (관리자 전용) */}
       {isAdmin && isFriendModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden text-slate-900 dark:text-slate-100">
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">친구 및 라벨 색상 관리</h3>
@@ -2417,7 +2417,7 @@ export const FriendCalendar: React.FC = () => {
         const unjoinedFriends = friends.filter((f) => !pFriendIds.includes(f.id));
 
         return (
-          <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden text-slate-900 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-100">
               <div
                 className="h-3.5"
@@ -2611,7 +2611,7 @@ export const FriendCalendar: React.FC = () => {
 
       {/* 4. Friend Profile Modal */}
       {isFriendProfileModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden text-slate-900 dark:text-slate-100 my-auto animate-in fade-in zoom-in-95 duration-100 flex flex-col max-h-[90vh]">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-950 shrink-0">
@@ -2940,7 +2940,7 @@ export const FriendCalendar: React.FC = () => {
 
       {/* 변경 이력 및 데이터 안전 금고 모달 */}
       {isHistoryModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in">
           <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-slate-100">
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950">
@@ -3096,7 +3096,7 @@ export const FriendCalendar: React.FC = () => {
 
       {/* 5. 친구 전체 일정 및 여행 프로필 상세 모달 */}
       {isFriendScheduleModalOpen && selectedFriendForSchedule && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-100">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-100">
           <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden my-auto flex flex-col max-h-[90vh] text-slate-900 dark:text-slate-100">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-950 shrink-0">
