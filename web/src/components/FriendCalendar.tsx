@@ -317,6 +317,8 @@ const calculateAge = (birthDateStr?: string) => {
 
 export const FriendCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  // 모바일 캘린더에서 현재 선택된 날짜 (기본값: 오늘)
+  const [selectedDateStr, setSelectedDateStr] = useState<string>(() => getFormattedDate(new Date()));
   
   // [영구 안전 금고] 로컬스토리지에 저장된 실제 친구 정보가 있으면 즉시 우선 복원!
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -414,6 +416,14 @@ export const FriendCalendar: React.FC = () => {
           localStorage.setItem('flypromo_admin_mode', 'true');
           setIsAdmin(true);
         }
+      }
+
+      // 0-0. 모바일 환경 기본 접힘 또는 이전 설정 복원
+      const savedCollapsed = localStorage.getItem('flypromo_countdown_collapsed');
+      if (savedCollapsed !== null) {
+        setIsCountdownCollapsed(savedCollapsed === 'true');
+      } else if (window.innerWidth < 768) {
+        setIsCountdownCollapsed(true);
       }
 
       // 0-1. 영구 안전 금고 캐시 우선 로드
@@ -755,7 +765,9 @@ export const FriendCalendar: React.FC = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
   const goToday = () => {
-    setCurrentDate(new Date());
+    const today = new Date();
+    setCurrentDate(today);
+    setSelectedDateStr(getFormattedDate(today));
   };
 
   // 특정 친구의 모든 일정 추출 및 정렬 (시작일 기준 오름차순)
@@ -784,6 +796,7 @@ export const FriendCalendar: React.FC = () => {
       const m = parseInt(parts[1], 10);
       if (!isNaN(y) && !isNaN(m)) {
         setCurrentDate(new Date(y, m - 1, 1));
+        setSelectedDateStr(dateStr);
       }
     }
   };
@@ -1268,6 +1281,67 @@ export const FriendCalendar: React.FC = () => {
     return result;
   }, [calendarDays]);
 
+  // 특정 날짜에 해당하는 이벤트 목록 필터링
+  const getEventsForDate = (dateStr: string) => {
+    return events.filter((ev) => {
+      const evStart = ev.startDate;
+      const evEnd = ev.endDate || ev.startDate;
+      const isOverlapping = evStart <= dateStr && evEnd >= dateStr;
+      if (!isOverlapping) return false;
+
+      const evFriendIds = getEventFriendIds(ev);
+
+      // 친구 필터
+      if (activeFilterFriendId === 'UNASSIGNED') {
+        if (!isEventAppointment(ev)) return false;
+      } else if (activeFilterFriendId !== 'ALL') {
+        if (!evFriendIds.includes(activeFilterFriendId) && ev.friendId !== activeFilterFriendId) {
+          return false;
+        }
+      }
+
+      // 검색어 필터
+      if (searchKeyword) {
+        const pFriends = getEventFriends(ev);
+        const matchTitle = ev.title.toLowerCase().includes(searchKeyword.toLowerCase());
+        const matchFriends = pFriends.some((f) => f.name.toLowerCase().includes(searchKeyword.toLowerCase()));
+        const matchLoc = (ev.location || '').toLowerCase().includes(searchKeyword.toLowerCase());
+        const matchMemo = (ev.memo || '').toLowerCase().includes(searchKeyword.toLowerCase());
+        if (!matchTitle && !matchFriends && !matchLoc && !matchMemo) return false;
+      }
+
+      return true;
+    });
+  };
+
+  // 모바일 선택 날짜의 이벤트 목록
+  const selectedDateEvents = useMemo(() => {
+    return getEventsForDate(selectedDateStr);
+  }, [events, selectedDateStr, activeFilterFriendId, searchKeyword, friends]);
+
+  // 선택된 날짜 헤딩 포맷 헬퍼 (예: "10월 24일 (토)")
+  const formatSelectedDateHeading = (dateStr: string) => {
+    if (!dateStr) return { title: '', isToday: false, holidayName: null, dayOfWeek: 0 };
+    const parts = dateStr.split('-');
+    if (parts.length < 3) return { title: dateStr, isToday: false, holidayName: null, dayOfWeek: 0 };
+    const y = parseInt(parts[0], 10);
+    const m = parseInt(parts[1], 10);
+    const d = parseInt(parts[2], 10);
+    const dateObj = new Date(y, m - 1, d);
+    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+    const dayName = dayNames[dateObj.getDay()];
+    const todayStr = getFormattedDate(new Date());
+    const isToday = dateStr === todayStr;
+    const holidayName = getHolidayName(dateStr);
+
+    return {
+      title: `${m}월 ${d}일 (${dayName})`,
+      isToday,
+      holidayName,
+      dayOfWeek: dateObj.getDay(),
+    };
+  };
+
   interface WeekEventSegment {
     event: CalendarEvent;
     friend: Friend;
@@ -1718,7 +1792,7 @@ export const FriendCalendar: React.FC = () => {
           </div>
 
           {/* Bottom Row: 달력 네비게이션(< 오늘 > & 2026년 10월) 및 검색창 */}
-          <div className="flex items-center justify-between gap-2 w-full pt-1 sm:pt-2 border-t border-slate-100 dark:border-white/[0.06]">
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 w-full pt-1 sm:pt-2 border-t border-slate-100 dark:border-white/[0.06]">
             {/* Navigation & Title (< 오늘 > 및 2026년 10월) */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <div className="flex items-center bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/50 dark:border-white/[0.06] rounded-full p-0.5 sm:p-1 shrink-0">
@@ -1942,7 +2016,11 @@ export const FriendCalendar: React.FC = () => {
           </div>
         </div>
 
-        {/* Day of Week Header */}
+        {/* ======================================================== */}
+        {/* DESKTOP CALENDAR VIEW (md:block)                          */}
+        {/* ======================================================== */}
+        <div className="hidden md:block">
+          {/* Day of Week Header */}
         <div className="grid grid-cols-7 text-center text-xs font-bold py-2.5 sm:py-3 bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-200/60 dark:border-white/[0.06] text-slate-500 dark:text-slate-400">
           <div className="text-rose-500">일</div>
           <div>월</div>
@@ -2122,6 +2200,276 @@ export const FriendCalendar: React.FC = () => {
               </div>
             );
           })}
+        </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* MOBILE CALENDAR VIEW (block md:hidden)                   */}
+        {/* Apple/Google Calendar Paradigm: Compact Month + Agenda   */}
+        {/* ======================================================== */}
+        <div className="block md:hidden">
+          {/* 1. Compact Mini Month Grid */}
+          <div className="p-3 bg-slate-50/40 dark:bg-slate-950/20 border-b border-slate-200/60 dark:border-white/[0.06]">
+            {/* Day of week labels */}
+            <div className="grid grid-cols-7 text-center text-[11px] font-bold text-slate-400 dark:text-slate-500 mb-1">
+              <div className="text-rose-500">일</div>
+              <div>월</div>
+              <div>화</div>
+              <div>수</div>
+              <div>목</div>
+              <div>금</div>
+              <div className="text-sky-600">토</div>
+            </div>
+
+            {/* Day numbers & micro-dots */}
+            <div className="grid grid-cols-7 gap-y-1">
+              {calendarDays.map((cDay, idx) => {
+                const isSelected = cDay.dateStr === selectedDateStr;
+                const holidayName = getHolidayName(cDay.dateStr);
+                const isHoliday = !!holidayName;
+                const dayEvents = getEventsForDate(cDay.dateStr);
+
+                // Determine text color
+                let textClass = 'text-slate-800 dark:text-slate-200';
+                if (isSelected) {
+                  textClass = 'bg-slate-900 text-white dark:bg-white dark:text-slate-950 font-bold shadow-xs';
+                } else if (cDay.isToday) {
+                  textClass = 'border border-rose-500 text-rose-500 font-bold';
+                } else if (cDay.isOtherMonth) {
+                  textClass = cDay.dayOfWeek === 0 || isHoliday ? 'text-rose-300 dark:text-rose-900/60' : 'text-slate-300 dark:text-slate-700';
+                } else if (cDay.dayOfWeek === 0 || isHoliday) {
+                  textClass = 'text-rose-500 font-bold';
+                } else if (cDay.dayOfWeek === 6) {
+                  textClass = 'text-sky-600 font-semibold';
+                }
+
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDateStr(cDay.dateStr);
+                      if (cDay.isOtherMonth) {
+                        jumpToDate(cDay.dateStr);
+                      }
+                    }}
+                    className={`flex flex-col items-center justify-start py-1 rounded-xl transition cursor-pointer relative ${
+                      isSelected
+                        ? 'bg-white dark:bg-white/[0.08] shadow-2xs'
+                        : 'hover:bg-white/60 dark:hover:bg-white/[0.03]'
+                    }`}
+                  >
+                    {/* Day number pill */}
+                    <span
+                      className={`w-7 h-7 flex items-center justify-center rounded-full text-xs transition-all ${textClass}`}
+                    >
+                      {cDay.day}
+                    </span>
+
+                    {/* Holiday micro text or micro dots */}
+                    <div className="h-2.5 mt-0.5 flex items-center justify-center gap-0.5 overflow-hidden w-full px-0.5">
+                      {isHoliday && !isSelected ? (
+                        <span className="text-[9px] text-rose-500 font-bold truncate leading-none">
+                          {holidayName}
+                        </span>
+                      ) : dayEvents.length > 0 ? (
+                        <div className="flex items-center gap-0.5">
+                          {dayEvents.slice(0, 3).map((ev, dIdx) => {
+                            const dInfo = getEventDisplayInfo(ev);
+                            return (
+                              <span
+                                key={dIdx}
+                                className="w-1.5 h-1.5 rounded-full shrink-0"
+                                style={{ backgroundColor: dInfo.color }}
+                              />
+                            );
+                          })}
+                          {dayEvents.length > 3 && (
+                            <span className="w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-500 shrink-0" />
+                          )}
+                        </div>
+                      ) : null}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 2. Selected Date Agenda Stream */}
+          <div className="p-3.5 sm:p-4 space-y-3">
+            {/* Header of the selected date */}
+            {(() => {
+              const heading = formatSelectedDateHeading(selectedDateStr);
+              return (
+                <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-100 dark:border-white/[0.06]">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-baseline gap-1.5 min-w-0">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                        {heading.title}
+                      </h3>
+                      {heading.isToday && (
+                        <span className="px-1.5 py-0.2 bg-rose-500 text-white text-[10px] font-bold rounded-full shrink-0">
+                          오늘
+                        </span>
+                      )}
+                      {heading.holidayName && (
+                        <span className="text-[11px] text-rose-500 font-bold truncate">
+                          {heading.holidayName}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-slate-400 dark:text-slate-500 font-medium shrink-0">
+                      {selectedDateEvents.length}개
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => openAddEventModal(selectedDateStr)}
+                    className="flex items-center gap-1 px-2.5 py-1 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-950 text-xs font-bold rounded-full shadow-2xs transition active:scale-95 shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>일정 추가</span>
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* Events List */}
+            {selectedDateEvents.length === 0 ? (
+              <div className="py-8 px-4 text-center rounded-2xl bg-slate-50/50 dark:bg-white/[0.02] border border-dashed border-slate-200/80 dark:border-white/[0.08] flex flex-col items-center justify-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-white/[0.05] text-slate-400 flex items-center justify-center">
+                  <CalendarIcon className="w-4 h-4" />
+                </div>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  등록된 일정이 없습니다.
+                </p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                  새로운 여행이나 친구와의 약속을 등록해보세요.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => openAddEventModal(selectedDateStr)}
+                  className="mt-1 text-xs text-slate-900 dark:text-slate-100 font-bold underline hover:opacity-80 transition"
+                >
+                  + 이 날짜에 새 일정 등록
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {selectedDateEvents.map((ev) => {
+                  const dInfo = getEventDisplayInfo(ev);
+                  const pFriends = getEventFriends(ev);
+                  const isAppointment = isEventAppointment(ev);
+                  const durationText = getNightsDaysBadge(ev.startDate, ev.endDate || ev.startDate);
+
+                  return (
+                    <div
+                      key={ev.id}
+                      onClick={() => {
+                        setSelectedEvent(ev);
+                        setIsViewModalOpen(true);
+                      }}
+                      className="group relative p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/70 dark:border-white/[0.08] shadow-2xs hover:shadow-sm active:scale-[0.99] transition cursor-pointer flex flex-col gap-2 overflow-hidden"
+                    >
+                      {/* Left Accent Color Indicator */}
+                      <div
+                        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
+                        style={{ backgroundColor: dInfo.color }}
+                      />
+
+                      {/* Top row: Badges & Right arrow */}
+                      <div className="flex items-center justify-between gap-2 min-w-0 pl-1">
+                        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                          {isAppointment ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/70 dark:border-indigo-800/60">
+                              약속
+                            </span>
+                          ) : (
+                            <span
+                              className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
+                              style={{ backgroundColor: dInfo.color }}
+                            >
+                              {dInfo.shortLabel}
+                            </span>
+                          )}
+
+                          {/* If multiple participants */}
+                          {isAppointment && pFriends.length > 0 && (
+                            <div className="flex items-center gap-1">
+                              {pFriends.map((f) => (
+                                <span
+                                  key={f.id}
+                                  className="text-[10px] px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1"
+                                >
+                                  <span
+                                    className="w-1.5 h-1.5 rounded-full"
+                                    style={{ backgroundColor: f.color }}
+                                  />
+                                  {f.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Multi-day badge */}
+                          {durationText && (
+                            <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded-md bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-white/[0.06]">
+                              {durationText}
+                            </span>
+                          )}
+                        </div>
+
+                        <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-slate-400 group-hover:bg-slate-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-slate-900 flex items-center justify-center transition shrink-0">
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+
+                      {/* Title */}
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 pl-1 leading-snug">
+                        {ev.title}
+                      </h4>
+
+                      {/* Meta details (Time, Period, Location, Memo) */}
+                      <div className="pl-1 space-y-1 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          {ev.time && (
+                            <div className="flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
+                              <Clock className="w-3 h-3 text-slate-400" />
+                              <span>{ev.time}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <CalendarIcon className="w-3 h-3 text-slate-400" />
+                            <span>
+                              {ev.startDate === ev.endDate || !ev.endDate
+                                ? ev.startDate
+                                : `${ev.startDate} ~ ${ev.endDate}`}
+                            </span>
+                          </div>
+                        </div>
+
+                        {ev.location && (
+                          <div className="flex items-center gap-1 truncate text-slate-600 dark:text-slate-300">
+                            <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span className="truncate">{ev.location}</span>
+                          </div>
+                        )}
+
+                        {ev.memo && (
+                          <div className="flex items-start gap-1 text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 pt-0.5">
+                            <FileText className="w-3 h-3 shrink-0 mt-0.5" />
+                            <span className="truncate">{ev.memo}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
