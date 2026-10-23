@@ -68,9 +68,9 @@ export const NewsCard: React.FC<NewsCardProps> = ({ grouped }) => {
         isExpanded ? 'z-30 ring-1 ring-slate-900/20 dark:ring-white/20' : 'z-10'
       } bg-white dark:bg-slate-900/70 border-slate-200/70 dark:border-white/[0.08] hover:border-slate-400 dark:hover:border-white/20 shadow-xs hover:shadow-xl dark:hover:shadow-2xl`}
     >
-      <div className="p-5">
+      <div className="p-3.5 sm:p-5">
         {/* Top Badges & Time */}
-        <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/[0.08] text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-white/[0.08]">
               {isNZ ? '뉴질랜드' : '일본'}
@@ -80,7 +80,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ grouped }) => {
           <div className="flex items-center gap-1.5 shrink-0">
             {dDayText && (
               <span
-                className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                className={`text-[11px] sm:text-xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full ${
                   dDayText === '오늘 마감'
                     ? 'bg-rose-500 text-white'
                     : dDayText.includes('D-')
@@ -100,7 +100,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ grouped }) => {
         </div>
 
         {/* Article Title */}
-        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 leading-snug hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
           <a href={mainArticle.link} target="_blank" rel="noopener noreferrer">
             {mainArticle.title}
           </a>
@@ -108,7 +108,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ grouped }) => {
 
         {/* Cities Tags */}
         {cities.length > 0 && (
-          <div className="mt-3.5 flex flex-wrap gap-1.5">
+          <div className="mt-2.5 sm:mt-3.5 flex flex-wrap gap-1 sm:gap-1.5">
             {cities.map((city, idx) => (
               <span
                 key={idx}

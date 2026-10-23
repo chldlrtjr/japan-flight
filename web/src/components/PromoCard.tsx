@@ -65,13 +65,10 @@ export const PromoCard: React.FC<PromoCardProps> = ({
     ? promo.destinations.split(',').map((d) => d.trim()).filter(Boolean)
     : [];
 
-  // Default fallback image
   const defaultBg =
-    promo.region_category === '일본'
-      ? 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80'
-      : promo.region_category === '뉴질랜드'
+    promo.region_category === '뉴질랜드'
       ? 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80'
-      : 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80';
+      : 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80';
 
   const displayImage = promo.image_url && promo.image_url.startsWith('http')
     ? promo.image_url
@@ -80,10 +77,10 @@ export const PromoCard: React.FC<PromoCardProps> = ({
   return (
     <div
       onClick={() => onSelectPromo(promo)}
-      className="group relative flex flex-col bg-white dark:bg-slate-900/70 rounded-2xl border border-slate-200/70 dark:border-white/[0.08] hover:border-slate-400 dark:hover:border-white/20 transition-all duration-300 shadow-xs hover:shadow-xl dark:hover:shadow-2xl overflow-hidden cursor-pointer arch-card-glow"
+      className="group relative flex flex-row sm:flex-col bg-white dark:bg-slate-900/70 rounded-2xl border border-slate-200/70 dark:border-white/[0.08] hover:border-slate-400 dark:hover:border-white/20 transition-all duration-300 shadow-xs hover:shadow-xl dark:hover:shadow-2xl overflow-hidden cursor-pointer arch-card-glow p-3 sm:p-0 gap-3 sm:gap-0"
     >
-      {/* Visual Window (차경 프레이밍 효과) */}
-      <div className="relative h-44 sm:h-48 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+      {/* Visual Window (차경 프레이밍: 모바일에서는 콤팩트 스퀘어, PC에서는 와이드 윈도우) */}
+      <div className="relative w-28 h-28 sm:w-full sm:h-48 shrink-0 overflow-hidden rounded-xl sm:rounded-none bg-slate-100 dark:bg-slate-800">
         <img
           src={displayImage}
           alt={promo.title}
@@ -93,12 +90,11 @@ export const PromoCard: React.FC<PromoCardProps> = ({
           }}
         />
 
-        {/* Ambient Overlay Layer */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent pointer-events-none" />
+        {/* Ambient Overlay Layer (Desktop) */}
+        <div className="hidden sm:block absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent pointer-events-none" />
 
-        {/* Top Floating Chips (Layering) */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-          {/* Airline Chip */}
+        {/* Desktop Top Floating Chips */}
+        <div className="hidden sm:flex absolute top-3 left-3 right-3 items-center justify-between pointer-events-none">
           <span
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border shadow-xs ${airlineStyle.bg}`}
           >
@@ -106,68 +102,84 @@ export const PromoCard: React.FC<PromoCardProps> = ({
             {promo.airline}
           </span>
 
-          {/* D-Day Chip */}
           <span className={`text-[11px] px-2.5 py-1 rounded-full shadow-xs ${dday.color}`}>
             {dday.text}
           </span>
         </div>
 
-        {/* Bookmark Button */}
+        {/* Desktop Bookmark Button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             onToggleBookmark(promo.id);
           }}
-          className="absolute bottom-3 right-3 p-2 rounded-full bg-black/50 hover:bg-black/75 text-white backdrop-blur-md transition-colors border border-white/10"
+          className="hidden sm:block absolute bottom-3 right-3 p-2 rounded-full bg-black/50 hover:bg-black/75 text-white backdrop-blur-md transition-colors border border-white/10 cursor-pointer"
           title={isBookmarked ? '관심 특가 저장 취소' : '관심 특가 저장'}
           aria-label="북마크"
         >
           <Bookmark className={`w-3.5 h-3.5 stroke-[1.75] ${isBookmarked ? 'fill-amber-400 text-amber-400' : 'text-white'}`} />
         </button>
 
-        {/* Region Tag */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-1">
+        {/* Desktop Region Tag */}
+        <div className="hidden sm:flex absolute bottom-3 left-3 items-center gap-1">
           <span className="text-xs font-bold px-2.5 py-0.5 rounded-md backdrop-blur-md bg-black/70 text-white border border-white/15">
             {promo.region_category === '뉴질랜드' ? '뉴질랜드' : (promo.region_category || '국제선')}
           </span>
         </div>
+
+        {/* Mobile Floating D-Day Chip */}
+        <div className="sm:hidden absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between pointer-events-none">
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shadow-xs ${dday.color}`}>
+            {dday.text}
+          </span>
+        </div>
       </div>
 
-      {/* Content Space (마당과 여백의 미학) */}
-      <div className="p-5 flex-1 flex flex-col justify-between">
+      {/* Content Space (모바일은 가볍게, PC는 디테일하게) */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between sm:p-5">
         <div>
-          {/* Badge text / Benefit Highlight */}
+          {/* Mobile Airline Header & Bookmark */}
+          <div className="flex sm:hidden items-center justify-between gap-1 mb-1">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 truncate">
+              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${airlineStyle.dot}`} />
+              <span className="truncate">{promo.airline}</span>
+            </span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleBookmark(promo.id);
+              }}
+              className="p-1 text-slate-400 hover:text-amber-500 transition-colors shrink-0"
+              title={isBookmarked ? '관심 특가 취소' : '관심 특가 저장'}
+              aria-label="북마크"
+            >
+              <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? 'fill-amber-400 text-amber-400' : 'text-slate-400'}`} />
+            </button>
+          </div>
+
+          {/* Desktop Badge text / Benefit Highlight */}
           {promo.badge_text && (
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mb-1.5 tracking-tight">
+            <div className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 mb-1.5 tracking-tight">
               <Tag className="w-3 h-3 stroke-[2]" />
               <span className="line-clamp-1">{promo.badge_text}</span>
             </div>
           )}
 
           {/* Title */}
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-            <a
-              href={eventUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="hover:underline"
-              title={`${promo.airline} 공식 이벤트 페이지 바로가기`}
-            >
-              {promo.title}
-            </a>
+          <h3 className="text-xs sm:text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            {promo.title}
           </h3>
 
-          {/* Subtitle */}
+          {/* Subtitle (Desktop only - 모바일에서는 과밀 억제를 위해 생략) */}
           {promo.subtitle && promo.subtitle !== promo.badge_text && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-1 leading-relaxed">
+            <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-1 leading-relaxed">
               {promo.subtitle}
             </p>
           )}
 
-          {/* Destination Tags (Minimal Geometric Pills) */}
+          {/* Destination Tags (Desktop only) */}
           {destList.length > 0 && (
-            <div className="mt-3.5 flex flex-wrap gap-1.5">
+            <div className="hidden sm:flex mt-3.5 flex-wrap gap-1.5">
               {destList.slice(0, 4).map((dest, i) => (
                 <span
                   key={i}
@@ -178,7 +190,7 @@ export const PromoCard: React.FC<PromoCardProps> = ({
                 </span>
               ))}
               {destList.length > 4 && (
-                <span className="text-[10px] font-mono text-slate-400 px-1 py-0.5">
+                <span className="text-[10px] text-slate-400 px-1 py-0.5">
                   +{destList.length - 4}
                 </span>
               )}
@@ -187,8 +199,9 @@ export const PromoCard: React.FC<PromoCardProps> = ({
         </div>
 
         {/* Bottom Horizon: Period & CTA Button */}
-        <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <div className="mt-2 sm:mt-5 sm:pt-3.5 sm:border-t sm:border-slate-100 sm:dark:border-white/[0.06] flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          {/* Desktop full period */}
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
             <Calendar className="w-3.5 h-3.5 text-slate-400 stroke-[1.75]" />
             <span className="truncate max-w-[130px] sm:max-w-[150px]">
               {promo.promo_start && promo.promo_end
@@ -197,13 +210,18 @@ export const PromoCard: React.FC<PromoCardProps> = ({
             </span>
           </div>
 
+          {/* Mobile compact date info */}
+          <div className="sm:hidden text-[11px] text-slate-400 font-medium truncate max-w-[100px]">
+            {promo.promo_end ? `~ ${promo.promo_end.slice(5)}` : '상시 진행'}
+          </div>
+
           {/* AGENTS.md Standard CTA: "바로가기" */}
           <a
             href={eventUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-2xs active:scale-96 shrink-0"
+            className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-2xs active:scale-96 shrink-0"
             title={`${promo.airline} 바로가기`}
           >
             <span>바로가기</span>

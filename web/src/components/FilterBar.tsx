@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, X, ChevronDown, ChevronUp, SlidersHorizontal, RotateCcw } from 'lucide-react';
 
 interface FilterBarProps {
   searchTerm: string;
@@ -77,7 +77,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   totalFilteredCount,
 }) => {
   const [isCitiesExpanded, setIsCitiesExpanded] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
   const isSelectedInSecondary = SECONDARY_JAPAN_CITIES.some((c) => c.id === selectedRegion);
+  const hasActiveSubfilters = selectedRegion !== 'ALL' || selectedAirline !== 'ALL';
 
   const getAirlines = () => {
     if (selectedCountry === 'NZ') {
@@ -106,55 +109,38 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   const currentAirlines = getAirlines();
 
   return (
-    <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-200/70 dark:border-white/[0.07] p-4 sm:p-5 shadow-xs mb-8 space-y-4">
-      {/* Top Search & Sort Row */}
-      <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
-        {/* Minimal Search input */}
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2]" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="목적지(오클랜드, 도쿄, 삿포로...) 또는 항공사, 특가명 검색"
-            className="w-full pl-10 pr-9 py-2 rounded-xl border border-slate-200/80 dark:border-white/[0.08] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 focus:border-slate-400 dark:focus:border-white/25 transition-all text-slate-900 dark:text-slate-100 bg-white/60 dark:bg-slate-950/50 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => onSearchChange('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
-              aria-label="검색어 지우기"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-
-        {/* Sort selector */}
-        <div className="flex items-center gap-2">
-          <select
-            value={sortOrder}
-            onChange={(e) => onSortChange(e.target.value)}
-            className="px-3.5 py-2 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white/60 dark:bg-slate-950/50 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 cursor-pointer shadow-2xs"
+    <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-200/70 dark:border-white/[0.07] p-3.5 sm:p-5 shadow-xs mb-6 sm:mb-8 space-y-3 sm:space-y-4">
+      {/* Row 1: Minimal Search input */}
+      <div className="relative w-full">
+        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2]" />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="목적지(오클랜드, 도쿄, 삿포로...) 또는 항공사, 특가명 검색"
+          className="w-full pl-10 pr-9 py-2 rounded-xl border border-slate-200/80 dark:border-white/[0.08] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 focus:border-slate-400 dark:focus:border-white/25 transition-all text-slate-900 dark:text-slate-100 bg-white/60 dark:bg-slate-950/50 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+        />
+        {searchTerm && (
+          <button
+            onClick={() => onSearchChange('')}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer"
+            aria-label="검색어 지우기"
           >
-            <option value="default">특가 시작일순 (최신순)</option>
-            <option value="end_soon">마감임박순</option>
-            <option value="created_recent">최신등록순</option>
-          </select>
-        </div>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
-      {/* Country / Destination Section Switcher (Architectural Pill Group) */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
-        <span className="text-xs font-semibold text-slate-400 shrink-0">노선 영역</span>
-        <div className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/50 dark:border-white/[0.06] rounded-full">
+      {/* Row 2: Country Switcher & Sort Selector */}
+      <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar pt-0.5">
+        <div className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/50 dark:border-white/[0.06] rounded-full shrink-0">
           <button
             onClick={() => {
               onCountryChange('ALL');
               onSelectRegion('ALL');
               onSelectAirline('ALL');
             }}
-            className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all shrink-0 ${
+            className={`px-3 sm:px-3.5 py-1 rounded-full text-xs font-bold transition-all shrink-0 ${
               selectedCountry === 'ALL'
                 ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
@@ -168,13 +154,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               onSelectRegion('ALL');
               onSelectAirline('ALL');
             }}
-            className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all shrink-0 ${
+            className={`px-3 sm:px-3.5 py-1 rounded-full text-xs font-bold transition-all shrink-0 ${
               selectedCountry === 'JAPAN'
                 ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
-            일본 노선 (31개 도시)
+            일본 노선
           </button>
           <button
             onClick={() => {
@@ -182,114 +168,144 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               onSelectRegion('ALL');
               onSelectAirline('ALL');
             }}
-            className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all shrink-0 ${
+            className={`px-3 sm:px-3.5 py-1 rounded-full text-xs font-bold transition-all shrink-0 ${
               selectedCountry === 'NZ'
                 ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
-            뉴질랜드 노선 (오클랜드 등)
+            뉴질랜드
           </button>
+        </div>
+
+        {/* Sort selector */}
+        <div className="shrink-0">
+          <select
+            value={sortOrder}
+            onChange={(e) => onSortChange(e.target.value)}
+            className="px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white/60 dark:bg-slate-950/50 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 cursor-pointer shadow-2xs"
+          >
+            <option value="default">시작일순</option>
+            <option value="end_soon">마감임박순</option>
+            <option value="created_recent">최신등록순</option>
+          </select>
         </div>
       </div>
 
-      {/* New Zealand Destinations (when NZ is active) */}
-      {selectedCountry === 'NZ' && (
-        <div className="flex flex-col gap-2 border-t border-slate-100 dark:border-white/[0.06] pt-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">뉴질랜드 취항 도시</span>
-              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full border border-slate-200/50 dark:border-white/[0.05]">
-                직항 및 주요 연계 노선
-              </span>
-            </div>
-            {selectedRegion !== 'ALL' && (
-              <button
-                onClick={() => onSelectRegion('ALL')}
-                className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 font-medium transition-colors"
-              >
-                <span>전체 노선 보기</span>
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {NZ_CITIES.map((city) => {
-              const isSelected = selectedRegion === city.id;
-              return (
-                <button
-                  key={city.id}
-                  onClick={() => onSelectRegion(city.id)}
-                  className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all ${
-                    isSelected
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
-                      : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
-                  }`}
-                >
-                  {city.label}
-                </button>
-              );
-            })}
+      {/* Row 3: Mobile Exclusive Filter Expand Toggle (모바일 화면 과밀 원천 차단) */}
+      <div className="flex md:hidden items-center justify-between pt-1 border-t border-slate-100 dark:border-white/[0.05]">
+        <button
+          type="button"
+          onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+            hasActiveSubfilters
+              ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 border-transparent shadow-xs'
+              : 'bg-white dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-white/[0.08]'
+          }`}
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5 stroke-[1.75]" />
+          <span>도시/항공사 필터</span>
+          {hasActiveSubfilters && (
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          )}
+          {isMobileFilterOpen ? (
+            <ChevronUp className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5" />
+          )}
+        </button>
+
+        <div className="flex items-center gap-2">
+          {hasActiveSubfilters && (
+            <button
+              onClick={() => {
+                onSelectRegion('ALL');
+                onSelectAirline('ALL');
+              }}
+              className="text-xs text-rose-500 dark:text-rose-400 font-bold flex items-center gap-1 hover:underline cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>초기화</span>
+            </button>
+          )}
+
+          <div className="text-xs text-slate-500 whitespace-nowrap">
+            특가 <span className="font-bold text-slate-900 dark:text-white">{totalFilteredCount}</span>건
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Japan City Tabs (when JAPAN or ALL) */}
-      {(selectedCountry === 'JAPAN' || selectedCountry === 'ALL') && (
-        <div className="flex flex-col gap-2 border-t border-slate-100 dark:border-white/[0.06] pt-3">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">일본 취항 도시</span>
-              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full border border-slate-200/50 dark:border-white/[0.05]">
-                한국 직항 31개 도시
-              </span>
-            </div>
-            {selectedRegion !== 'ALL' && (
-              <button
-                onClick={() => onSelectRegion('ALL')}
-                className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 font-medium transition-colors"
-              >
-                <span>전체 일본 노선 보기</span>
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {PRIMARY_JAPAN_CITIES.map((city) => {
-              const isSelected = selectedRegion === city.id;
-              return (
+      {/* Collapsible Section on Mobile, Always Accessible on Desktop */}
+      <div className={`${isMobileFilterOpen ? 'block' : 'hidden'} md:block space-y-4 pt-1`}>
+        {/* New Zealand Destinations (when NZ is active) */}
+        {selectedCountry === 'NZ' && (
+          <div className="flex flex-col gap-2 border-t border-slate-100 dark:border-white/[0.06] pt-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">뉴질랜드 취항 도시</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full border border-slate-200/50 dark:border-white/[0.05]">
+                  직항 및 주요 연계 노선
+                </span>
+              </div>
+              {selectedRegion !== 'ALL' && (
                 <button
-                  key={city.id}
-                  onClick={() => onSelectRegion(city.id)}
-                  className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all ${
-                    isSelected
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
-                      : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
-                  }`}
+                  onClick={() => onSelectRegion('ALL')}
+                  className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 font-medium transition-colors cursor-pointer"
                 >
-                  {city.label}
+                  <span>전체 노선 보기</span>
+                  <X className="w-3.5 h-3.5" />
                 </button>
-              );
-            })}
-
-            {!isCitiesExpanded && isSelectedInSecondary && (
-              <button
-                onClick={() => onSelectRegion(selectedRegion)}
-                className="text-xs px-3 py-1 rounded-full font-bold whitespace-nowrap transition-all bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xs flex items-center gap-1"
-              >
-                <span>{JAPAN_CITIES.find((c) => c.id === selectedRegion)?.label}</span>
-                <span className="text-[10px] bg-white/20 dark:bg-slate-800 px-1.5 py-0.2 rounded-full font-normal">선택됨</span>
-              </button>
-            )}
-
-            {isCitiesExpanded &&
-              SECONDARY_JAPAN_CITIES.map((city) => {
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {NZ_CITIES.map((city) => {
                 const isSelected = selectedRegion === city.id;
                 return (
                   <button
                     key={city.id}
                     onClick={() => onSelectRegion(city.id)}
-                    className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all ${
+                    className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
+                        : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
+                    }`}
+                  >
+                    {city.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Japan City Tabs (when JAPAN or ALL) */}
+        {(selectedCountry === 'JAPAN' || selectedCountry === 'ALL') && (
+          <div className="flex flex-col gap-2 border-t border-slate-100 dark:border-white/[0.06] pt-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">일본 취항 도시</span>
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full border border-slate-200/50 dark:border-white/[0.05]">
+                  한국 직항 31개 도시
+                </span>
+              </div>
+              {selectedRegion !== 'ALL' && (
+                <button
+                  onClick={() => onSelectRegion('ALL')}
+                  className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 font-medium transition-colors cursor-pointer"
+                >
+                  <span>전체 일본 노선 보기</span>
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {PRIMARY_JAPAN_CITIES.map((city) => {
+                const isSelected = selectedRegion === city.id;
+                return (
+                  <button
+                    key={city.id}
+                    onClick={() => onSelectRegion(city.id)}
+                    className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
                         : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
@@ -300,51 +316,80 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 );
               })}
 
-            <button
-              onClick={() => setIsCitiesExpanded(!isCitiesExpanded)}
-              className="text-xs px-3 py-1 rounded-full font-semibold whitespace-nowrap transition-all flex items-center gap-1 border border-slate-200/80 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.03] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.07] cursor-pointer"
-              aria-expanded={isCitiesExpanded}
-            >
-              {isCitiesExpanded ? (
-                <>
-                  <span>접기</span>
-                  <ChevronUp className="w-3.5 h-3.5 text-slate-500" />
-                </>
-              ) : (
-                <>
-                  <span>+ 25개 도시 더보기</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
-                </>
+              {!isCitiesExpanded && isSelectedInSecondary && (
+                <button
+                  onClick={() => onSelectRegion(selectedRegion)}
+                  className="text-xs px-3 py-1 rounded-full font-bold whitespace-nowrap transition-all bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xs flex items-center gap-1 cursor-pointer"
+                >
+                  <span>{JAPAN_CITIES.find((c) => c.id === selectedRegion)?.label}</span>
+                  <span className="text-[10px] bg-white/20 dark:bg-slate-800 px-1.5 py-0.2 rounded-full font-normal">선택됨</span>
+                </button>
               )}
-            </button>
-          </div>
-        </div>
-      )}
 
-      {/* Airline Tabs */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-white/[0.06]">
-        <div className="flex flex-wrap items-center gap-1.5 flex-1">
-          <span className="text-xs font-semibold text-slate-400 shrink-0 mr-1">항공사</span>
-          {currentAirlines.map((air) => {
-            const isSelected = selectedAirline === air.id;
-            return (
+              {isCitiesExpanded &&
+                SECONDARY_JAPAN_CITIES.map((city) => {
+                  const isSelected = selectedRegion === city.id;
+                  return (
+                    <button
+                      key={city.id}
+                      onClick={() => onSelectRegion(city.id)}
+                      className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
+                          : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
+                      }`}
+                    >
+                      {city.label}
+                    </button>
+                  );
+                })}
+
               <button
-                key={air.id}
-                onClick={() => onSelectAirline(air.id)}
-                className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all ${
-                  isSelected
-                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
-                    : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
-                }`}
+                onClick={() => setIsCitiesExpanded(!isCitiesExpanded)}
+                className="text-xs px-3 py-1 rounded-full font-semibold whitespace-nowrap transition-all flex items-center gap-1 border border-slate-200/80 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.03] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.07] cursor-pointer"
+                aria-expanded={isCitiesExpanded}
               >
-                {air.label}
+                {isCitiesExpanded ? (
+                  <>
+                    <span>접기</span>
+                    <ChevronUp className="w-3.5 h-3.5 text-slate-500" />
+                  </>
+                ) : (
+                  <>
+                    <span>+ 25개 도시 더보기</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                  </>
+                )}
               </button>
-            );
-          })}
-        </div>
+            </div>
+          </div>
+        )}
 
-        <div className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0">
-          특가 <span className="font-bold text-slate-900 dark:text-white">{totalFilteredCount}</span>건
+        {/* Airline Tabs */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-white/[0.06]">
+          <div className="flex flex-wrap items-center gap-1.5 flex-1">
+            <span className="text-xs font-semibold text-slate-400 shrink-0 mr-1">항공사</span>
+            {currentAirlines.map((air) => {
+              const isSelected = selectedAirline === air.id;
+              return (
+                <button
+                  key={air.id}
+                  onClick={() => onSelectAirline(air.id)}
+                  className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
+                      : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
+                  }`}
+                >
+                  {air.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="hidden md:block text-xs text-slate-500 whitespace-nowrap shrink-0">
+            특가 <span className="font-bold text-slate-900 dark:text-white">{totalFilteredCount}</span>건
+          </div>
         </div>
       </div>
     </div>

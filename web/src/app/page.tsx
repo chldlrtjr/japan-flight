@@ -220,9 +220,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* Global Navbar */}
+      {/* Global Navbar (모바일/PC 공통 반응형 지원) */}
       <Navbar
-        className="hidden sm:block"
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
         bookmarkCount={bookmarkedIds.length}
@@ -232,34 +231,36 @@ export default function Home() {
       />
 
       {/* Main Stage (비움과 마당의 미학) */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 w-full min-w-0">
-        {/* Architectural Segment Controller Tab Switcher */}
-        <div className="flex items-center justify-between pb-3 mb-8 border-b border-slate-200/70 dark:border-white/[0.06] overflow-x-auto no-scrollbar">
-          <div className="inline-flex items-center gap-1 p-1 bg-slate-200/60 dark:bg-white/[0.05] rounded-full border border-slate-200/60 dark:border-white/[0.06] shadow-2xs">
+      <main className="flex-1 max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-10 w-full min-w-0">
+        {/* Architectural Segment Controller Tab Switcher (모바일 최적화) */}
+        <div className="flex items-center justify-between pb-2.5 mb-6 sm:mb-8 border-b border-slate-200/70 dark:border-white/[0.06] overflow-x-auto no-scrollbar">
+          <div className="inline-flex items-center gap-1 p-1 bg-slate-200/60 dark:bg-white/[0.05] rounded-full border border-slate-200/60 dark:border-white/[0.06] shadow-2xs w-full sm:w-auto justify-between sm:justify-start">
             <button
               onClick={() => handleTabChange('calendar')}
-              className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all shrink-0 ${
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all flex-1 sm:flex-initial cursor-pointer ${
                 activeTab === 'calendar'
                   ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <Calendar className="w-4 h-4 stroke-[2] shrink-0" />
-              <span>친구 일정 캘린더</span>
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2] shrink-0" />
+              <span className="sm:hidden">일정 달력</span>
+              <span className="hidden sm:inline">친구 일정 캘린더</span>
             </button>
 
             <button
               onClick={() => handleTabChange('promotions')}
-              className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all shrink-0 ${
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all flex-1 sm:flex-initial cursor-pointer ${
                 activeTab === 'promotions'
                   ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <PlaneTakeoff className="w-4 h-4 stroke-[2] shrink-0" />
-              <span>항공사 공식 특가</span>
+              <PlaneTakeoff className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2] shrink-0" />
+              <span className="sm:hidden">공식 특가</span>
+              <span className="hidden sm:inline">항공사 공식 특가</span>
               <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
+                className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${
                   activeTab === 'promotions'
                     ? 'bg-white/20 dark:bg-slate-900/15 text-current'
                     : 'bg-slate-200/80 dark:bg-white/10 text-slate-700 dark:text-slate-300'
@@ -271,16 +272,17 @@ export default function Home() {
 
             <button
               onClick={() => handleTabChange('news')}
-              className={`flex items-center justify-center gap-2 px-4 sm:px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all shrink-0 ${
+              className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all flex-1 sm:flex-initial cursor-pointer ${
                 activeTab === 'news'
                   ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-sm'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <Newspaper className="w-4 h-4 stroke-[2] shrink-0" />
-              <span>실시간 특가 보도자료</span>
+              <Newspaper className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2] shrink-0" />
+              <span className="sm:hidden">보도자료</span>
+              <span className="hidden sm:inline">실시간 특가 보도자료</span>
               <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded-full shrink-0 ${
+                className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${
                   activeTab === 'news'
                     ? 'bg-white/20 dark:bg-slate-900/15 text-current'
                     : 'bg-slate-200/80 dark:bg-white/10 text-slate-700 dark:text-slate-300'
@@ -306,7 +308,7 @@ export default function Home() {
             {featuredPromo && !searchTerm && selectedRegion === 'ALL' && selectedAirline === 'ALL' && !showOnlyBookmarks && (
               <div
                 onClick={() => setSelectedPromo(featuredPromo)}
-                className="relative w-full h-64 sm:h-80 md:h-[360px] rounded-3xl overflow-hidden mb-8 border border-slate-200/80 dark:border-white/[0.1] shadow-md group cursor-pointer arch-card-glow"
+                className="relative w-full h-48 sm:h-80 md:h-[360px] rounded-2xl sm:rounded-3xl overflow-hidden mb-6 sm:mb-8 border border-slate-200/80 dark:border-white/[0.1] shadow-md group cursor-pointer arch-card-glow"
               >
                 <img
                   src={featuredPromo.image_url || 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80'}
@@ -317,35 +319,35 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent pointer-events-none" />
 
                 {/* Top Floating Tag */}
-                <div className="absolute top-4 left-5 right-5 flex items-center justify-between pointer-events-none">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md text-white border border-white/20">
+                <div className="absolute top-3 left-3.5 right-3.5 sm:top-4 sm:left-5 sm:right-5 flex items-center justify-between pointer-events-none">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-white/20 backdrop-blur-md text-white border border-white/20">
                       <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
-                      오늘의 주목 특가
+                      주목 특가
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-black/50 backdrop-blur-md text-white/90 border border-white/10">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-black/50 backdrop-blur-md text-white/90 border border-white/10">
                       {featuredPromo.airline}
                     </span>
                   </div>
 
-                  <span className="text-xs font-bold px-3 py-1 rounded-full backdrop-blur-md bg-black/70 text-white border border-white/15">
+                  <span className="text-xs font-bold px-2.5 sm:px-3 py-1 rounded-full backdrop-blur-md bg-black/70 text-white border border-white/15">
                     {featuredPromo.region_category === '뉴질랜드' ? '뉴질랜드' : '일본 노선'}
                   </span>
                 </div>
 
                 {/* Bottom Frame Content */}
-                <div className="absolute bottom-5 left-5 right-5 sm:bottom-7 sm:left-7 sm:right-7 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                  <div className="max-w-2xl text-white">
+                <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-7 sm:left-7 sm:right-7 flex flex-row items-end justify-between gap-3">
+                  <div className="max-w-2xl text-white min-w-0">
                     {featuredPromo.badge_text && (
-                      <p className="text-xs font-bold text-amber-300 mb-1.5 tracking-tight flex items-center gap-1">
+                      <p className="hidden sm:flex text-xs font-bold text-amber-300 mb-1.5 tracking-tight items-center gap-1">
                         <span>{featuredPromo.badge_text}</span>
                       </p>
                     )}
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black leading-tight tracking-tight drop-shadow-md">
+                    <h2 className="text-sm sm:text-2xl md:text-3xl font-black leading-snug sm:leading-tight tracking-tight drop-shadow-md line-clamp-2">
                       {featuredPromo.title}
                     </h2>
                     {featuredPromo.subtitle && (
-                      <p className="text-xs sm:text-sm text-slate-300 mt-2 line-clamp-1 max-w-xl">
+                      <p className="hidden sm:block text-xs sm:text-sm text-slate-300 mt-2 line-clamp-1 max-w-xl">
                         {featuredPromo.subtitle}
                       </p>
                     )}
@@ -356,11 +358,11 @@ export default function Home() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-slate-950 font-bold hover:bg-slate-100 transition-all text-xs sm:text-sm shadow-md active:scale-97 shrink-0 cursor-pointer self-start sm:self-end"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full bg-white text-slate-950 font-bold hover:bg-slate-100 transition-all text-xs sm:text-sm shadow-md active:scale-97 shrink-0 cursor-pointer"
                     title={`${featuredPromo.airline} 바로가기`}
                   >
                     <span>바로가기</span>
-                    <ExternalLink className="w-4 h-4 stroke-[2.5]" />
+                    <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
                   </a>
                 </div>
               </div>
@@ -383,13 +385,13 @@ export default function Home() {
 
             {/* Promotions Grid (걷고 싶은 거리의 리듬감) */}
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="h-80 bg-white dark:bg-white/[0.03] rounded-2xl border border-slate-200/70 dark:border-white/[0.06] animate-pulse" />
+                  <div key={i} className="h-32 sm:h-80 bg-white dark:bg-white/[0.03] rounded-2xl border border-slate-200/70 dark:border-white/[0.06] animate-pulse" />
                 ))}
               </div>
             ) : displayedPromotions.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {displayedPromotions.map((promo) => (
                   <PromoCard
                     key={promo.id}
@@ -479,13 +481,13 @@ export default function Home() {
 
             {/* News List */}
             {newsLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="p-5 rounded-2xl bg-white dark:bg-white/[0.03] border border-slate-200/70 dark:border-white/[0.06] animate-pulse h-40" />
+                  <div key={i} className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-white/[0.03] border border-slate-200/70 dark:border-white/[0.06] animate-pulse h-32 sm:h-40" />
                 ))}
               </div>
             ) : displayNewsList.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
                 {displayNewsList.map((grouped) => (
                   <NewsCard key={grouped.id} grouped={grouped} />
                 ))}
