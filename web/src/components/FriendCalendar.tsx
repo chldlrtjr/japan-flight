@@ -1553,7 +1553,7 @@ export const FriendCalendar: React.FC = () => {
                         setSelectedEvent(ev);
                         setIsViewModalOpen(true);
                       }}
-                      className={`min-w-[230px] max-w-[260px] sm:min-w-[250px] sm:max-w-[280px] shrink-0 rounded-xl p-3 sm:p-3.5 border transition cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
+                      className={`min-w-[240px] max-w-[320px] sm:min-w-[260px] sm:max-w-[350px] shrink-0 rounded-xl p-3 sm:p-3.5 border transition cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
                         isFirst
                           ? 'bg-gradient-to-br from-indigo-50/60 via-white to-white border-indigo-300 ring-2 ring-indigo-500/10'
                           : 'bg-white hover:bg-slate-50/80 border-slate-200 hover:border-indigo-200'
@@ -1611,39 +1611,41 @@ export const FriendCalendar: React.FC = () => {
                         )}
                       </div>
 
-                      {/* 카드 하단: 참여 친구 아바타 & 바로가기 화살표 */}
+                      {/* 카드 하단: 참여 친구 전원 목록 & 바로가기 화살표 */}
                       <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1 overflow-hidden min-w-0">
+                        <div className="flex-1 min-w-0">
                           {evFriends.length === 0 ? (
-                            <span className="text-[10px] text-slate-400 font-medium">🤝 참여자 미정</span>
+                            <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+                              <span>🤝</span>
+                              <span>참여자 미정 (클릭하여 참여)</span>
+                            </span>
                           ) : (
-                            <div className="flex items-center gap-1 flex-wrap">
-                              {evFriends.slice(0, 3).map((f) => (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {evFriends.map((f) => (
                                 <span
                                   key={f.id}
-                                  className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                                  className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md shadow-2xs whitespace-nowrap"
                                   style={{
-                                    backgroundColor: `${f.color}15`,
+                                    backgroundColor: `${f.color}18`,
                                     color: f.color,
+                                    border: `1px solid ${f.color}40`,
                                   }}
                                 >
                                   <span
-                                    className="w-1.5 h-1.5 rounded-full"
+                                    className="w-1.5 h-1.5 rounded-full shrink-0"
                                     style={{ backgroundColor: f.color }}
                                   />
-                                  <span className="truncate max-w-[45px]">{f.name}</span>
+                                  <span>{f.name}</span>
                                 </span>
                               ))}
-                              {evFriends.length > 3 && (
-                                <span className="text-[10px] text-slate-400 font-bold">
-                                  +{evFriends.length - 3}
-                                </span>
-                              )}
                             </div>
                           )}
                         </div>
 
-                        <span className="w-5 h-5 rounded-full bg-slate-100 group-hover:bg-indigo-600 text-slate-400 group-hover:text-white flex items-center justify-center transition shrink-0">
+                        <span
+                          className="w-5 h-5 rounded-full bg-slate-100 group-hover:bg-indigo-600 text-slate-400 group-hover:text-white flex items-center justify-center transition shrink-0 self-center"
+                          title="약속 상세 및 참여 관리"
+                        >
                           <ArrowRight className="w-3 h-3" />
                         </span>
                       </div>
@@ -2075,7 +2077,7 @@ export const FriendCalendar: React.FC = () => {
                                 <span>🤝</span>
                                 <span className="text-[10px] px-1 py-0.2 rounded bg-indigo-100 text-indigo-700">약속</span>
                                 {seg.friends.length > 0 && (
-                                  <span className="text-[10px] text-indigo-800 font-bold max-w-[42px] sm:max-w-[100px] truncate ml-0.5">
+                                  <span className="text-[10px] text-indigo-800 font-bold max-w-[120px] sm:max-w-[220px] truncate ml-0.5">
                                     ({seg.displayTitle}):
                                   </span>
                                 )}
