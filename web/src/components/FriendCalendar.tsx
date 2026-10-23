@@ -1559,7 +1559,7 @@ export const FriendCalendar: React.FC = () => {
                           : 'bg-white hover:bg-slate-50/80 border-slate-200 hover:border-indigo-200'
                       }`}
                     >
-                      {/* 카드 상단: D-Day 뱃지 & 보조 힌트 */}
+                      {/* 카드 상단: D-Day 뱃지 & 날짜 */}
                       <div>
                         <div className="flex items-center justify-between gap-1.5 mb-2">
                           <span
@@ -1567,8 +1567,11 @@ export const FriendCalendar: React.FC = () => {
                           >
                             {detail.badge}
                           </span>
-                          <span className="text-[11px] font-bold text-slate-500 truncate text-right">
-                            {detail.subText}
+                          <span className="text-[11px] font-bold text-slate-600 truncate text-right">
+                            {formatShortDateWithDay(ev.startDate)}
+                            {ev.endDate && ev.endDate !== ev.startDate
+                              ? ` ~ ${formatShortDateWithDay(ev.endDate)}`
+                              : ''}
                           </span>
                         </div>
 
@@ -1577,30 +1580,35 @@ export const FriendCalendar: React.FC = () => {
                           {ev.title}
                         </h4>
 
-                        {/* 날짜 / 시간 정보 */}
-                        <div className="space-y-1 text-[11px] text-slate-500">
-                          <div className="flex items-center gap-1.5">
-                            <CalendarIcon className="w-3 h-3 text-slate-400 shrink-0" />
-                            <span className="font-semibold text-slate-700">
-                              {formatShortDateWithDay(ev.startDate)}
-                              {ev.endDate && ev.endDate !== ev.startDate
-                                ? ` ~ ${formatShortDateWithDay(ev.endDate)}`
-                                : ''}
-                            </span>
+                        {/* 시간 / 장소 / 메모 세부 정보 */}
+                        {(ev.time || ev.location || ev.memo) ? (
+                          <div className="space-y-1 text-[11px] text-slate-500 min-h-[18px]">
                             {ev.time && (
-                              <span className="text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.2 rounded text-[10px]">
-                                {ev.time}
-                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <Clock className="w-3 h-3 text-indigo-500 shrink-0" />
+                                <span className="text-indigo-700 font-bold bg-indigo-50 px-1.5 py-0.2 rounded text-[10px]">
+                                  {ev.time}
+                                </span>
+                                {ev.location && (
+                                  <span className="truncate text-slate-600">· {ev.location}</span>
+                                )}
+                              </div>
+                            )}
+                            {!ev.time && ev.location && (
+                              <div className="flex items-center gap-1.5 truncate text-slate-600">
+                                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="truncate">{ev.location}</span>
+                              </div>
+                            )}
+                            {!ev.time && !ev.location && ev.memo && (
+                              <p className="text-[11px] text-slate-400 line-clamp-1 truncate">
+                                {ev.memo}
+                              </p>
                             )}
                           </div>
-
-                          {ev.location && (
-                            <div className="flex items-center gap-1.5 truncate text-slate-500">
-                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                              <span className="truncate">{ev.location}</span>
-                            </div>
-                          )}
-                        </div>
+                        ) : (
+                          <div className="min-h-[18px]" />
+                        )}
                       </div>
 
                       {/* 카드 하단: 참여 친구 아바타 & 바로가기 화살표 */}
