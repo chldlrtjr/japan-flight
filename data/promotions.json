@@ -1,5 +1,26 @@
 [
   {
+    "id": "jeju_0000004363",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "일본 센다이 신규취항 특가",
+    "subtitle": "최대 20% 할인코드⭐",
+    "badge_text": "최대 20% 할인코드⭐",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004363",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261020170956260.jpg",
+    "promo_start": "2026-10-23",
+    "promo_end": "2026-11-08",
+    "travel_period": "2026.10.23 ~ 2026.11.08",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "센다이",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-10-23T14:32:06.447603+09:00",
+    "updated_at": "2026-10-23T14:32:07.041716+09:00"
+  },
+  {
     "id": "jeju_0000004413",
     "airline": "제주항공",
     "airline_code": "JEJU",
@@ -18,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-22T11:14:50.674610+09:00",
-    "updated_at": "2026-10-23T09:34:38.489467+09:00"
+    "updated_at": "2026-10-23T14:32:07.043648+09:00"
   },
   {
     "id": "jeju_0000004361",
@@ -39,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-14T02:29:10.448829",
-    "updated_at": "2026-10-23T09:34:38.491571+09:00"
+    "updated_at": "2026-10-23T14:32:07.045809+09:00"
   },
   {
     "id": "jin_october_newmember_baggage",
@@ -60,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-16T08:34:03.998348",
-    "updated_at": "2026-10-23T09:34:50.113349+09:00"
+    "updated_at": "2026-10-23T14:32:19.292963+09:00"
   },
   {
     "id": "airbusan_october_coupon",
@@ -81,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:20:56.155331",
-    "updated_at": "2026-10-23T09:34:50.116072+09:00"
+    "updated_at": "2026-10-23T14:32:19.295435+09:00"
   },
   {
     "id": "eastar_2645",
@@ -123,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-03T20:07:03.212277",
-    "updated_at": "2026-10-23T09:34:50.117323+09:00"
+    "updated_at": "2026-10-23T14:32:19.296526+09:00"
   },
   {
     "id": "eastar_2505",
