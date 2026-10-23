@@ -26,8 +26,8 @@ export const PromoModal: React.FC<PromoModalProps> = ({
     : [];
 
   const regionLabel = promo.region_category === '뉴질랜드'
-    ? '🇳🇿 뉴질랜드'
-    : (promo.region_category ? `🇯🇵 ${promo.region_category}` : '국제선');
+    ? '뉴질랜드'
+    : (promo.region_category || '국제선');
 
   return (
     <div
@@ -35,21 +35,21 @@ export const PromoModal: React.FC<PromoModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col relative"
+        className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close & Action Buttons */}
         <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
           <button
             onClick={() => onToggleBookmark(promo.id)}
-            className="p-2.5 rounded-full bg-white/80 hover:bg-white text-slate-700 backdrop-blur-md shadow-md transition-all"
+            className="p-2.5 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 backdrop-blur-md shadow-md transition-all"
             title={isBookmarked ? '북마크 해제' : '북마크 저장'}
           >
             <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
           </button>
           <button
             onClick={onClose}
-            className="p-2.5 rounded-full bg-white/80 hover:bg-white text-slate-700 backdrop-blur-md shadow-md transition-all"
+            className="p-2.5 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 backdrop-blur-md shadow-md transition-all"
           >
             <X className="w-5 h-5" />
           </button>
@@ -69,7 +69,7 @@ export const PromoModal: React.FC<PromoModalProps> = ({
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/20" />
             
             <div className="absolute bottom-4 left-6 right-6 text-white">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500 text-white mb-2 shadow-sm">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-600 text-white mb-2 shadow-sm">
                 {promo.airline} · {regionLabel}
               </div>
               <h2 className="text-xl sm:text-2xl font-black leading-tight drop-shadow-md">
@@ -83,10 +83,10 @@ export const PromoModal: React.FC<PromoModalProps> = ({
         <div className="p-6 sm:p-8 space-y-6">
           {!promo.image_url && (
             <div>
-              <span className="text-xs font-bold text-sky-600 bg-sky-50 px-2.5 py-1 rounded-md">
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-1 rounded-md">
                 {promo.airline} · {regionLabel}
               </span>
-              <h2 className="text-2xl font-black text-slate-900 mt-2">
+              <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-2">
                 {promo.title}
               </h2>
             </div>
@@ -94,31 +94,31 @@ export const PromoModal: React.FC<PromoModalProps> = ({
 
           {/* Subtitle / summary */}
           {promo.subtitle && (
-            <p className="text-sm sm:text-base text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
               {promo.subtitle}
             </p>
           )}
 
           {/* Details Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 space-y-1">
+            <div className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 space-y-1">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                <Calendar className="w-4 h-4 text-sky-600" />
+                <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 <span>프로모션 기간</span>
               </div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {promo.promo_start && promo.promo_end
                   ? `${promo.promo_start} ~ ${promo.promo_end}`
                   : '공식 사이트 확인 요망'}
               </p>
             </div>
 
-            <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 space-y-1">
+            <div className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 space-y-1">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
                 <Tag className="w-4 h-4 text-amber-500" />
                 <span>프로모션 혜택 유형</span>
               </div>
-              <p className="text-sm font-semibold text-slate-900">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {promo.badge_text || '국제선 정기/특가 할인'}
               </p>
             </div>
@@ -128,14 +128,14 @@ export const PromoModal: React.FC<PromoModalProps> = ({
           {destList.length > 0 && (
             <div>
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-sky-500" />
+                <MapPin className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 <span>주요 대상 목적지</span>
               </h4>
               <div className="flex flex-wrap gap-2">
                 {destList.map((dest, i) => (
                   <span
                     key={i}
-                    className="px-3 py-1.5 rounded-lg bg-sky-50 text-sky-800 text-xs font-bold border border-sky-100"
+                    className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-200 text-xs font-bold border border-indigo-100 dark:border-indigo-800"
                   >
                     {dest}
                   </span>
@@ -158,7 +158,7 @@ export const PromoModal: React.FC<PromoModalProps> = ({
               href={eventUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 text-white font-bold flex items-center justify-center gap-2 hover:opacity-95 shadow-lg shadow-sky-600/25 active:scale-[0.99] transition-all text-base"
+              className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 active:scale-[0.99] transition-all text-base"
             >
               <span>바로가기</span>
               <ExternalLink className="w-5 h-5" />

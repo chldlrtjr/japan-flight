@@ -203,7 +203,7 @@ export default function Home() {
   const displayNewsList = rawDisplayList;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans w-full max-w-full overflow-x-hidden transition-colors">
       {/* Refresh Toast Notification */}
       {refreshMessage && (
         <div className="fixed top-4 right-4 z-50 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -226,32 +226,32 @@ export default function Home() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full min-w-0">
         {/* Tab Switcher: Airline Website Events vs Flight News vs Friend Calendar */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-6 border-b border-slate-200 w-full min-w-0">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-6 border-b border-slate-200 dark:border-slate-800 w-full min-w-0">
           <button
             onClick={() => handleTabChange('calendar')}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
               activeTab === 'calendar'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 border border-slate-200 dark:border-slate-800'
             }`}
           >
             <Calendar className="w-4 h-4 shrink-0" />
-            <span className="truncate">📅 친구 일정 캘린더</span>
+            <span className="truncate">친구 일정 캘린더</span>
           </button>
 
           <button
             onClick={() => handleTabChange('promotions')}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
               activeTab === 'promotions'
-                ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 border border-slate-200 dark:border-slate-800'
             }`}
           >
             <PlaneTakeoff className="w-4 h-4 shrink-0" />
-            <span className="truncate">✈️ 항공사 공식 특가</span>
+            <span className="truncate">항공사 공식 특가</span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                activeTab === 'promotions' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                activeTab === 'promotions' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
               }`}
             >
               {stats.total}
@@ -262,15 +262,15 @@ export default function Home() {
             onClick={() => handleTabChange('news')}
             className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all shrink-0 ${
               activeTab === 'news'
-                ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 border border-slate-200 dark:border-slate-800'
             }`}
           >
             <Newspaper className="w-4 h-4 shrink-0" />
-            <span className="truncate">📰 실시간 특가 보도자료</span>
+            <span className="truncate">실시간 특가 보도자료</span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                activeTab === 'news' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                activeTab === 'news' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
               }`}
             >
               {totalNewsCount}
@@ -280,7 +280,7 @@ export default function Home() {
 
         {/* Main Content View by Active Tab */}
         {!isMounted ? (
-          <div className="min-h-[420px] bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center justify-center gap-3">
+          <div className="min-h-[420px] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 flex flex-col items-center justify-center gap-3">
             <div className="w-7 h-7 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
             <p className="text-xs font-semibold text-slate-400">화면을 불러오는 중입니다...</p>
           </div>
@@ -307,7 +307,7 @@ export default function Home() {
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="h-80 bg-white rounded-2xl border border-slate-200 animate-pulse" />
+                  <div key={i} className="h-80 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 animate-pulse" />
                 ))}
               </div>
             ) : displayedPromotions.length > 0 ? (
@@ -323,12 +323,12 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center max-w-md mx-auto my-12 shadow-sm">
-                <BookmarkX className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <h3 className="text-base font-bold text-slate-800">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center max-w-md mx-auto my-12 shadow-sm">
+                <BookmarkX className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
                   {showOnlyBookmarks ? '저장된 관심 특가가 없습니다' : '조건에 맞는 특가가 없습니다'}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   {showOnlyBookmarks
                     ? '마음에 드는 항공권 특가의 북마크 아이콘을 눌러 저장해보세요.'
                     : '검색 조건을 변경하거나 필터를 초기화해보세요.'}
@@ -343,36 +343,36 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
               {/* Country Filter */}
               <div className="flex items-center gap-2">
-                <div className="inline-flex rounded-xl bg-slate-200/70 p-1 text-xs font-semibold text-slate-600">
+                <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                   <button
                     onClick={() => setSelectedCountry('ALL')}
                     className={`px-3 py-1.5 rounded-lg transition-all ${
                       selectedCountry === 'ALL'
-                        ? 'bg-white text-slate-900 shadow-sm font-bold'
-                        : 'hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-sm font-bold'
+                        : 'hover:text-slate-900 dark:hover:text-[#f0f6fc]'
                     }`}
                   >
-                    🌏 전체
+                    전체
                   </button>
                   <button
                     onClick={() => setSelectedCountry('JAPAN')}
                     className={`px-3 py-1.5 rounded-lg transition-all ${
                       selectedCountry === 'JAPAN'
-                        ? 'bg-rose-600 text-white shadow-sm font-bold'
-                        : 'hover:text-slate-900'
+                        ? 'bg-indigo-600 text-white shadow-sm font-bold'
+                        : 'hover:text-slate-900 dark:hover:text-[#f0f6fc]'
                     }`}
                   >
-                    🇯🇵 일본
+                    일본
                   </button>
                   <button
                     onClick={() => setSelectedCountry('NZ')}
                     className={`px-3 py-1.5 rounded-lg transition-all ${
                       selectedCountry === 'NZ'
-                        ? 'bg-emerald-600 text-white shadow-sm font-bold'
-                        : 'hover:text-slate-900'
+                        ? 'bg-indigo-600 text-white shadow-sm font-bold'
+                        : 'hover:text-slate-900 dark:hover:text-[#f0f6fc]'
                     }`}
                   >
-                    🇳🇿 뉴질랜드
+                    뉴질랜드
                   </button>
                 </div>
               </div>
@@ -385,7 +385,7 @@ export default function Home() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="기사 검색 (오클랜드, 도쿄, 할인...)"
-                  className="w-full pl-9 pr-9 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-xs placeholder:text-slate-400"
+                  className="w-full pl-9 pr-9 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 shadow-xs"
                 />
                 {searchTerm && (
                   <button
@@ -412,10 +412,10 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center max-w-md mx-auto my-12 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center max-w-md mx-auto my-12 shadow-sm">
                 <Newspaper className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <h3 className="text-base font-bold text-slate-800">해당 조건의 기사가 없습니다</h3>
-                <p className="text-xs text-slate-500 mt-1">검색어를 지우거나 전체 기사 보기를 클릭해보세요.</p>
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">해당 조건의 기사가 없습니다</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">검색어를 지우거나 전체 기사 보기를 클릭해보세요.</p>
               </div>
             )}
           </div>

@@ -18,105 +18,21 @@ export const PromoCard: React.FC<PromoCardProps> = ({
   onToggleBookmark,
   onSelectPromo,
 }) => {
-  // Airline style helper
+  // Airline style helper (Simple material: technical monochrome glass badge)
   const getAirlineBadge = (airline: string) => {
-    switch (airline) {
-      case '에어뉴질랜드':
-      case '에어뉴질랜드 (Air New Zealand)':
-        return {
-          bg: 'bg-emerald-50 text-emerald-900 border-emerald-300',
-          dot: 'bg-emerald-600',
-        };
-      case '중국남방항공':
-        return {
-          bg: 'bg-cyan-50 text-cyan-900 border-cyan-300',
-          dot: 'bg-cyan-600',
-        };
-      case '제주항공':
-        return {
-          bg: 'bg-orange-50 text-orange-700 border-orange-200',
-          dot: 'bg-orange-500',
-        };
-      case '티웨이항공':
-        return {
-          bg: 'bg-rose-50 text-rose-700 border-rose-200',
-          dot: 'bg-rose-500',
-        };
-      case '이스타항공':
-        return {
-          bg: 'bg-red-50 text-red-700 border-red-200',
-          dot: 'bg-red-500',
-        };
-      case '진에어':
-        return {
-          bg: 'bg-lime-50 text-lime-800 border-lime-300',
-          dot: 'bg-lime-600',
-        };
-      case '피치항공 (Peach)':
-      case '피치항공':
-        return {
-          bg: 'bg-pink-50 text-pink-700 border-pink-200',
-          dot: 'bg-pink-500',
-        };
-      case '집에어 (ZIPAIR)':
-      case '집에어':
-        return {
-          bg: 'bg-emerald-50 text-emerald-800 border-emerald-300',
-          dot: 'bg-emerald-600',
-        };
-      case '일본항공 (JAL)':
-      case '일본항공':
-        return {
-          bg: 'bg-red-50 text-red-800 border-red-300',
-          dot: 'bg-red-600',
-        };
-      case '전일본공수 (ANA)':
-      case '전일본공수':
-        return {
-          bg: 'bg-blue-50 text-blue-900 border-blue-300',
-          dot: 'bg-blue-600',
-        };
-      case '대한항공':
-        return {
-          bg: 'bg-sky-50 text-sky-900 border-sky-300',
-          dot: 'bg-sky-600',
-        };
-      case '아시아나항공':
-        return {
-          bg: 'bg-amber-50 text-amber-900 border-amber-300',
-          dot: 'bg-amber-600',
-        };
-      case '에어서울':
-        return {
-          bg: 'bg-teal-50 text-teal-800 border-teal-300',
-          dot: 'bg-teal-500',
-        };
-      case '에어부산':
-        return {
-          bg: 'bg-blue-50 text-blue-800 border-blue-300',
-          dot: 'bg-blue-600',
-        };
-      case '에어프레미아':
-        return {
-          bg: 'bg-indigo-50 text-indigo-900 border-indigo-300',
-          dot: 'bg-indigo-600',
-        };
-      case '에어로케이':
-        return {
-          bg: 'bg-yellow-50 text-yellow-900 border-yellow-300',
-          dot: 'bg-yellow-600',
-        };
-      case '파라타항공':
-        return {
-          bg: 'bg-cyan-50 text-cyan-900 border-cyan-300',
-          dot: 'bg-cyan-600',
-        };
-      default:
-        return {
-          bg: 'bg-slate-50 text-slate-700 border-slate-200',
-          dot: 'bg-slate-500',
-        };
-    }
+    let dot = 'bg-slate-400';
+    if (airline.includes('뉴질랜드')) dot = 'bg-emerald-400';
+    else if (airline.includes('대한항공') || airline.includes('ANA')) dot = 'bg-sky-400';
+    else if (airline.includes('아시아나')) dot = 'bg-amber-400';
+    else if (airline.includes('티웨이') || airline.includes('이스타') || airline.includes('일본항공')) dot = 'bg-rose-400';
+    else if (airline.includes('제주항공')) dot = 'bg-orange-400';
+    else if (airline.includes('진에어')) dot = 'bg-lime-400';
+    else if (airline.includes('에어서울')) dot = 'bg-teal-400';
+
+    return {
+      bg: 'bg-black/60 dark:bg-black/75 text-white border-white/15',
+      dot,
+    };
   };
 
   // D-Day calculation
@@ -164,7 +80,7 @@ export const PromoCard: React.FC<PromoCardProps> = ({
   return (
     <div
       onClick={() => onSelectPromo(promo)}
-      className="group bg-white rounded-2xl border border-slate-200 hover:border-sky-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden cursor-pointer relative"
+      className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-400 shadow-sm hover:shadow-xl dark:hover:shadow-sky-950/40 transition-all duration-300 flex flex-col overflow-hidden cursor-pointer relative"
     >
       {/* Thumbnail Banner */}
       <div className="relative h-44 w-full overflow-hidden bg-slate-100">
@@ -210,12 +126,8 @@ export const PromoCard: React.FC<PromoCardProps> = ({
 
         {/* Region Chip on image */}
         <div className="absolute bottom-3 left-3 flex items-center gap-1">
-          <span className={`text-xs font-bold px-2.5 py-0.5 rounded-md backdrop-blur-md border ${
-            promo.region_category === '뉴질랜드'
-              ? 'bg-emerald-600/90 text-white border-emerald-400/40 shadow-sm'
-              : 'bg-white/20 text-white border-white/20'
-          }`}>
-            {promo.region_category === '뉴질랜드' ? '🇳🇿 뉴질랜드' : (promo.region_category ? `🇯🇵 ${promo.region_category}` : '국제선')}
+          <span className="text-xs font-bold px-2.5 py-0.5 rounded-md backdrop-blur-md bg-black/60 dark:bg-black/75 text-white border border-white/15">
+            {promo.region_category === '뉴질랜드' ? '뉴질랜드' : (promo.region_category || '국제선')}
           </span>
         </div>
       </div>
@@ -225,14 +137,14 @@ export const PromoCard: React.FC<PromoCardProps> = ({
         <div>
           {/* Badge text / Benefit tagline */}
           {promo.badge_text && (
-            <div className="flex items-center gap-1 text-[11px] font-bold text-sky-600 mb-1.5">
+            <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mb-1.5">
               <Tag className="w-3 h-3" />
               <span>{promo.badge_text}</span>
             </div>
           )}
 
           {/* Title */}
-          <h3 className="text-base font-bold text-slate-900 line-clamp-2 leading-snug group-hover:text-sky-600 transition-colors">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
             <a
               href={eventUrl}
               target="_blank"
@@ -247,7 +159,7 @@ export const PromoCard: React.FC<PromoCardProps> = ({
 
           {/* Subtitle */}
           {promo.subtitle && promo.subtitle !== promo.badge_text && (
-            <p className="text-xs text-slate-500 mt-1.5 line-clamp-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 line-clamp-1">
               {promo.subtitle}
             </p>
           )}
@@ -258,7 +170,7 @@ export const PromoCard: React.FC<PromoCardProps> = ({
               {destList.slice(0, 4).map((dest, i) => (
                 <span
                   key={i}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                 >
                   <MapPin className="w-2.5 h-2.5 text-slate-400" />
                   {dest}
@@ -274,7 +186,7 @@ export const PromoCard: React.FC<PromoCardProps> = ({
         </div>
 
         {/* Bottom meta & Direct CTA */}
-        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-1 text-[11px] text-slate-500">
             <Calendar className="w-3 h-3 text-slate-400" />
             <span>
@@ -289,7 +201,7 @@ export const PromoCard: React.FC<PromoCardProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 hover:text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200/80 px-2.5 py-1 rounded-lg transition-all shadow-2xs"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:text-indigo-900 dark:hover:text-indigo-100 bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/80 dark:border-indigo-800/80 px-2.5 py-1 rounded-lg transition-all shadow-2xs"
             title={`${promo.airline} 바로가기`}
           >
             <span>바로가기</span>

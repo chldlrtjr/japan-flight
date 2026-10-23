@@ -28,6 +28,7 @@ import {
   ChevronDown,
   ChevronUp,
   Flame,
+  Database,
 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
@@ -51,10 +52,10 @@ interface CalendarEvent {
   time?: string;     // HH:mm (옵션)
   location?: string;
   memo?: string;
-  isAppointment?: boolean; // 🤝 약속 여부 (참여 인원이 배정되어도 약속 칸에 유지되며 참여자들에게도 부여됨)
+  isAppointment?: boolean; // 약속 여부 (참여 인원이 배정되어도 약속 칸에 유지되며 참여자들에게도 부여됨)
 }
 
-// 🛡️ 변경 이력 스냅샷 인터페이스 (절대 유실 방지용)
+// 변경 이력 스냅샷 인터페이스 (절대 유실 방지용)
 interface CalendarBackupSnapshot {
   savedAt: string; // ISO string
   summary: string;
@@ -72,9 +73,9 @@ const getFormattedDate = (date: Date) => {
   return `${y}-${m}-${d}`;
 };
 
-// 🚫 가상/예시 데이터 완전 배제 (Zero Fake Data 원칙)
+// 가상/예시 데이터 완전 배제 (Zero Fake Data 원칙)
 // 기본 상태는 비어 있는 깨끗한 상태로 시작하여 가상 인물이 실제 입력을 오염시키지 않도록 보장합니다.
-// 🛡️ 친구 데이터 무결성 보장 헬퍼 (undefined 원천 차단 및 필수 필드 정규화)
+// 친구 데이터 무결성 보장 헬퍼 (undefined 원천 차단 및 필수 필드 정규화)
 const sanitizeFriend = (f: any): Friend => ({
   id: String(f?.id || 'f_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7)),
   name: String(f?.name || '').trim(),
@@ -89,7 +90,7 @@ const sanitizeFriendsList = (rawFriends: any[]): Friend[] => {
   return rawFriends.map(sanitizeFriend);
 };
 
-// 🛡️ 일정 데이터 무결성 보장 헬퍼 (undefined 원천 차단 및 복수 참여자/하위 호환 완벽 정규화)
+// 일정 데이터 무결성 보장 헬퍼 (undefined 원천 차단 및 복수 참여자/하위 호환 완벽 정규화)
 const sanitizeEvent = (ev: any): CalendarEvent => {
   const friendIds: string[] = Array.isArray(ev?.friendIds)
     ? ev.friendIds.map((id: any) => String(id || '').trim()).filter(Boolean)
@@ -125,7 +126,7 @@ const sanitizeEventsList = (rawEvents: any[]): CalendarEvent[] => {
   return rawEvents.map(sanitizeEvent);
 };
 
-// 🛡️ 변경 이력 스냅샷 정제 헬퍼 (스냅샷 내부의 과거 일정/친구 undefined 방지)
+// 변경 이력 스냅샷 정제 헬퍼 (스냅샷 내부의 과거 일정/친구 undefined 방지)
 const sanitizeBackupSnapshot = (snap: any): CalendarBackupSnapshot => ({
   savedAt: String(snap?.savedAt || new Date().toISOString()),
   summary: String(snap?.summary || ''),
@@ -133,7 +134,7 @@ const sanitizeBackupSnapshot = (snap: any): CalendarBackupSnapshot => ({
   events: sanitizeEventsList(snap?.events || []),
 });
 
-// 🛡️ Firestore 직렬화 시 undefined 값 완전 박멸 헬퍼 (Deep Recursive Cleanser)
+// Firestore 직렬화 시 undefined 값 완전 박멸 헬퍼 (Deep Recursive Cleanser)
 const stripUndefinedDeep = (obj: any): any => {
   if (obj === undefined) return null;
   if (obj === null || typeof obj !== 'object') return obj;
@@ -178,7 +179,7 @@ const formatShortDateWithDay = (dateStr: string) => {
   return `${m}.${d}(${dayName})`;
 };
 
-// 🇰🇷 대한민국 법정 공휴일 및 대체공휴일 매핑 데이터 (2024~2028년)
+// 대한민국 법정 공휴일 및 대체공휴일 매핑 데이터 (2024~2028년)
 const KOREAN_HOLIDAYS: Record<string, string> = {
   // 2024년
   '2024-01-01': '신정',
@@ -317,7 +318,7 @@ const calculateAge = (birthDateStr?: string) => {
 export const FriendCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   
-  // 🛡️ [영구 안전 금고] 로컬스토리지에 저장된 실제 친구 정보가 있으면 즉시 우선 복원!
+  // [영구 안전 금고] 로컬스토리지에 저장된 실제 친구 정보가 있으면 즉시 우선 복원!
   const [friends, setFriends] = useState<Friend[]>([]);
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -326,12 +327,12 @@ export const FriendCalendar: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [hasLoadedFromFirestore, setHasLoadedFromFirestore] = useState<boolean>(false);
 
-  // 🛡️ 클라우드 변경 이력 스냅샷 목록 (원클릭 과거 복원용)
+  // 클라우드 변경 이력 스냅샷 목록 (원클릭 과거 복원용)
   const [backupHistory, setBackupHistory] = useState<CalendarBackupSnapshot[]>([]);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
-  // 🔐 관리자 모드 상태 (본인만 백업/복원 버튼을 볼 수 있도록 제어)
+  // 관리자 모드 상태 (본인만 백업/복원 버튼을 볼 수 있도록 제어)
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   // Modals
@@ -341,9 +342,9 @@ export const FriendCalendar: React.FC = () => {
   const [isFriendProfileModalOpen, setIsFriendProfileModalOpen] = useState(false);
   const [isFriendScheduleModalOpen, setIsFriendScheduleModalOpen] = useState(false);
   const [selectedFriendForSchedule, setSelectedFriendForSchedule] = useState<Friend | null>(null);
-  // ⏰ 다가오는 약속 위젯 접기/펼치기 상태
+  // 다가오는 약속 위젯 접기/펼치기 상태
   const [isCountdownCollapsed, setIsCountdownCollapsed] = useState<boolean>(false);
-  // 👥 친구 필터 드롭다운 상태 & Ref
+  // 친구 필터 드롭다운 상태 & Ref
   const [isFriendFilterDropdownOpen, setIsFriendFilterDropdownOpen] = useState(false);
   const friendFilterDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -375,7 +376,7 @@ export const FriendCalendar: React.FC = () => {
   const [newFriendName, setNewFriendName] = useState<string>('');
   const [newFriendColor, setNewFriendColor] = useState<string>('#6366f1');
 
-  // 👥 친구 필터 드롭다운 외부 클릭 시 자동 닫힘
+  // 친구 필터 드롭다운 외부 클릭 시 자동 닫힘
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -396,7 +397,7 @@ export const FriendCalendar: React.FC = () => {
   // Selected event for view modal
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
-  // 💾 이전 브라우저 로컬스토리지 백업 데이터 자동 감지 상태
+  // 이전 브라우저 로컬스토리지 백업 데이터 자동 감지 상태
   const [localBackupData, setLocalBackupData] = useState<{ friends: Friend[]; events: CalendarEvent[]; sourceName: string } | null>(null);
 
   useEffect(() => {
@@ -479,7 +480,7 @@ export const FriendCalendar: React.FC = () => {
     }
   }, []);
 
-  // 🛡️ [영구 안전 금고] 브라우저 LocalStorage에 실시간 자동 미러링 백업 (클라우드 장애나 실수 대비)
+  // [영구 안전 금고] 브라우저 LocalStorage에 실시간 자동 미러링 백업 (클라우드 장애나 실수 대비)
   const saveToLocalVault = (friendsToSave: Friend[], eventsToSave: CalendarEvent[]) => {
     if (typeof window === 'undefined') return;
     try {
@@ -511,7 +512,7 @@ export const FriendCalendar: React.FC = () => {
     }
   };
 
-  // 🔥 1. Firebase Firestore 실시간 동기화
+  // 1. Firebase Firestore 실시간 동기화
   useEffect(() => {
     const docRef = doc(db, 'calendar_data', 'shared');
 
@@ -541,13 +542,13 @@ export const FriendCalendar: React.FC = () => {
             setEvents(loadedEvents);
           }
 
-          // 🛡️ 백업 히스토리 로드 (여권, 계좌 등 과거 민감 필드 완전 소거 및 undefined 원천 방지)
+          // 백업 히스토리 로드 (여권, 계좌 등 과거 민감 필드 완전 소거 및 undefined 원천 방지)
           if (data.backupHistory && Array.isArray(data.backupHistory)) {
             const sanitizedHistory: CalendarBackupSnapshot[] = data.backupHistory.map(sanitizeBackupSnapshot);
             setBackupHistory(sanitizedHistory);
           }
 
-          // 🛡️ 불러온 실제 데이터를 즉시 브라우저 로컬 안전 금고에도 이중 보관!
+          // 불러온 실제 데이터를 즉시 브라우저 로컬 안전 금고에도 이중 보관!
           if (loadedFriends.length > 0) {
             saveToLocalVault(loadedFriends, loadedEvents);
           }
@@ -573,7 +574,7 @@ export const FriendCalendar: React.FC = () => {
 
   // Update Firestore helper (3중 보호 안전 가드 & 자동 히스토리 누적 적용)
   const syncToFirestore = async (newFriends: Friend[], newEvents: CalendarEvent[], actionNote = '정보 업데이트') => {
-    // 🛡️ 1단계: 브라우저 로컬 안전 금고에 즉시 0.001초 만에 1차 영구 보관!
+    // 1단계: 브라우저 로컬 안전 금고에 즉시 0.001초 만에 1차 영구 보관!
     const cleanFriends = sanitizeFriendsList(newFriends);
     const cleanEvents = sanitizeEventsList(newEvents);
     saveToLocalVault(cleanFriends, cleanEvents);
@@ -586,7 +587,7 @@ export const FriendCalendar: React.FC = () => {
     try {
       const docRef = doc(db, 'calendar_data', 'shared');
 
-      // 🛡️ 2단계: 과거 15개 시점 변경 이력 자동 스냅샷 생성!
+      // 2단계: 과거 15개 시점 변경 이력 자동 스냅샷 생성!
       const newSnapshot: CalendarBackupSnapshot = {
         savedAt: new Date().toISOString(),
         summary: `${actionNote} (친구 ${cleanFriends.length}명, 일정 ${cleanEvents.length}개)`,
@@ -597,7 +598,7 @@ export const FriendCalendar: React.FC = () => {
       const updatedHistory = rawHistory.map(sanitizeBackupSnapshot);
       setBackupHistory(updatedHistory);
 
-      // 🛡️ 3단계: 클라우드 Firestore 영구 저장 (undefined 완전 제거 보장)
+      // 3단계: 클라우드 Firestore 영구 저장 (undefined 완전 제거 보장)
       const payload = stripUndefinedDeep({
         friends: cleanFriends,
         events: cleanEvents,
@@ -612,7 +613,7 @@ export const FriendCalendar: React.FC = () => {
     }
   };
 
-  // 🛡️ 과거 스냅샷 시점으로 즉시 되돌리기 (원클릭 롤백 - 여권/계좌 등은 절대 복원되지 않음)
+  // 과거 스냅샷 시점으로 즉시 되돌리기 (원클릭 롤백 - 여권/계좌 등은 절대 복원되지 않음)
   const restoreSnapshot = async (snapshot: CalendarBackupSnapshot) => {
     const timeStr = new Date(snapshot.savedAt).toLocaleString();
     if (confirm(`'${timeStr}' 시점 (${snapshot.summary})으로 데이터를 복원하시겠습니까?\n(과거에 입력했던 여권이나 계좌 정보는 복원되지 않고 안전하게 제외됩니다)`)) {
@@ -626,7 +627,7 @@ export const FriendCalendar: React.FC = () => {
     }
   };
 
-  // 🛡️ 과거 변경 이력 전체 영구 삭제 (민감정보 완전 소거)
+  // 과거 변경 이력 전체 영구 삭제 (민감정보 완전 소거)
   const clearAllBackupHistory = async () => {
     if (confirm('저장된 과거 변경 이력 스냅샷을 모두 삭제하시겠습니까?\n(현재 등록된 친구 목록과 일정은 유지되며, 과거 시점 기록만 영구 소거됩니다)')) {
       setBackupHistory([]);
@@ -647,7 +648,7 @@ export const FriendCalendar: React.FC = () => {
     }
   };
 
-  // 📥 [파일 내보내기] 전체 친구 정보 백업 파일(JSON) 다운로드
+  // [파일 내보내기] 전체 친구 정보 백업 파일(JSON) 다운로드
   const exportFriendsAsJsonFile = () => {
     const backupData = {
       title: '모임 수첩 Friends Calendar Safe Backup',
@@ -668,7 +669,7 @@ export const FriendCalendar: React.FC = () => {
     alert('친구 정보 백업 파일이 다운로드되었습니다. 스마트폰이나 PC에 소장해두시면 언제든 복원할 수 있습니다!');
   };
 
-  // 📤 [파일 불러오기] 백업 파일(JSON)에서 데이터 읽어와 클라우드 복원
+  // [파일 불러오기] 백업 파일(JSON)에서 데이터 읽어와 클라우드 복원
   const importFriendsFromJsonFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -715,7 +716,7 @@ export const FriendCalendar: React.FC = () => {
     return ids.map((id) => getFriend(id)).filter((f) => f && f.id !== 'unknown' && f.id !== 'unassigned');
   };
 
-  // 🤝 이벤트가 '약속'인지 확인하는 헬퍼 (인원이 참여해도 계속 약속 칸에 유지되며 해당 인원들에게도 부여됨)
+  // 이벤트가 '약속'인지 확인하는 헬퍼 (인원이 참여해도 계속 약속 칸에 유지되며 해당 인원들에게도 부여됨)
   const isEventAppointment = (ev?: CalendarEvent | null): boolean => {
     if (!ev) return false;
     if (typeof ev.isAppointment === 'boolean') return ev.isAppointment;
@@ -792,7 +793,7 @@ export const FriendCalendar: React.FC = () => {
     const todayStr = getFormattedDate(new Date());
     const endStr = endDate || startDate;
     if (todayStr >= startDate && todayStr <= endStr) {
-      return { label: '🔥 진행 중', color: 'bg-emerald-600 text-white animate-pulse' };
+      return { label: '진행 중', color: 'bg-emerald-600 text-white animate-pulse' };
     }
     if (todayStr > endStr) {
       return { label: '종료됨', color: 'bg-slate-200 text-slate-600' };
@@ -805,7 +806,7 @@ export const FriendCalendar: React.FC = () => {
     return { label: `D-${diffDays}`, color: 'bg-indigo-600 text-white' };
   };
 
-  // ⏰ 다가오는 약속 위젯용 정밀 카운트다운 및 상태 계산
+  // 다가오는 약속 위젯용 정밀 카운트다운 및 상태 계산
   const getEventCountdownDetail = (event: CalendarEvent) => {
     const now = new Date();
     const todayStr = getFormattedDate(now);
@@ -830,7 +831,7 @@ export const FriendCalendar: React.FC = () => {
       const currentDayNum = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
       return {
         type: 'ongoing',
-        badge: '🔥 진행 중',
+        badge: '진행 중',
         badgeColor: 'bg-emerald-600 text-white animate-pulse shadow-2xs',
         subText: `${currentDayNum}일차 진행 중`,
         isUrgent: true,
@@ -860,7 +861,7 @@ export const FriendCalendar: React.FC = () => {
       }
       return {
         type: 'today',
-        badge: '🚨 D-Day 오늘',
+        badge: 'D-Day 오늘',
         badgeColor: 'bg-rose-500 text-white font-extrabold animate-pulse shadow-xs',
         subText: timeDetail,
         isUrgent: true,
@@ -877,7 +878,7 @@ export const FriendCalendar: React.FC = () => {
     if (diffDays === 1) {
       return {
         type: 'tomorrow',
-        badge: '⚡ D-1 내일',
+        badge: 'D-1 내일',
         badgeColor: 'bg-amber-500 text-white font-extrabold shadow-xs',
         subText: event.time ? `내일 ${event.time}` : '내일 예정',
         isUrgent: true,
@@ -903,7 +904,7 @@ export const FriendCalendar: React.FC = () => {
     };
   };
 
-  // ⏰ 다가오는 약속 위젯 접기/펼치기 토글
+  // 다가오는 약속 위젯 접기/펼치기 토글
   const toggleCountdownCollapse = () => {
     setIsCountdownCollapsed((prev) => {
       const next = !prev;
@@ -914,7 +915,7 @@ export const FriendCalendar: React.FC = () => {
     });
   };
 
-  // ⏰ 다가오는 약속 목록 (오늘 진행 중이거나 앞으로 남은 일정, 시작일 빠른 순)
+  // 다가오는 약속 목록 (오늘 진행 중이거나 앞으로 남은 일정, 시작일 빠른 순)
   const upcomingEvents = useMemo(() => {
     const todayStr = getFormattedDate(new Date());
     return events
@@ -922,7 +923,7 @@ export const FriendCalendar: React.FC = () => {
         const endStr = ev.endDate || ev.startDate;
         if (endStr < todayStr) return false; // 완전히 지난 과거 일정 제외
 
-        // 🤝 '약속' (참여자 미정 오픈 약속 및 인원이 참여한 약속 모두 약속 칸에 영구 유지)
+        // '약속' (참여자 미정 오픈 약속 및 인원이 참여한 약속 모두 약속 칸에 영구 유지)
         return isEventAppointment(ev);
       })
       .sort((a, b) => {
@@ -963,7 +964,7 @@ export const FriendCalendar: React.FC = () => {
     setIsEventModalOpen(true);
   };
 
-  // 🤝 약속 참여하기 / 참여 취소 토글 (자기가 원하면 즉시 참여/제외 가능)
+  // 약속 참여하기 / 참여 취소 토글 (자기가 원하면 즉시 참여/제외 가능)
   const handleToggleEventParticipant = async (eventId: string, friendId: string) => {
     const targetEvent = events.find((e) => e.id === eventId);
     if (!targetEvent) return;
@@ -1424,18 +1425,18 @@ export const FriendCalendar: React.FC = () => {
 
   return (
     <div className="space-y-4 w-full min-w-0">
-      {/* 💾 이전 로컬스토리지 백업 데이터 복원 배너 */}
+      {/* 이전 로컬스토리지 백업 데이터 복원 배너 */}
       {localBackupData && (
-        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md animate-in slide-in-from-top-2">
+        <div className="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm animate-in slide-in-from-top-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg shrink-0">
-              💾
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shrink-0">
+              <Database className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-bold text-amber-950 text-sm">
+              <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
                 이전 브라우저에 저장된 친구 정보({localBackupData.friends.length}명)가 발견되었습니다!
               </h4>
-              <p className="text-xs text-amber-800">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 [{localBackupData.friends.map((f) => f.name).join(', ')}] 정보를 지금 현재 캘린더로 복원할 수 있습니다.
               </p>
             </div>
@@ -1443,13 +1444,13 @@ export const FriendCalendar: React.FC = () => {
           <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
             <button
               onClick={restoreLocalBackup}
-              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
             >
               지금 복원하기
             </button>
             <button
               onClick={() => setLocalBackupData(null)}
-              className="px-2.5 py-2 text-amber-700 hover:text-amber-900 text-xs font-medium"
+              className="px-2.5 py-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 text-xs font-medium"
             >
               닫기
             </button>
@@ -1457,17 +1458,17 @@ export const FriendCalendar: React.FC = () => {
         </div>
       )}
 
-      {/* ⏰ 다가오는 약속 (D-Day 카운트다운) 위젯 */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden transition-all duration-200">
+      {/* 다가오는 약속 (D-Day 카운트다운) 위젯 */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden transition-all duration-200">
         {/* 위젯 헤더 */}
-        <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-slate-50 via-white to-indigo-50/30 border-b border-slate-100 flex items-center justify-between gap-2.5">
+        <div className="px-3.5 sm:px-4 py-2.5 sm:py-3 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
               <Clock className="w-3.5 h-3.5" />
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                🤝 다가오는 약속
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                다가오는 약속
               </h3>
               <span className="px-2 py-0.2 sm:py-0.5 bg-indigo-100 text-indigo-700 text-[10px] sm:text-[11px] font-extrabold rounded-full shrink-0">
                 {upcomingEvents.length}건
@@ -1493,7 +1494,7 @@ export const FriendCalendar: React.FC = () => {
             <button
               type="button"
               onClick={toggleCountdownCollapse}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition"
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
               title={isCountdownCollapsed ? '다가오는 약속 펼치기' : '다가오는 약속 접기'}
             >
               <span className="hidden sm:inline">{isCountdownCollapsed ? '펼치기' : '접기'}</span>
@@ -1510,7 +1511,7 @@ export const FriendCalendar: React.FC = () => {
         {!isCountdownCollapsed && (
           <div className="p-3 sm:p-4">
             {upcomingEvents.length === 0 ? (
-              <div className="py-5 px-4 text-center rounded-xl bg-slate-50/70 border border-dashed border-slate-200 flex flex-col items-center justify-center">
+              <div className="py-5 px-4 text-center rounded-xl bg-slate-50/70 dark:bg-slate-950/50 border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center">
                 <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-1.5">
                   <Sparkles className="w-4 h-4" />
                 </div>
@@ -1553,10 +1554,10 @@ export const FriendCalendar: React.FC = () => {
                         setSelectedEvent(ev);
                         setIsViewModalOpen(true);
                       }}
-                      className={`min-w-[240px] max-w-[320px] sm:min-w-[260px] sm:max-w-[350px] shrink-0 rounded-xl p-3 sm:p-3.5 border transition cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
+                      className={`min-w-[240px] max-w-[320px] sm:min-w-[260px] sm:max-w-[350px] shrink-0 rounded-xl p-3 sm:p-3.5 border transition cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-md hover:-translate-y-0.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 ${
                         isFirst
-                          ? 'bg-gradient-to-br from-indigo-50/60 via-white to-white border-indigo-300 ring-2 ring-indigo-500/10'
-                          : 'bg-white hover:bg-slate-50/80 border-slate-200 hover:border-indigo-200'
+                          ? 'ring-2 ring-indigo-500/20 border-indigo-300 dark:border-indigo-600/50'
+                          : 'hover:border-slate-300 dark:hover:border-slate-700'
                       }`}
                     >
                       {/* 카드 상단: D-Day 뱃지 & 날짜 */}
@@ -1567,7 +1568,7 @@ export const FriendCalendar: React.FC = () => {
                           >
                             {detail.badge}
                           </span>
-                          <span className="text-[11px] font-bold text-slate-600 truncate text-right">
+                          <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 truncate text-right">
                             {formatShortDateWithDay(ev.startDate)}
                             {ev.endDate && ev.endDate !== ev.startDate
                               ? ` ~ ${formatShortDateWithDay(ev.endDate)}`
@@ -1576,7 +1577,7 @@ export const FriendCalendar: React.FC = () => {
                         </div>
 
                         {/* 카드 제목 */}
-                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition line-clamp-1 mb-1.5">
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition line-clamp-1 mb-1.5">
                           {ev.title}
                         </h4>
 
@@ -1586,22 +1587,22 @@ export const FriendCalendar: React.FC = () => {
                             {ev.time && (
                               <div className="flex items-center gap-1.5">
                                 <Clock className="w-3 h-3 text-indigo-500 shrink-0" />
-                                <span className="text-indigo-700 font-bold bg-indigo-50 px-1.5 py-0.2 rounded text-[10px]">
+                                <span className="text-indigo-700 dark:text-indigo-300 font-bold bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.2 rounded text-[10px]">
                                   {ev.time}
                                 </span>
                                 {ev.location && (
-                                  <span className="truncate text-slate-600">· {ev.location}</span>
+                                  <span className="truncate text-slate-600 dark:text-slate-400">· {ev.location}</span>
                                 )}
                               </div>
                             )}
                             {!ev.time && ev.location && (
-                              <div className="flex items-center gap-1.5 truncate text-slate-600">
+                              <div className="flex items-center gap-1.5 truncate text-slate-600 dark:text-slate-400">
                                 <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
                                 <span className="truncate">{ev.location}</span>
                               </div>
                             )}
                             {!ev.time && !ev.location && ev.memo && (
-                              <p className="text-[11px] text-slate-400 line-clamp-1 truncate">
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 truncate">
                                 {ev.memo}
                               </p>
                             )}
@@ -1612,11 +1613,11 @@ export const FriendCalendar: React.FC = () => {
                       </div>
 
                       {/* 카드 하단: 참여 친구 전원 목록 & 바로가기 화살표 */}
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           {evFriends.length === 0 ? (
-                            <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
-                              <span>🤝</span>
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1">
+                              
                               <span>참여자 미정 (클릭하여 참여)</span>
                             </span>
                           ) : (
@@ -1624,13 +1625,13 @@ export const FriendCalendar: React.FC = () => {
                               {evFriends.map((f) => (
                                 <span
                                   key={f.id}
-                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200/70 border border-slate-200/90 text-slate-800 shadow-2xs whitespace-nowrap transition"
+                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/70 dark:hover:bg-slate-700 border border-slate-200/90 dark:border-slate-700 text-slate-800 dark:text-slate-200 shadow-2xs whitespace-nowrap transition"
                                 >
                                   <span
                                     className="w-2 h-2 rounded-full shrink-0 ring-1 ring-black/10"
                                     style={{ backgroundColor: f.color }}
                                   />
-                                  <span className="text-slate-800 font-semibold">{f.name}</span>
+                                  <span className="text-slate-800 dark:text-slate-200 font-semibold">{f.name}</span>
                                 </span>
                               ))}
                             </div>
@@ -1638,7 +1639,7 @@ export const FriendCalendar: React.FC = () => {
                         </div>
 
                         <span
-                          className="w-5 h-5 rounded-full bg-slate-100 group-hover:bg-indigo-600 text-slate-400 group-hover:text-white flex items-center justify-center transition shrink-0 self-center"
+                          className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-600 text-slate-400 dark:text-slate-400 group-hover:text-white flex items-center justify-center transition shrink-0 self-center"
                           title="약속 상세 및 참여 관리"
                         >
                           <ArrowRight className="w-3 h-3" />
@@ -1654,9 +1655,9 @@ export const FriendCalendar: React.FC = () => {
       </div>
 
       {/* Calendar Grid Container (상단 컨트롤 바와 달력 그리드가 일체형으로 통합) */}
-      <div id="calendar-container" className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full min-w-0">
+      <div id="calendar-container" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden w-full min-w-0">
         {/* Calendar Integrated Header Bar */}
-        <div className="p-3.5 sm:p-5 border-b border-slate-200 flex flex-col gap-3 bg-white">
+        <div className="p-3.5 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-white dark:bg-slate-900">
           {/* Top Row: 인적사항, (안전 보관함) 및 새 일정 등록 버튼 (빨간 동그라미 위치) */}
           <div className="flex items-center justify-between gap-2 w-full">
             {/* 좌측: 인적사항 / 안전 보관함 */}
@@ -1667,18 +1668,18 @@ export const FriendCalendar: React.FC = () => {
                   resetProfileForm();
                   setIsFriendProfileModalOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 text-indigo-700 border border-indigo-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
                 title="친구 인적사항 및 생년월일 관리"
               >
                 <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
                 <span className="hidden sm:inline">친구 인적사항</span>
               </button>
 
-              {/* 🛡️ 데이터 안전 보관함 및 복원 버튼 (관리자/본인 전용) */}
+              {/* 데이터 안전 보관함 및 복원 버튼 (관리자/본인 전용) */}
               {isAdmin && (
                 <button
                   onClick={() => setIsHistoryModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold transition shadow-2xs hover:shadow-xs active:scale-95 shrink-0"
                   title="친구 정보 백업 다운로드 및 과거 변경 이력 복원 (관리자 전용)"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -1697,7 +1698,7 @@ export const FriendCalendar: React.FC = () => {
               {isAdmin && (
                 <button
                   onClick={() => setIsFriendModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs sm:text-sm font-semibold rounded-xl shadow-2xs transition active:scale-95 shrink-0"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-semibold rounded-xl shadow-2xs transition active:scale-95 shrink-0"
                   title="친구 목록 및 색상 관리"
                 >
                   <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />
@@ -1720,36 +1721,36 @@ export const FriendCalendar: React.FC = () => {
           <div className="flex items-center justify-between gap-2 w-full pt-1 sm:pt-2 border-t border-slate-100">
             {/* Navigation & Title (< 오늘 > 및 2026년 10월) */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div className="flex items-center bg-slate-100 rounded-lg p-0.5 sm:p-1 shrink-0">
+              <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 sm:p-1 shrink-0">
                 <button
                   onClick={prevMonth}
-                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600 transition"
+                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
                   title="이전달"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={goToday}
-                  className="px-2 sm:px-3 h-7 sm:h-8 text-xs font-semibold rounded-md hover:bg-white text-slate-700 transition"
+                  className="px-2 sm:px-3 h-7 sm:h-8 text-xs font-semibold rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition"
                 >
                   오늘
                 </button>
                 <button
                   onClick={nextMonth}
-                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-md hover:bg-white text-slate-600 transition"
+                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
                   title="다음달"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-              <h2 className="text-sm sm:text-xl font-bold text-slate-900 tracking-tight whitespace-nowrap">
+              <h2 className="text-sm sm:text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight whitespace-nowrap">
                 {year}년 {month + 1}월
               </h2>
             </div>
 
             {/* 우측: 친구 필터 드롭다운 & 검색창 */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              {/* 👥 친구 필터 콤팩트 드롭다운 */}
+              {/* 친구 필터 콤팩트 드롭다운 */}
               <div className="relative" ref={friendFilterDropdownRef}>
                 <button
                   type="button"
@@ -1758,8 +1759,8 @@ export const FriendCalendar: React.FC = () => {
                     activeFilterFriendId === 'ALL'
                       ? 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
                       : activeFilterFriendId === 'UNASSIGNED'
-                      ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200 font-bold'
-                      : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-300 font-bold'
+                      ? 'bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 font-bold'
+                      : 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 font-bold'
                   }`}
                   title="친구별 일정 필터링"
                 >
@@ -1772,7 +1773,7 @@ export const FriendCalendar: React.FC = () => {
                     </>
                   ) : activeFilterFriendId === 'UNASSIGNED' ? (
                     <>
-                      <span>🤝</span>
+                      
                       <span>약속만</span>
                       <span className="text-[10px] px-1 rounded-full bg-indigo-200 text-indigo-900 font-extrabold">
                         {events.filter((e) => isEventAppointment(e)).length}
@@ -1818,7 +1819,7 @@ export const FriendCalendar: React.FC = () => {
 
                 {/* 드롭다운 메뉴 팝업 */}
                 {isFriendFilterDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-1.5 w-52 sm:w-60 bg-white rounded-2xl shadow-xl border border-slate-200 p-1.5 z-40 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="absolute right-0 top-full mt-1.5 w-52 sm:w-60 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-1.5 z-40 animate-in fade-in zoom-in-95 duration-100 text-slate-900 dark:text-slate-100">
                     <div className="px-2.5 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                       일정 필터 선택
                     </div>
@@ -1833,7 +1834,7 @@ export const FriendCalendar: React.FC = () => {
                       className={`w-full px-2.5 py-2 text-xs font-semibold rounded-xl flex items-center justify-between transition cursor-pointer ${
                         activeFilterFriendId === 'ALL'
                           ? 'bg-slate-900 text-white font-bold'
-                          : 'hover:bg-slate-100 text-slate-700'
+                          : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -1845,7 +1846,7 @@ export const FriendCalendar: React.FC = () => {
                       </span>
                     </button>
 
-                    {/* 🤝 약속만 모아보기 */}
+                    {/* 약속만 모아보기 */}
                     <button
                       type="button"
                       onClick={() => {
@@ -1855,25 +1856,25 @@ export const FriendCalendar: React.FC = () => {
                       className={`w-full px-2.5 py-2 text-xs font-semibold rounded-xl flex items-center justify-between transition mt-0.5 cursor-pointer ${
                         activeFilterFriendId === 'UNASSIGNED'
                           ? 'bg-indigo-600 text-white font-bold'
-                          : 'hover:bg-indigo-50 text-indigo-700'
+                          : 'hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400'
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <span>🤝</span>
+                        
                         <span>약속만 모아보기</span>
                       </div>
                       <span
                         className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
                           activeFilterFriendId === 'UNASSIGNED'
                             ? 'bg-indigo-700 text-white'
-                            : 'bg-indigo-100 text-indigo-800'
+                            : 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300'
                         }`}
                       >
                         {events.filter((e) => isEventAppointment(e)).length}건
                       </span>
                     </button>
 
-                    <div className="my-1.5 border-t border-slate-100" />
+                    <div className="my-1.5 border-t border-slate-100 dark:border-slate-800" />
 
                     <div className="px-2.5 py-1 text-[11px] font-bold text-slate-400">
                       친구별 일정 ({friends.length}명)
@@ -1894,8 +1895,8 @@ export const FriendCalendar: React.FC = () => {
                             }}
                             className={`w-full px-2.5 py-1.5 text-xs rounded-xl flex items-center justify-between transition cursor-pointer ${
                               isSelected
-                                ? 'bg-slate-100 text-slate-900 font-bold ring-1 ring-slate-300'
-                                : 'hover:bg-slate-50 text-slate-700'
+                                ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-bold ring-1 ring-slate-300 dark:ring-slate-700'
+                                : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
@@ -1924,7 +1925,7 @@ export const FriendCalendar: React.FC = () => {
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
                 placeholder="일정 검색..."
-                className="w-full pl-8 pr-6 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                className="w-full pl-8 pr-6 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition"
               />
               {searchKeyword && (
                 <button
@@ -1942,7 +1943,7 @@ export const FriendCalendar: React.FC = () => {
         </div>
 
         {/* Day of Week Header */}
-        <div className="grid grid-cols-7 text-center text-xs font-bold py-3 bg-slate-50 border-b border-slate-200 text-slate-500">
+        <div className="grid grid-cols-7 text-center text-xs font-bold py-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400">
           <div className="text-rose-500">일</div>
           <div>월</div>
           <div>화</div>
@@ -1953,7 +1954,7 @@ export const FriendCalendar: React.FC = () => {
         </div>
 
         {/* Days Matrix (주 단위로 연속 막대 렌더링) */}
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
           {weeks.map((week, weekIdx) => {
             const slots = getWeekSlots(week);
 
@@ -1963,14 +1964,14 @@ export const FriendCalendar: React.FC = () => {
                 className="relative min-h-[115px] sm:min-h-[125px] flex flex-col"
               >
                 {/* 1. 배경 날짜 셀 그리드 (7열) */}
-                <div className="absolute inset-0 grid grid-cols-7 divide-x divide-slate-100 pointer-events-none">
+                <div className="absolute inset-0 grid grid-cols-7 divide-x divide-slate-100 dark:divide-slate-800 pointer-events-none">
                   {week.map((cDay, colIdx) => {
                     const holidayName = getHolidayName(cDay.dateStr);
                     const isHoliday = !!holidayName;
 
-                    let dayColorClass = 'text-slate-800';
+                    let dayColorClass = 'text-slate-800 dark:text-slate-200';
                     if (cDay.isOtherMonth) {
-                      dayColorClass = cDay.dayOfWeek === 0 || isHoliday ? 'text-rose-300' : 'text-slate-300';
+                      dayColorClass = cDay.dayOfWeek === 0 || isHoliday ? 'text-rose-300 dark:text-rose-400/60' : 'text-slate-300 dark:text-slate-600';
                     } else if (cDay.dayOfWeek === 0 || isHoliday) {
                       dayColorClass = 'text-rose-500 font-bold';
                     } else if (cDay.dayOfWeek === 6) {
@@ -1981,12 +1982,12 @@ export const FriendCalendar: React.FC = () => {
                       <div
                         key={colIdx}
                         onClick={() => openAddEventModal(cDay.dateStr)}
-                        className={`h-full p-2 flex flex-col justify-between transition hover:bg-slate-50/70 cursor-pointer pointer-events-auto group ${
+                        className={`h-full p-2 flex flex-col justify-between transition hover:bg-slate-50/70 dark:hover:bg-slate-800/70 cursor-pointer pointer-events-auto group ${
                           cDay.isOtherMonth
-                            ? 'bg-slate-50/40'
+                            ? 'bg-slate-50/40 dark:bg-slate-950/60'
                             : isHoliday && cDay.dayOfWeek !== 0
-                            ? 'bg-rose-50/30'
-                            : 'bg-white'
+                            ? 'bg-rose-50/30 dark:bg-rose-950/20'
+                            : 'bg-white dark:bg-slate-900'
                         }`}
                       >
                         {/* 상단 날짜 숫자, 공휴일 이름 및 + 버튼 */}
@@ -2051,7 +2052,7 @@ export const FriendCalendar: React.FC = () => {
                             style={{
                               gridColumnStart: seg.startCol + 1,
                               gridColumnEnd: `span ${seg.span}`,
-                              backgroundColor: isAppointment ? '#eef2ff' : (isUnassigned ? '#eef2ff' : `${barColor}18`),
+                              backgroundColor: isAppointment ? 'var(--appointment-bar-bg, rgba(99, 102, 241, 0.15))' : (isUnassigned ? 'var(--appointment-bar-bg, rgba(99, 102, 241, 0.15))' : `${barColor}22`),
                               borderColor: isAppointment ? '#818cf8' : (isUnassigned ? '#818cf8' : `${barColor}55`),
                             }}
                             title={`${seg.displayTitle} - ${seg.event.title} (${seg.event.startDate} ~ ${seg.event.endDate || seg.event.startDate}${seg.durationText ? ', ' + seg.durationText : ''})`}
@@ -2069,18 +2070,18 @@ export const FriendCalendar: React.FC = () => {
                             {/* 약속인 경우와 친구 일정인 경우 구분 */}
                             {isAppointment ? (
                               <span className="text-[11px] shrink-0 font-bold text-indigo-600 flex items-center gap-0.5">
-                                <span>🤝</span>
-                                <span className="text-[10px] px-1 py-0.2 rounded bg-indigo-100 text-indigo-700">약속</span>
+                                
+                                <span className="text-[10px] px-1 py-0.2 rounded bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-bold">약속</span>
                                 {seg.friends.length > 0 && (
-                                  <span className="text-[10px] text-indigo-800 font-bold max-w-[120px] sm:max-w-[220px] truncate ml-0.5">
+                                  <span className="text-[10px] text-indigo-800 dark:text-indigo-300 font-bold max-w-[120px] sm:max-w-[220px] truncate ml-0.5">
                                     ({seg.displayTitle}):
                                   </span>
                                 )}
                               </span>
                             ) : isUnassigned ? (
                               <span className="text-[11px] shrink-0 font-bold text-indigo-600 flex items-center gap-0.5">
-                                <span>🤝</span>
-                                <span className="text-[10px] px-1 py-0.2 rounded bg-indigo-100 text-indigo-700">약속</span>
+                                
+                                <span className="text-[10px] px-1 py-0.2 rounded bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-bold">약속</span>
                               </span>
                             ) : (
                               <>
@@ -2089,7 +2090,7 @@ export const FriendCalendar: React.FC = () => {
                                   style={{ backgroundColor: barColor }}
                                 />
                                 <span
-                                  className="font-bold shrink-0 text-slate-800 truncate max-w-[120px] sm:max-w-[200px]"
+                                  className="font-bold shrink-0 text-slate-800 dark:text-slate-100 truncate max-w-[120px] sm:max-w-[200px]"
                                 >
                                   {seg.displayTitle}:
                                 </span>
@@ -2097,13 +2098,13 @@ export const FriendCalendar: React.FC = () => {
                             )}
 
                             {/* 일정 제목 */}
-                            <span className="truncate text-slate-800 font-semibold flex-1">
+                            <span className="truncate text-slate-800 dark:text-slate-100 font-semibold flex-1">
                               {seg.event.title}
                             </span>
 
                             {/* N박 N일 배지 (다일정인 경우) */}
                             {isMultiDay && seg.durationText && (
-                              <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/90 text-slate-700 border border-slate-200 shadow-2xs">
+                              <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-2xs">
                                 {seg.durationText}
                               </span>
                             )}
@@ -2129,9 +2130,9 @@ export const FriendCalendar: React.FC = () => {
       {/* 1. Add / Edit Event Modal (기간: 몇일부터 몇일까지) */}
       {isEventModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800">{editingEventId ? '일정 수정' : '새 일정 / 약속 등록'}</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden text-slate-900 dark:text-slate-100">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100">{editingEventId ? '일정 수정' : '새 일정 / 약속 등록'}</h3>
               <button onClick={() => setIsEventModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
@@ -2163,7 +2164,7 @@ export const FriendCalendar: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setIsFriendModalOpen(true)}
-                        className="text-[11px] text-slate-500 hover:text-slate-800 font-semibold transition"
+                        className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-semibold transition"
                       >
                         + 친구 관리
                       </button>
@@ -2176,7 +2177,7 @@ export const FriendCalendar: React.FC = () => {
                     <span>등록된 친구가 없습니다. 인원 없이 약속을 먼저 등록할 수 있습니다!</span>
                   </div>
                 ) : (
-                  <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
                     <div className="flex flex-wrap gap-1.5">
                       {friends.map((f) => {
                         const isSelected = formFriendIds.includes(f.id);
@@ -2194,7 +2195,7 @@ export const FriendCalendar: React.FC = () => {
                             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                               isSelected
                                 ? 'bg-slate-800 text-white border border-slate-800 shadow-xs'
-                                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                             }`}
                           >
                             <span>{f.name}</span>
@@ -2206,7 +2207,7 @@ export const FriendCalendar: React.FC = () => {
                     <div className="pt-1.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
                       {formFriendIds.length === 0 ? (
                         <span className="text-indigo-600 font-semibold flex items-center gap-1">
-                          <span>🤝</span>
+                          
                           <span>참여 인원 없이 오픈 약속으로 등록됩니다 (등록 후 누구나 참가 가능)</span>
                         </span>
                       ) : (
@@ -2227,12 +2228,12 @@ export const FriendCalendar: React.FC = () => {
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="예: 오사카 3박 4일 여행, 주말 힐링 캠핑"
                   required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100"
                 />
               </div>
 
               {/* 기간 설정: 몇일부터 ~ 몇일까지 */}
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
                 <label className="block text-xs font-bold text-slate-700">
                   일정 기간 (몇일부터 몇일까지) *
                 </label>
@@ -2251,7 +2252,7 @@ export const FriendCalendar: React.FC = () => {
                         }
                       }}
                       required
-                      className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100"
                     />
                   </div>
                   <div>
@@ -2262,7 +2263,7 @@ export const FriendCalendar: React.FC = () => {
                       min={formStartDate}
                       onChange={(e) => setFormEndDate(e.target.value)}
                       required
-                      className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100"
                     />
                   </div>
                 </div>
@@ -2282,7 +2283,7 @@ export const FriendCalendar: React.FC = () => {
                     value={formLocation}
                     onChange={(e) => setFormLocation(e.target.value)}
                     placeholder="예: 일본 오사카/교토"
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100"
                   />
                 </div>
               </div>
@@ -2294,16 +2295,16 @@ export const FriendCalendar: React.FC = () => {
                   value={formMemo}
                   onChange={(e) => setFormMemo(e.target.value)}
                   placeholder="항공권 예약번호, 챙길 것, 여행 코스 등"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100 resize-none"
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 {editingEventId && (
                   <button
                     type="button"
                     onClick={() => handleDeleteEvent(editingEventId)}
-                    className="px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-xl text-xs font-bold transition flex items-center gap-1"
+                    className="px-3 py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl text-xs font-bold transition flex items-center gap-1"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>삭제</span>
@@ -2313,7 +2314,7 @@ export const FriendCalendar: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsEventModalOpen(false)}
-                    className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition"
+                    className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition"
                   >
                     취소
                   </button>
@@ -2333,9 +2334,9 @@ export const FriendCalendar: React.FC = () => {
       {/* 2. Friend Management Modal (관리자 전용) */}
       {isAdmin && isFriendModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800">친구 및 라벨 색상 관리</h3>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden text-slate-900 dark:text-slate-100">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100">친구 및 라벨 색상 관리</h3>
               <button onClick={() => setIsFriendModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
@@ -2349,13 +2350,13 @@ export const FriendCalendar: React.FC = () => {
                   onChange={(e) => setNewFriendName(e.target.value)}
                   placeholder="새 친구 이름 (예: 민호)"
                   required
-                  className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-slate-100"
                 />
                 <input
                   type="color"
                   value={newFriendColor}
                   onChange={(e) => setNewFriendColor(e.target.value)}
-                  className="w-10 h-9 p-0.5 border border-slate-200 rounded-xl cursor-pointer bg-white"
+                  className="w-10 h-9 p-0.5 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer bg-white dark:bg-slate-900"
                   title="친구 색상 선택"
                 />
                 <button
@@ -2374,7 +2375,7 @@ export const FriendCalendar: React.FC = () => {
                   {friends.map((f) => (
                     <div
                       key={f.id}
-                      className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100"
+                      className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800"
                     >
                       <div className="flex items-center gap-2.5">
                         <input
@@ -2388,7 +2389,7 @@ export const FriendCalendar: React.FC = () => {
                           }}
                           className="w-6 h-6 rounded border-0 p-0 cursor-pointer bg-transparent"
                         />
-                        <span className="text-sm font-semibold text-slate-800">{f.name}</span>
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{f.name}</span>
                       </div>
                       <button
                         onClick={() => handleDeleteFriend(f.id)}
@@ -2417,7 +2418,7 @@ export const FriendCalendar: React.FC = () => {
 
         return (
           <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-md overflow-hidden text-slate-900 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-100">
               <div
                 className="h-3.5"
                 style={{ backgroundColor: displayInfo.color }}
@@ -2428,12 +2429,12 @@ export const FriendCalendar: React.FC = () => {
                   <div>
                     {isEventAppointment(selectedEvent) ? (
                       <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-700 mb-1.5">
-                        <span>🤝</span>
-                        <span>{isUnassigned ? '오픈 약속 (인원 모집 중)' : `약속 (👥 ${pFriends.length}명 참여 중)`}</span>
+                        
+                        <span>{isUnassigned ? '오픈 약속 (인원 모집 중)' : `약속 (${pFriends.length}명 참여 중)`}</span>
                       </span>
                     ) : isUnassigned ? (
                       <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-700 mb-1.5">
-                        <span>🤝</span>
+                        
                         <span>오픈 약속 (인원 모집 중)</span>
                       </span>
                     ) : (
@@ -2442,11 +2443,11 @@ export const FriendCalendar: React.FC = () => {
                           className="inline-block text-xs px-2.5 py-0.5 rounded-full font-bold text-white shadow-2xs"
                           style={{ backgroundColor: displayInfo.color }}
                         >
-                          👥 {pFriends.length}명 참여 중
+                          {pFriends.length}명 참여 중
                         </span>
                       </div>
                     )}
-                    <h4 className="text-base sm:text-lg font-bold text-slate-900">{selectedEvent.title}</h4>
+                    <h4 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">{selectedEvent.title}</h4>
                   </div>
                   <button onClick={() => setIsViewModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
                     <X className="w-4 h-4" />
@@ -2454,11 +2455,11 @@ export const FriendCalendar: React.FC = () => {
                 </div>
 
                 {/* Event Metadata (일정 기간, 장소, 메모) */}
-                <div className="space-y-2.5 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <div className="space-y-2.5 text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
                   <div className="flex items-center gap-2">
                     <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
                     <div className="flex flex-col">
-                      <span className="font-semibold text-slate-800">
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
                         {selectedEvent.startDate === selectedEvent.endDate
                           ? selectedEvent.startDate
                           : `${selectedEvent.startDate} ~ ${selectedEvent.endDate}`}
@@ -2482,23 +2483,23 @@ export const FriendCalendar: React.FC = () => {
                   )}
                 </div>
 
-                {/* 🤝 참여자 현황 & 약속 참여 관리 섹션 (약속 잡듯이 참여/등록) */}
-                <div className="p-3.5 bg-indigo-50/50 rounded-xl border border-indigo-100 space-y-3">
+                {/* 참여자 현황 & 약속 참여 관리 섹션 (약속 잡듯이 참여/등록) */}
+                <div className="p-3.5 bg-slate-50 dark:bg-slate-950/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-indigo-600" />
-                      <span className="text-xs font-bold text-slate-800">
+                      <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
                         약속 참여 현황 ({pFriends.length}명)
                       </span>
                     </div>
-                    <span className="text-[11px] text-indigo-600 font-semibold">
+                    <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold">
                       클릭하여 참여/취소
                     </span>
                   </div>
 
                   {/* 1. 현재 참여 중인 친구 목록 */}
                   {pFriends.length === 0 ? (
-                    <div className="py-2.5 px-3 bg-white rounded-lg border border-dashed border-indigo-200 text-center text-xs text-slate-500">
+                    <div className="py-2.5 px-3 bg-white dark:bg-slate-900 rounded-lg border border-dashed border-indigo-200 dark:border-indigo-900/50 text-center text-xs text-slate-500 dark:text-slate-400">
                       아직 참여 인원이 없습니다. 아래 버튼으로 바로 약속에 참여해보세요!
                     </div>
                   ) : (
@@ -2506,7 +2507,7 @@ export const FriendCalendar: React.FC = () => {
                       {pFriends.map((f) => (
                         <div
                           key={f.id}
-                          className="group inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold shadow-2xs"
+                          className="group inline-flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold shadow-2xs"
                         >
                           <button
                             type="button"
@@ -2514,16 +2515,16 @@ export const FriendCalendar: React.FC = () => {
                               setIsViewModalOpen(false);
                               openFriendSchedule(f);
                             }}
-                            className="inline-flex items-center gap-1.5 hover:text-indigo-600 transition"
+                            className="inline-flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
                             title={`${f.name}의 전체 일정 확인하기`}
                           >
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: f.color }} />
-                            <span className="text-slate-800 hover:text-indigo-600 underline-offset-2 hover:underline">{f.name}</span>
+                            <span className="w-2 h-2 rounded-full ring-1 ring-black/10 shrink-0" style={{ backgroundColor: f.color }} />
+                            <span className="text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 underline-offset-2 hover:underline font-bold">{f.name}</span>
                           </button>
                           <button
                             type="button"
                             onClick={() => handleToggleEventParticipant(selectedEvent.id, f.id)}
-                            className="text-slate-400 hover:text-rose-600 transition p-0.5 ml-0.5"
+                            className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition p-0.5 ml-0.5"
                             title={`${f.name} 참여 취소`}
                           >
                             <X className="w-3 h-3" />
@@ -2535,12 +2536,12 @@ export const FriendCalendar: React.FC = () => {
 
                   {/* 2. 약속 참여하기 / 인원 추가 버튼들 */}
                   <div>
-                    <span className="block text-[11px] font-bold text-slate-600 mb-1.5">
-                      🙋‍♂️ 나/친구 참여 등록하기:
+                    <span className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                      참여 인원 등록:
                     </span>
                     {unjoinedFriends.length === 0 && friends.length > 0 ? (
-                      <div className="text-[11px] text-emerald-700 font-medium bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200/60 flex items-center gap-1">
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <div className="text-[11px] text-emerald-700 dark:text-emerald-300 font-medium bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1.5 rounded-lg border border-emerald-200/60 dark:border-emerald-800/60 flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                         <span>등록된 모든 친구({friends.length}명)가 이 약속에 참여 중입니다!</span>
                       </div>
                     ) : (
@@ -2550,9 +2551,9 @@ export const FriendCalendar: React.FC = () => {
                             key={f.id}
                             type="button"
                             onClick={() => handleToggleEventParticipant(selectedEvent.id, f.id)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-indigo-600 text-slate-700 hover:text-white border border-indigo-200 rounded-lg text-xs font-semibold transition group shadow-2xs active:scale-95"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-indigo-600 dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-200 hover:text-white dark:hover:text-white border border-slate-200 dark:border-slate-800 hover:border-indigo-600 dark:hover:border-indigo-600 rounded-lg text-xs font-semibold transition group shadow-2xs active:scale-95"
                           >
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: f.color }} />
+                            <span className="w-1.5 h-1.5 rounded-full ring-1 ring-black/10 shrink-0" style={{ backgroundColor: f.color }} />
                             <span>+ {f.name} 참여</span>
                           </button>
                         ))}
@@ -2563,7 +2564,7 @@ export const FriendCalendar: React.FC = () => {
                               setIsViewModalOpen(false);
                               setIsFriendModalOpen(true);
                             }}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-medium transition"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium transition"
                           >
                             <span>+ 새 친구 등록</span>
                           </button>
@@ -2574,10 +2575,10 @@ export const FriendCalendar: React.FC = () => {
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                   <button
                     onClick={() => handleDeleteEvent(selectedEvent.id)}
-                    className="px-3 py-1.5 text-rose-600 hover:bg-rose-50 text-xs font-bold rounded-lg transition flex items-center gap-1"
+                    className="px-3 py-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-bold rounded-lg transition flex items-center gap-1"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>삭제</span>
@@ -2589,14 +2590,14 @@ export const FriendCalendar: React.FC = () => {
                         setIsViewModalOpen(false);
                         openEditEventModal(selectedEvent);
                       }}
-                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center gap-1"
+                      className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold rounded-lg transition flex items-center gap-1"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                       <span>수정</span>
                     </button>
                     <button
                       onClick={() => setIsViewModalOpen(false)}
-                      className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition"
+                      className="px-4 py-1.5 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 text-xs font-bold rounded-lg transition"
                     >
                       닫기
                     </button>
@@ -2611,17 +2612,17 @@ export const FriendCalendar: React.FC = () => {
       {/* 4. Friend Profile Modal */}
       {isFriendProfileModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-100 flex flex-col max-h-[90vh]">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden text-slate-900 dark:text-slate-100 my-auto animate-in fade-in zoom-in-95 duration-100 flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60 shrink-0">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/60 dark:bg-slate-950 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
                   <UserCheck className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                  <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base flex items-center gap-2">
                     친구 인적사항 관리
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">인적사항</span>
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">인적사항</span>
                   </h3>
                   <p className="text-[11px] text-slate-500">
                     친구의 생년월일과 기본 인적사항을 관리합니다.
@@ -2637,14 +2638,14 @@ export const FriendCalendar: React.FC = () => {
             </div>
 
             {/* Quick Action Bar & Toast */}
-            <div className="px-6 py-2.5 bg-indigo-50/50 border-b border-indigo-100/60 flex flex-wrap items-center justify-between gap-2 shrink-0">
+            <div className="px-6 py-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-600 font-medium">
                   총 <span className="font-bold text-indigo-600">{friends.length}명</span>의 친구가 등록되어 있습니다.
                 </span>
                 {copyToastMessage && (
                   <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full animate-in fade-in">
-                    ✓ {copyToastMessage}
+                    {copyToastMessage}
                   </span>
                 )}
               </div>
@@ -2674,7 +2675,7 @@ export const FriendCalendar: React.FC = () => {
                 <button
                   type="button"
                   onClick={copyAllFriendsInfo}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
                   title="항공권 예매창에 붙여넣을 수 있도록 전체 친구 정보를 복사합니다"
                 >
                   <Copy className="w-3.5 h-3.5" />
@@ -2685,7 +2686,7 @@ export const FriendCalendar: React.FC = () => {
                     <button
                       type="button"
                       onClick={exportFriendsAsJsonFile}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white dark:bg-slate-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
                       title="친구 전체 정보를 내 PC/스마트폰에 영구 보관용 JSON 파일로 다운로드합니다 (관리자 전용)"
                     >
                       <Download className="w-3.5 h-3.5 text-emerald-600" />
@@ -2694,7 +2695,7 @@ export const FriendCalendar: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => jsonFileInputRef.current?.click()}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white dark:bg-slate-900 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
                       title="다운로드해둔 백업 JSON 파일에서 친구 정보를 복원합니다 (관리자 전용)"
                     >
                       <Upload className="w-3.5 h-3.5 text-amber-600" />
@@ -2703,7 +2704,7 @@ export const FriendCalendar: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setIsHistoryModalOpen(true)}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white dark:bg-slate-900 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 text-xs font-bold rounded-lg transition shadow-2xs active:scale-95"
                       title="과거 저장 시점 목록을 확인하고 원하는 시점으로 복원합니다 (관리자 전용)"
                     >
                       <History className="w-3.5 h-3.5 text-indigo-600" />
@@ -2718,10 +2719,10 @@ export const FriendCalendar: React.FC = () => {
             <div ref={profileModalBodyRef} className="p-6 overflow-y-auto space-y-6 flex-1 scroll-smooth">
               {/* Profile Edit / Add Form (수정 버튼이나 새 친구 추가 버튼을 누르면 최상단에 나타남!) */}
               {isProfileFormOpen && (
-                <div className="bg-gradient-to-br from-indigo-50/70 to-blue-50/70 border-2 border-indigo-200 rounded-2xl p-4 sm:p-5 shadow-sm animate-in slide-in-from-top-3 fade-in duration-150">
+                <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm animate-in slide-in-from-top-3 fade-in duration-150">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-xs font-bold text-indigo-950 flex items-center gap-1.5 uppercase tracking-wide">
-                      <span>{editingFriendId ? `✏️ '${profileName}' 정보 수정` : '➕ 새 친구 정보 등록'}</span>
+                      <span>{editingFriendId ? `'${profileName}' 정보 수정` : '새 친구 정보 등록'}</span>
                     </h4>
                     <button
                       type="button"
@@ -2729,7 +2730,7 @@ export const FriendCalendar: React.FC = () => {
                         resetProfileForm();
                         setIsProfileFormOpen(false);
                       }}
-                      className="text-xs text-slate-400 hover:text-slate-600 p-1 hover:bg-white/80 rounded-lg transition flex items-center gap-1"
+                      className="text-xs text-slate-400 hover:text-slate-600 p-1 hover:bg-white/80 dark:hover:bg-slate-800 rounded-lg transition flex items-center gap-1"
                       title="닫기"
                     >
                       <X className="w-4 h-4" />
@@ -2750,7 +2751,7 @@ export const FriendCalendar: React.FC = () => {
                           onChange={(e) => setProfileName(e.target.value)}
                           placeholder="예: 민수"
                           required
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-100"
                         />
                       </div>
 
@@ -2761,7 +2762,7 @@ export const FriendCalendar: React.FC = () => {
                           type="date"
                           value={profileBirthDate}
                           onChange={(e) => setProfileBirthDate(e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-100"
                         />
                       </div>
 
@@ -2772,7 +2773,7 @@ export const FriendCalendar: React.FC = () => {
                           <select
                             value={profileGender}
                             onChange={(e) => setProfileGender(e.target.value as any)}
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-slate-100"
                           >
                             <option value="">선택안함</option>
                             <option value="M">남성 (M)</option>
@@ -2787,7 +2788,7 @@ export const FriendCalendar: React.FC = () => {
                               type="color"
                               value={profileColor}
                               onChange={(e) => setProfileColor(e.target.value)}
-                              className="w-full h-9 p-0.5 border border-slate-200 rounded-xl cursor-pointer bg-white"
+                              className="w-full h-9 p-0.5 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer bg-white dark:bg-slate-900"
                             />
                           </div>
                         </div>
@@ -2801,7 +2802,7 @@ export const FriendCalendar: React.FC = () => {
                           resetProfileForm();
                           setIsProfileFormOpen(false);
                         }}
-                        className="px-3.5 py-2 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-white transition text-xs"
+                        className="px-3.5 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-white dark:hover:bg-slate-800 transition text-xs"
                       >
                         취소
                       </button>
@@ -2835,7 +2836,7 @@ export const FriendCalendar: React.FC = () => {
                       return (
                         <div
                           key={f.id}
-                          className={`p-3.5 bg-white rounded-xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                          className={`p-3.5 bg-white dark:bg-slate-900 rounded-xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                             isEditing
                               ? 'border-indigo-400 ring-2 ring-indigo-100 bg-indigo-50/20'
                               : 'border-slate-200 hover:border-slate-300 shadow-2xs'
@@ -2849,7 +2850,7 @@ export const FriendCalendar: React.FC = () => {
                                 className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs"
                                 style={{ backgroundColor: f.color }}
                               />
-                              <span className="font-bold text-slate-900 text-sm min-w-[45px]">
+                              <span className="font-bold text-slate-900 dark:text-slate-100 text-sm min-w-[45px]">
                                 {f.name}
                               </span>
                             </div>
@@ -2863,7 +2864,7 @@ export const FriendCalendar: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => copyToClipboard(f.birthDate!, `birth_${f.id}`, `${f.name}의 생년월일이`)}
-                                  className="group flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition"
+                                  className="group flex items-center gap-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium transition"
                                   title="클릭하여 생년월일 복사"
                                 >
                                   <span>{f.birthDate}</span>
@@ -2888,7 +2889,7 @@ export const FriendCalendar: React.FC = () => {
                                 setIsFriendProfileModalOpen(false);
                                 openFriendSchedule(f);
                               }}
-                              className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs"
+                              className="px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs"
                               title={`${f.name}의 전체 일정 확인`}
                             >
                               <CalendarIcon className="w-3 h-3" />
@@ -2897,7 +2898,7 @@ export const FriendCalendar: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => startEditProfile(f)}
-                              className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                              className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition"
                               title="정보 수정"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
@@ -2905,7 +2906,7 @@ export const FriendCalendar: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleDeleteFriend(f.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                              className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
                               title="삭제"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -2920,14 +2921,14 @@ export const FriendCalendar: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-between shrink-0">
+            <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-between shrink-0">
               <span className="text-[11px] text-slate-400">
                 입력하신 정보는 Firebase 클라우드에 안전하게 실시간 동기화됩니다.
               </span>
               <button
                 type="button"
                 onClick={() => setIsFriendProfileModalOpen(false)}
-                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition"
+                className="px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-200 transition"
               >
                 닫기
               </button>
@@ -2937,12 +2938,12 @@ export const FriendCalendar: React.FC = () => {
       )}
 
 
-      {/* 🛡️ 변경 이력 및 데이터 안전 금고 모달 */}
+      {/* 변경 이력 및 데이터 안전 금고 모달 */}
       {isHistoryModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-slate-100">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
                   <ShieldCheck className="w-6 h-6" />
@@ -2954,7 +2955,7 @@ export const FriendCalendar: React.FC = () => {
                       3중 보호 활성
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     친구 정보가 브라우저 금고 및 클라우드에 실시간 보관되며 언제든 과거 시점으로 복원할 수 있습니다.
                   </p>
                 </div>
@@ -2970,17 +2971,17 @@ export const FriendCalendar: React.FC = () => {
             {/* Body */}
             <div className="p-6 overflow-y-auto space-y-5">
               {/* Status Box */}
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-2xl p-4 space-y-3">
+              <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="font-bold text-emerald-950 text-xs sm:text-sm">현재 데이터 보관 상태</span>
+                    <span className="font-bold text-emerald-950 dark:text-emerald-300 text-xs sm:text-sm">현재 데이터 보관 상태</span>
                   </div>
-                  <span className="text-xs text-emerald-800 font-semibold">
+                  <span className="text-xs text-emerald-800 dark:text-emerald-400 font-semibold">
                     친구 {friends.length}명 / 일정 {events.length}개
                   </span>
                 </div>
-                <p className="text-xs text-emerald-900/80 leading-relaxed">
+                <p className="text-xs text-emerald-900/80 dark:text-emerald-300/80 leading-relaxed">
                   친구 정보가 추가되거나 변경될 때마다 브라우저 로컬 안전 금고(LocalStorage)에 즉시 미러링되고, 클라우드(Firestore) 및 변경 이력 스냅샷에 3중으로 영구 보관됩니다.
                 </p>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -2989,14 +2990,14 @@ export const FriendCalendar: React.FC = () => {
                     className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>📥 백업 파일(JSON) 내 PC/폰에 저장</span>
+                    <span>백업 파일(JSON) 다운로드</span>
                   </button>
                   <button
                     onClick={() => jsonFileInputRef.current?.click()}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-bold transition shadow-2xs"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-900 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 rounded-xl text-xs font-bold transition shadow-2xs"
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    <span>📤 백업 파일에서 복원</span>
+                    <span>백업 파일에서 복원</span>
                   </button>
                 </div>
               </div>
@@ -3004,7 +3005,7 @@ export const FriendCalendar: React.FC = () => {
               {/* History Timeline */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
                     <History className="w-4 h-4 text-indigo-600" />
                     <span>자동 저장된 변경 이력 스냅샷 ({backupHistory.length}/15)</span>
                   </h4>
@@ -3025,7 +3026,7 @@ export const FriendCalendar: React.FC = () => {
                 </div>
 
                 {backupHistory.length === 0 ? (
-                  <div className="p-6 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-xs">
+                  <div className="p-6 text-center bg-slate-50 dark:bg-slate-950 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 text-xs">
                     아직 저장된 변경 이력이 없습니다. 친구 정보를 수정하거나 일정을 등록하면 자동으로 시점별 백업이 생성됩니다.
                   </div>
                 ) : (
@@ -3044,17 +3045,17 @@ export const FriendCalendar: React.FC = () => {
                       return (
                         <div
                           key={snapshot.savedAt + idx}
-                          className="p-3.5 bg-slate-50 hover:bg-indigo-50/40 border border-slate-200 hover:border-indigo-200 rounded-xl transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                          className="p-3.5 bg-slate-50 dark:bg-slate-950 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30 border border-slate-200 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 rounded-xl transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-xs text-slate-900">{snapshot.summary}</span>
-                              <span className="text-[10px] text-indigo-700 bg-indigo-100 font-semibold px-2 py-0.5 rounded-md">
+                              <span className="font-bold text-xs text-slate-900 dark:text-slate-100">{snapshot.summary}</span>
+                              <span className="text-[10px] text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-950/60 font-semibold px-2 py-0.5 rounded-md">
                                 친구 {snapshot.friends.length}명
                               </span>
                             </div>
                             <div className="text-[11px] text-slate-500 mt-1 truncate">
-                              포함된 친구: <span className="font-medium text-slate-700">{friendNames || '(없음)'}</span>
+                              포함된 친구: <span className="font-medium text-slate-700 dark:text-slate-300">{friendNames || '(없음)'}</span>
                             </div>
                             <div className="text-[10px] text-slate-400 mt-0.5">
                               저장 일시: {timeStr}
@@ -3063,7 +3064,7 @@ export const FriendCalendar: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => restoreSnapshot(snapshot)}
-                            className="flex items-center justify-center gap-1 px-3 py-1.5 bg-white hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition shadow-2xs shrink-0 self-end sm:self-center"
+                            className="flex items-center justify-center gap-1 px-3 py-1.5 bg-white dark:bg-slate-900 hover:bg-indigo-600 dark:hover:bg-indigo-600 hover:text-white dark:hover:text-white text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-bold transition shadow-2xs shrink-0 self-end sm:self-center"
                           >
                             <RotateCcw className="w-3.5 h-3.5" />
                             <span>이 시점으로 복원</span>
@@ -3077,14 +3078,14 @@ export const FriendCalendar: React.FC = () => {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+            <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
               <span className="text-[11px] text-slate-400">
                 실수로 친구 정보를 지웠더라도 위 목록에서 언제든 이전 시점으로 되돌릴 수 있습니다.
               </span>
               <button
                 type="button"
                 onClick={() => setIsHistoryModalOpen(false)}
-                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition"
+                className="px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-200 transition"
               >
                 닫기
               </button>
@@ -3096,9 +3097,9 @@ export const FriendCalendar: React.FC = () => {
       {/* 5. 친구 전체 일정 및 여행 프로필 상세 모달 */}
       {isFriendScheduleModalOpen && selectedFriendForSchedule && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-100">
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden my-auto flex flex-col max-h-[90vh]">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl overflow-hidden my-auto flex flex-col max-h-[90vh] text-slate-900 dark:text-slate-100">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-950 shrink-0">
               <div className="flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-extrabold text-base shadow-sm shrink-0"
@@ -3108,14 +3109,14 @@ export const FriendCalendar: React.FC = () => {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-slate-900">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                       {selectedFriendForSchedule.name}
                     </h3>
-                    <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">
                       개인별 일정 브리핑
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {selectedFriendForSchedule.birthDate ? selectedFriendForSchedule.birthDate : '생년월일 미등록'}
                     {selectedFriendForSchedule.birthDate && calculateAge(selectedFriendForSchedule.birthDate) && ` (${calculateAge(selectedFriendForSchedule.birthDate)})`}
                   </p>
@@ -3129,7 +3130,7 @@ export const FriendCalendar: React.FC = () => {
                     startEditProfile(selectedFriendForSchedule);
                     setIsFriendProfileModalOpen(true);
                   }}
-                  className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-medium rounded-xl transition flex items-center gap-1 shadow-2xs"
+                  className="px-2.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-medium rounded-xl transition flex items-center gap-1 shadow-2xs"
                   title="친구 정보 수정"
                 >
                   <Edit2 className="w-3 h-3" />
@@ -3138,7 +3139,7 @@ export const FriendCalendar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsFriendScheduleModalOpen(false)}
-                  className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition"
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -3151,11 +3152,11 @@ export const FriendCalendar: React.FC = () => {
               {/* Schedules Section Header */}
               <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-2">
-                  <CalendarIcon className="w-4 h-4 text-indigo-600" />
-                  <h4 className="text-sm font-bold text-slate-800">
+                  <CalendarIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
                     {selectedFriendForSchedule.name} 님의 등록된 일정
                   </h4>
-                  <span className="text-xs px-2 py-0.5 rounded-full font-extrabold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-extrabold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">
                     {getEventsForFriend(selectedFriendForSchedule.id).length}건
                   </span>
                 </div>
@@ -3177,14 +3178,14 @@ export const FriendCalendar: React.FC = () => {
                 const fEvents = getEventsForFriend(selectedFriendForSchedule.id);
                 if (fEvents.length === 0) {
                   return (
-                    <div className="py-12 px-4 text-center bg-slate-50/70 rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center">
-                      <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-3">
+                    <div className="py-12 px-4 text-center bg-slate-50/70 dark:bg-slate-950/80 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-500 dark:text-indigo-400 flex items-center justify-center mb-3">
                         <Sparkles className="w-6 h-6" />
                       </div>
-                      <h5 className="text-sm font-bold text-slate-800 mb-1">
+                      <h5 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">
                         등록된 일정이 아직 없습니다
                       </h5>
-                      <p className="text-xs text-slate-500 max-w-sm mb-4">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-4">
                         {selectedFriendForSchedule.name} 님과 함께 갈 일본 여행이나 항공권 특가, 약속 일정을 지금 추가해보세요!
                       </p>
                       <button
@@ -3212,7 +3213,7 @@ export const FriendCalendar: React.FC = () => {
                       return (
                         <div
                           key={ev.id}
-                          className="p-4 bg-white rounded-2xl border border-slate-200 hover:border-indigo-300 hover:shadow-xs transition space-y-3 group"
+                          className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-xs transition space-y-3 group"
                         >
                           {/* Card Header: Dates & D-day */}
                           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -3220,12 +3221,12 @@ export const FriendCalendar: React.FC = () => {
                               <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${status.color}`}>
                                 {status.label}
                               </span>
-                              <span className="text-xs font-bold text-slate-800">
+                              <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
                                 {ev.startDate}
                                 {ev.endDate && ev.endDate !== ev.startDate ? ` ~ ${ev.endDate}` : ''}
                               </span>
                               {durationStr && (
-                                <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
                                   {durationStr}
                                 </span>
                               )}
@@ -3241,7 +3242,7 @@ export const FriendCalendar: React.FC = () => {
                                   const calElem = document.getElementById('calendar-container');
                                   if (calElem) calElem.scrollIntoView({ behavior: 'smooth' });
                                 }}
-                                className="px-2.5 py-1 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                                className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg text-xs font-bold transition flex items-center gap-1 border border-transparent dark:border-slate-700"
                                 title="캘린더 해당 일자로 이동"
                               >
                                 <CalendarIcon className="w-3 h-3" />
@@ -3253,7 +3254,7 @@ export const FriendCalendar: React.FC = () => {
                                   setIsFriendScheduleModalOpen(false);
                                   openEditEventModal(ev);
                                 }}
-                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition"
+                                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
                                 title="일정 수정"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
@@ -3262,26 +3263,26 @@ export const FriendCalendar: React.FC = () => {
                           </div>
 
                           {/* Title */}
-                          <div className="text-sm sm:text-base font-bold text-slate-900">
+                          <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
                             {ev.title}
                           </div>
 
                           {/* Details (Location, Time, Memo) */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300">
                             {ev.location && (
-                              <div className="flex items-center gap-1.5 text-slate-700">
+                              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                                 <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                                 <span className="truncate">{ev.location}</span>
                               </div>
                             )}
                             {ev.time && (
-                              <div className="flex items-center gap-1.5 text-slate-700">
+                              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                                 <Clock className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                                 <span>{ev.time}</span>
                               </div>
                             )}
                             {ev.memo && (
-                              <div className="sm:col-span-2 flex items-start gap-1.5 text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                              <div className="sm:col-span-2 flex items-start gap-1.5 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                                 <span className="whitespace-pre-wrap">{ev.memo}</span>
                               </div>
@@ -3290,14 +3291,14 @@ export const FriendCalendar: React.FC = () => {
 
                           {/* Other Participants */}
                           {otherFriends.length > 0 && (
-                            <div className="pt-2 border-t border-slate-100 flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[11px] font-bold text-slate-400">함께하는 친구:</span>
+                            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">함께하는 친구:</span>
                               {otherFriends.map((of) => (
                                 <button
                                   key={of.id}
                                   type="button"
                                   onClick={() => openFriendSchedule(of)}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md text-[11px] font-semibold text-slate-700 transition"
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-semibold text-slate-700 dark:text-slate-300 transition"
                                 >
                                   <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: of.color }} />
                                   <span>{of.name}</span>
@@ -3314,21 +3315,21 @@ export const FriendCalendar: React.FC = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/80 flex items-center justify-between shrink-0">
+            <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950 flex items-center justify-between shrink-0">
               <button
                 type="button"
                 onClick={() => {
                   setActiveFilterFriendId('ALL');
                   setIsFriendScheduleModalOpen(false);
                 }}
-                className="px-3 py-1.5 text-slate-500 hover:text-slate-800 text-xs font-semibold rounded-lg hover:bg-slate-100 transition"
+                className="px-3 py-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 text-xs font-semibold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
                 전체 친구 일정 보기 (필터 해제)
               </button>
               <button
                 type="button"
                 onClick={() => setIsFriendScheduleModalOpen(false)}
-                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-2xs"
+                className="px-5 py-2 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-900 rounded-xl text-xs font-bold transition shadow-2xs"
               >
                 닫기
               </button>

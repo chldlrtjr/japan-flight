@@ -40,16 +40,16 @@ export const Navbar: React.FC<NavbarProps> = ({
     : '';
 
   return (
-    <header className={`sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 ${className}`}>
+    <header className={`sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-rose-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-600/20">
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xl font-black tracking-tight text-slate-900">
-              모임 <span className="text-indigo-600">수첩</span>
+            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+              모임 <span className="text-indigo-600 dark:text-indigo-400">수첩</span>
             </span>
           </div>
         </div>
@@ -61,8 +61,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={onToggleBookmarks}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
               showOnlyBookmarks
-                ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700'
             }`}
             title="관심 프로모션만 모아보기"
           >
@@ -71,7 +71,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             {bookmarkCount > 0 && (
               <span
                 className={`text-xs px-1.5 py-0.2 rounded-full font-bold ${
-                  showOnlyBookmarks ? 'bg-white text-amber-600' : 'bg-amber-100 text-amber-700'
+                  showOnlyBookmarks
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                 }`}
               >
                 {bookmarkCount}
@@ -85,11 +87,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             disabled={isRefreshing}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold transition-all shadow-sm ${
               isRefreshing
-                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                : 'bg-sky-600 text-white hover:bg-sky-700 active:scale-95 shadow-sky-600/20'
+                ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-200 dark:border-slate-700'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 shadow-indigo-600/20'
             }`}
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-sky-400' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-indigo-200' : ''}`} />
             <span className="hidden md:inline">
               {isRefreshing ? '특가 수집 중...' : '최신 특가 수집'}
             </span>
@@ -97,9 +99,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {formattedTime && (
-            <div className="hidden lg:flex flex-col text-right text-[11px] text-slate-400 border-l border-slate-200 pl-3">
+            <div className="hidden lg:flex flex-col text-right text-[11px] text-slate-400 dark:text-slate-500 border-l border-slate-200 dark:border-slate-800 pl-3">
               <span>최근 수집</span>
-              <span className="font-semibold text-slate-600">{formattedTime}</span>
+              <span className="font-semibold text-slate-600 dark:text-slate-300">{formattedTime}</span>
             </div>
           )}
         </div>
