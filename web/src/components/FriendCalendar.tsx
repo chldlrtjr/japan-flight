@@ -1624,18 +1624,13 @@ export const FriendCalendar: React.FC = () => {
                               {evFriends.map((f) => (
                                 <span
                                   key={f.id}
-                                  className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-md shadow-2xs whitespace-nowrap"
-                                  style={{
-                                    backgroundColor: `${f.color}18`,
-                                    color: f.color,
-                                    border: `1px solid ${f.color}40`,
-                                  }}
+                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200/70 border border-slate-200/90 text-slate-800 shadow-2xs whitespace-nowrap transition"
                                 >
                                   <span
-                                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                                    className="w-2 h-2 rounded-full shrink-0 ring-1 ring-black/10"
                                     style={{ backgroundColor: f.color }}
                                   />
-                                  <span>{f.name}</span>
+                                  <span className="text-slate-800 font-semibold">{f.name}</span>
                                 </span>
                               ))}
                             </div>
@@ -2094,8 +2089,7 @@ export const FriendCalendar: React.FC = () => {
                                   style={{ backgroundColor: barColor }}
                                 />
                                 <span
-                                  className="font-bold shrink-0 text-slate-800 truncate max-w-[42px] sm:max-w-[120px]"
-                                  style={{ color: barColor }}
+                                  className="font-bold shrink-0 text-slate-800 truncate max-w-[120px] sm:max-w-[200px]"
                                 >
                                   {seg.displayTitle}:
                                 </span>
