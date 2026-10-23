@@ -1791,45 +1791,45 @@ export const FriendCalendar: React.FC = () => {
             </div>
           </div>
 
-          {/* Bottom Row: 달력 네비게이션(< 오늘 > & 2026년 10월) 및 검색창 */}
-          <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 w-full pt-1 sm:pt-2 border-t border-slate-100 dark:border-white/[0.06]">
+          {/* Bottom Row: 달력 네비게이션(< 오늘 > & 2026년 10월) 및 검색창 (빨간 동그라미 위치 한 줄 통합) */}
+          <div className="flex items-center justify-between gap-1.5 sm:gap-2 w-full pt-1.5 sm:pt-2 border-t border-slate-100 dark:border-white/[0.06]">
             {/* Navigation & Title (< 오늘 > 및 2026년 10월) */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink-0">
               <div className="flex items-center bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/50 dark:border-white/[0.06] rounded-full p-0.5 sm:p-1 shrink-0">
                 <button
                   onClick={prevMonth}
-                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition cursor-pointer"
+                  className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition cursor-pointer"
                   title="이전달"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
                 <button
                   onClick={goToday}
-                  className="px-2.5 sm:px-3 h-7 sm:h-8 text-xs font-bold rounded-full hover:bg-white dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 transition cursor-pointer"
+                  className="px-2 sm:px-3 h-6 sm:h-8 text-[11px] sm:text-xs font-bold rounded-full hover:bg-white dark:hover:bg-white/10 text-slate-800 dark:text-slate-200 transition cursor-pointer"
                 >
                   오늘
                 </button>
                 <button
                   onClick={nextMonth}
-                  className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition cursor-pointer"
+                  className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition cursor-pointer"
                   title="다음달"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </div>
-              <h2 className="text-sm sm:text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight whitespace-nowrap">
+              <h2 className="text-xs sm:text-xl font-bold sm:font-black text-slate-900 dark:text-slate-50 tracking-tight whitespace-nowrap">
                 {year}년 {month + 1}월
               </h2>
             </div>
 
             {/* 우측: 친구 필터 드롭다운 & 검색창 */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               {/* 친구 필터 콤팩트 드롭다운 */}
               <div className="relative" ref={friendFilterDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setIsFriendFilterDropdownOpen((prev) => !prev)}
-                  className={`h-7 sm:h-8 px-2.5 sm:px-3 text-xs font-semibold rounded-full border transition-all flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer ${
+                  className={`h-6.5 sm:h-8 px-2 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-full border transition-all flex items-center gap-1 sm:gap-1.5 shadow-2xs active:scale-95 cursor-pointer ${
                     activeFilterFriendId === 'ALL'
                       ? 'bg-white dark:bg-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.08] text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-white/[0.08]'
                       : activeFilterFriendId === 'UNASSIGNED'
@@ -1992,26 +1992,26 @@ export const FriendCalendar: React.FC = () => {
               </div>
 
               {/* 검색창 */}
-              <div className="relative w-28 sm:w-44 shrink-0">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-              <input
-                type="text"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder="일정 검색..."
-                className="w-full pl-8 pr-6 py-1 bg-white/60 dark:bg-slate-950/50 border border-slate-200/80 dark:border-white/[0.08] rounded-full text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 transition"
-              />
-              {searchKeyword && (
-                <button
-                  type="button"
-                  onClick={() => setSearchKeyword('')}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
-                  title="검색어 지우기"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
+              <div className="relative w-20 sm:w-44 focus-within:w-28 sm:focus-within:w-48 transition-all duration-200 shrink-0">
+                <Search className="w-3 h-3 sm:w-3.5 sm:h-3.5 absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  placeholder="검색..."
+                  className="w-full pl-6 sm:pl-8 pr-5 sm:pr-6 py-0.5 sm:py-1 bg-white/60 dark:bg-slate-950/50 border border-slate-200/80 dark:border-white/[0.08] rounded-full text-[11px] sm:text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 transition"
+                />
+                {searchKeyword && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchKeyword('')}
+                    className="absolute right-1 sm:right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                    title="검색어 지우기"
+                  >
+                    <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
