@@ -51,13 +51,14 @@ TITLE_AIRLINE_OR_FLIGHT_KEYWORDS = [
     '대한항공', '아시아나항공', '아시아나', '제주항공', '진에어', '티웨이항공', '티웨이',
     '트리니티항공', '트리니티', '이스타항공', '이스타', '에어부산', '에어서울',
     '에어프레미아', '에어로케이', '파라타항공', '파라타',
+    '에어뉴질랜드', '에어 뉴질랜드', 'Air New Zealand', '중국남방항공',
     # Flight terms
     '항공권', '비행기표', '비행기', '항공편', '탑승권', '하늘길', '노선', '취항', '운항',
     '항공사', '항공업계', 'LCC', 'FSC', '국제선', '항공'
 ]
 
-# Non-Japan destination keywords for excluding purely non-Japan headlines
-NON_JAPAN_DESTINATIONS = [
+# Non-target destination keywords for excluding purely unrelated headlines
+NON_TARGET_DESTINATIONS = [
     '유럽', '미주', '미국', '하와이', '괌', '사이판', '동남아', '다낭', '나트랑', '푸꾸옥',
     '방콕', '치앙마이', '발리', '대만', '타이베이', '가오슝', '홍콩', '마카오', '중국',
     '칭다오', '상하이', '베이징', '장가계', '선전', '세부', '보라카이', '보홀', '필리핀', '코타키나발루'
@@ -71,12 +72,18 @@ JAPAN_CITIES = [
     "우베", "이바라키", "도쿠시마"
 ]
 
+NZ_CITIES = [
+    "뉴질랜드", "오클랜드", "크라이스트처치", "퀸스타운", "웰링턴", "남섬", "북섬"
+]
+
 AIRLINE_KEYWORDS = {
+    "에어뉴질랜드": ["에어뉴질랜드", "에어 뉴질랜드", "AIR NEW ZEALAND", "ANZ"],
+    "대한항공": ["대한항공", "KOREAN AIR", "KAL"],
+    "중국남방항공": ["중국남방항공", "남방항공", "CHINA SOUTHERN"],
     "피치항공": ["피치", "피치항공", "PEACH"],
     "집에어": ["집에어", "ZIPAIR"],
     "일본항공": ["일본항공", "JAL"],
     "전일본공수": ["전일본공수", "ANA"],
-    "대한항공": ["대한항공", "KOREAN AIR", "KAL"],
     "아시아나항공": ["아시아나항공", "아시아나", "ASIANA", "AAR"],
     "제주항공": ["제주항공", "JEJU"],
     "진에어": ["진에어", "JINAIR", "진마켓"],
@@ -101,16 +108,17 @@ NAVER_QUERIES = [
     "이스타항공 일본 특가",
     "에어부산 일본 특가",
     "에어프레미아 일본 특가",
-    "에어로케이 일본 특가",
     "피치항공 특가",
     "일본항공 특가",
-    "전일본공수 ANA 특가",
-    "집에어 ZIPAIR 나리타",
+    "뉴질랜드 항공권 특가",
+    "에어뉴질랜드 특가",
+    "오클랜드 항공권 특가",
+    "뉴질랜드 항공권 프로모션",
+    "대한항공 오클랜드 특가"
 ]
 
 def clean_news_title(title: str) -> str:
     """Clean news title and strip media suffixes properly without ruining hyphenated city routes."""
-    # Only remove newspaper suffix when preceded by space-hyphen-space: e.g. " - 머니투데이"
     t = re.sub(r'\s+-\s+[^\s-]{2,15}$', '', title).strip()
     t = t.replace('&nbsp;', ' ').replace('&quot;', '"').replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
     t = re.sub(r'새 창 열림', '', t).strip()
@@ -159,35 +167,26 @@ def parse_naver_date(date_str: str) -> str:
     date_str = date_str.strip()
     m_min = re.search(r'(\d+)\s*분\s*전', date_str)
     if m_min:
-        return (now - timedelta(minutes=int(m_min.group(1)))).strftime('%Y-%m-%d %H:%M')
-    m_hr = re.search(r'(\d+)\s*시간\s*전', date_str)
-    if m_hr:
-        return (now - timedelta(hours=int(m_hr.group(1)))).strftime('%Y-%m-%d %H:%M')
+        return (now - timedelta(minutes=int(m_min.group(1)))).strftime('%Y-%m-%d')
+    m_hour = re.search(r'(\d+)\s*시간\s*전', date_str)
+    if m_hour:
+        return (now - timedelta(hours=int(m_hour.group(1)))).strftime('%Y-%m-%d')
     m_day = re.search(r'(\d+)\s*일\s*전', date_str)
     if m_day:
         return (now - timedelta(days=int(m_day.group(1)))).strftime('%Y-%m-%d')
-    m_week = re.search(r'(\d+)\s*주\s*전', date_str)
-    if m_week:
-        return (now - timedelta(weeks=int(m_week.group(1)))).strftime('%Y-%m-%d')
-    m_month = re.search(r'(\d+)\s*(달|개월)\s*전', date_str)
-    if m_month:
-        return (now - timedelta(days=int(m_month.group(1)) * 30)).strftime('%Y-%m-%d')
     m_date = re.search(r'(\d{4})[.-](\d{1,2})[.-](\d{1,2})', date_str)
     if m_date:
-        return f"{m_date.group(1)}-{int(m_date.group(2)):02d}-{int(m_date.group(3)):02d}"
+        y, m, d = m_date.groups()
+        return f"{int(y):04d}-{int(m):02d}-{int(d):02d}"
     return now.strftime('%Y-%m-%d')
 
-def detect_promo_status(title: str, summary: str, pub_date: str) -> tuple[str, str]:
-    """
-    Returns (status: 'ACTIVE' | 'UPCOMING', period_desc: string)
-    """
+def detect_promo_status(title: str, summary: str, pub_date_str: str) -> tuple:
+    """Detect promotion status (ACTIVE vs UPCOMING) and target travel period description."""
     text = f"{title} {summary}"
-    
-    # Check for upcoming keywords
-    is_upcoming = any(kw in text for kw in ['오픈 예정', '예고', '사전 예약', '미리 예매', '얼리버드', '취항 기념', '다음 달부터', '개시 예정'])
-    status = 'UPCOMING' if is_upcoming else 'ACTIVE'
+    status = "ACTIVE"
+    if any(k in text for k in ['오픈 예정', '예정', '출시 예정', '개시 예정', '앞두고', '사전 예약', '얼리버드 오픈']):
+        status = "UPCOMING"
 
-    # Extract target period description
     period_desc = "실시간 진행중"
     if '가을' in text and '겨울' in text:
         period_desc = "가을·겨울 시즌 특가"
@@ -204,7 +203,7 @@ def detect_promo_status(title: str, summary: str, pub_date: str) -> tuple[str, s
 
     return status, period_desc
 
-def is_valid_active_japan_promo(title: str, summary: str, pub_date: str) -> bool:
+def is_valid_active_promo(title: str, summary: str, pub_date: str) -> bool:
     clean_t = clean_news_title(title)
     clean_s = summary.strip() if summary else ''
     full_text = f"{clean_t} {clean_s}"
@@ -213,17 +212,16 @@ def is_valid_active_japan_promo(title: str, summary: str, pub_date: str) -> bool
     if len(clean_t) < 12:
         return False
 
-    # 2. Reject incomplete/truncated titles (dangling comma, dangling quotes, '최...', etc.)
+    # 2. Reject incomplete/truncated titles
     if clean_t.endswith(',') or clean_t.endswith(",'") or clean_t.endswith('최...') or clean_t.endswith("'인천") or clean_t.endswith('...外'):
         return False
 
-    # 3. Reject omnibus/roundup title prefixes (e.g. [산업소식], [유통가], [기업브리프])
+    # 3. Reject omnibus/roundup title prefixes
     for pfx in ROUNDUP_TITLE_PREFIXES:
         if clean_t.startswith(pfx):
             return False
 
     # 4. ESSENTIAL: Title MUST contain at least one airline name or flight keyword
-    # Prevents unrelated news like "[산업소식] 삼성전자, ..." from slipping in through summary
     if not any(ak in clean_t for ak in TITLE_AIRLINE_OR_FLIGHT_KEYWORDS):
         return False
 
@@ -232,15 +230,14 @@ def is_valid_active_japan_promo(title: str, summary: str, pub_date: str) -> bool
         if kw in full_text:
             return False
 
-    # 6. Strict Japan Relevance check
-    # If title specifically mentions non-Japan destinations without any Japan indicator in title, reject!
-    has_non_japan_in_title = any(nj in clean_t for nj in NON_JAPAN_DESTINATIONS)
-    has_japan_in_title = any(jd in clean_t for jd in JAPAN_CITIES)
-    if has_non_japan_in_title and not has_japan_in_title:
+    # 6. Target Relevance check (Japan or New Zealand)
+    has_target_in_title = any(jd in clean_t for jd in JAPAN_CITIES) or any(nz in clean_t for nz in NZ_CITIES)
+    has_non_target_in_title = any(nj in clean_t for nj in NON_TARGET_DESTINATIONS)
+    if has_non_target_in_title and not has_target_in_title:
         return False
 
-    # Must mention Japan or Japan city in full_text (title or summary)
-    if not any(city in full_text for city in JAPAN_CITIES):
+    has_japan_or_nz = any(city in full_text for city in JAPAN_CITIES) or any(city in full_text for city in NZ_CITIES)
+    if not has_japan_or_nz:
         return False
 
     # 7. Must have promotion keyword in full_text
@@ -254,8 +251,11 @@ def is_valid_active_japan_promo(title: str, summary: str, pub_date: str) -> bool
 
     return True
 
+# Backwards compatibility alias
+is_valid_active_japan_promo = is_valid_active_promo
+
 def crawl_flight_news() -> List[Dict[str, Any]]:
-    print("[NewsCrawler] Starting Japan flight promotion crawl (Naver News)...")
+    print("[NewsCrawler] Starting flight promotion crawl (Japan & New Zealand Deals)...")
     seen_links = set()
     seen_title_keys = set()
     articles = []
@@ -276,7 +276,6 @@ def crawl_flight_news() -> List[Dict[str, Any]]:
             with urllib.request.urlopen(req, timeout=8) as resp:
                 soup = BeautifulSoup(resp.read().decode('utf-8', errors='ignore'), 'html.parser')
                 
-                # Support both modern SDS layout and standard layout
                 raw_items = soup.select('.fds-news-item-list-tab > div')
                 if not raw_items:
                     raw_items = soup.select('.list_news > li')
@@ -316,25 +315,34 @@ def crawl_flight_news() -> List[Dict[str, Any]]:
 
                     pub_date_formatted = parse_naver_date(date_raw)
 
-                    # Strict active Japan promo filter
-                    if not is_valid_active_japan_promo(clean_title, clean_desc, pub_date_formatted):
+                    # Strict active promo filter
+                    if not is_valid_active_promo(clean_title, clean_desc, pub_date_formatted):
                         continue
 
                     seen_links.add(art_link)
                     if t_key:
                         seen_title_keys.add(t_key)
 
-                    # Detect mentioned airline
-                    detected_airline = "일본 노선 항공사"
+                    # Detect region (New Zealand vs Japan)
+                    is_nz = any(c in clean_title for c in NZ_CITIES) or any(c in clean_desc for c in NZ_CITIES) or '에어뉴질랜드' in clean_title or '에어뉴질랜드' in clean_desc
+                    if is_nz:
+                        region_category = "뉴질랜드"
+                        is_japan = 0
+                        matched_cities = [c for c in NZ_CITIES if c in clean_title and c not in ["뉴질랜드", "남섬", "북섬"]]
+                        dest_str = ", ".join(matched_cities) if matched_cities else "뉴질랜드 전역"
+                        default_airline = "뉴질랜드 노선 항공사"
+                    else:
+                        region_category = "일본"
+                        is_japan = 1
+                        matched_cities = [c for c in JAPAN_CITIES if c in clean_title and c != "일본"]
+                        dest_str = ", ".join(matched_cities) if matched_cities else "일본 전역"
+                        default_airline = "일본 노선 항공사"
+
+                    detected_airline = default_airline
                     for air_name, syns in AIRLINE_KEYWORDS.items():
                         if any(s in clean_title for s in syns):
                             detected_airline = air_name
                             break
-
-                    matched_japan_cities = []
-                    for city in JAPAN_CITIES:
-                        if city in clean_title and city != "일본" and city not in matched_japan_cities:
-                            matched_japan_cities.append(city)
 
                     promo_status, period_desc = detect_promo_status(clean_title, clean_desc, pub_date_formatted)
                     art_id = hashlib.md5(art_link.encode('utf-8')).hexdigest()
@@ -347,9 +355,9 @@ def crawl_flight_news() -> List[Dict[str, Any]]:
                         "link": art_link,
                         "published_at": pub_date_formatted,
                         "airline": detected_airline,
-                        "is_japan": 1,
-                        "japan_cities": ", ".join(matched_japan_cities) if matched_japan_cities else "일본 전역",
-                        "region_category": "일본",
+                        "is_japan": is_japan,
+                        "japan_cities": dest_str,
+                        "region_category": region_category,
                         "promo_status": promo_status,
                         "promo_period_desc": period_desc
                     })
@@ -359,7 +367,7 @@ def crawl_flight_news() -> List[Dict[str, Any]]:
 
     # Sort: newest first
     articles.sort(key=lambda x: x['published_at'] or '', reverse=True)
-    print(f"[NewsCrawler] TOTAL collected: {len(articles)} ACTIVE/UPCOMING Japan promotion articles from Naver News")
+    print(f"[NewsCrawler] TOTAL collected: {len(articles)} ACTIVE/UPCOMING promotion articles from Naver News")
     return articles
 
 if __name__ == '__main__':

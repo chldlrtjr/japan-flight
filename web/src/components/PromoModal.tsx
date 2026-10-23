@@ -25,6 +25,10 @@ export const PromoModal: React.FC<PromoModalProps> = ({
     ? promo.destinations.split(',').map((d) => d.trim()).filter(Boolean)
     : [];
 
+  const regionLabel = promo.region_category === '뉴질랜드'
+    ? '🇳🇿 뉴질랜드'
+    : (promo.region_category ? `🇯🇵 ${promo.region_category}` : '국제선');
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
@@ -65,8 +69,8 @@ export const PromoModal: React.FC<PromoModalProps> = ({
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/20" />
             
             <div className="absolute bottom-4 left-6 right-6 text-white">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500 text-white mb-2">
-                {promo.airline} · {promo.region_category}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500 text-white mb-2 shadow-sm">
+                {promo.airline} · {regionLabel}
               </div>
               <h2 className="text-xl sm:text-2xl font-black leading-tight drop-shadow-md">
                 {promo.title}
@@ -80,7 +84,7 @@ export const PromoModal: React.FC<PromoModalProps> = ({
           {!promo.image_url && (
             <div>
               <span className="text-xs font-bold text-sky-600 bg-sky-50 px-2.5 py-1 rounded-md">
-                {promo.airline} · {promo.region_category}
+                {promo.airline} · {regionLabel}
               </span>
               <h2 className="text-2xl font-black text-slate-900 mt-2">
                 {promo.title}
@@ -156,7 +160,7 @@ export const PromoModal: React.FC<PromoModalProps> = ({
               rel="noopener noreferrer"
               className="w-full py-4 rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 text-white font-bold flex items-center justify-center gap-2 hover:opacity-95 shadow-lg shadow-sky-600/25 active:scale-[0.99] transition-all text-base"
             >
-              <span>{promo.airline} 바로가기</span>
+              <span>바로가기</span>
               <ExternalLink className="w-5 h-5" />
             </a>
           </div>

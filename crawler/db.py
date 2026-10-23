@@ -31,8 +31,8 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS promotions (
             id TEXT PRIMARY KEY,               -- e.g. "jeju_0000004293" or hash
-            airline TEXT NOT NULL,             -- "제주항공", "티웨이항공", "이스타항공", "진에어" 등
-            airline_code TEXT NOT NULL,        -- "JEJU", "TWAY", "EASTAR", "JIN"
+            airline TEXT NOT NULL,             -- "제주항공", "티웨이항공", "에어뉴질랜드" 등
+            airline_code TEXT NOT NULL,        -- "JEJU", "TWAY", "AIR_NZ", "KAL"
             title TEXT NOT NULL,               -- 프로모션 제목
             subtitle TEXT,                     -- 부제목/요약
             badge_text TEXT,                   -- "최대 82% 할인", "신규취항", "얼리버드"
@@ -42,8 +42,8 @@ def init_db():
             promo_end TEXT,                    -- 프로모션 종료일 (YYYY-MM-DD)
             travel_period TEXT,                -- 탑승 기간 텍스트
             is_international INTEGER DEFAULT 1, -- 국제선 여부 (1=국제선, 0=국내선)
-            region_category TEXT,              -- "일본", "동남아", "중화권", "유럽/미주", "대양주/기타", "전노선"
-            destinations TEXT,                 -- 콤마 구분 목적지 (예: "도쿄,오사카,후쿠오카")
+            region_category TEXT,              -- "일본", "뉴질랜드", "대양주/기타"
+            destinations TEXT,                 -- 콤마 구분 목적지 (예: "도쿄,오사카", "오클랜드")
             status TEXT DEFAULT 'ING',         -- "ING" (진행중), "UPCOMING" (예정), "END" (종료)
             is_featured INTEGER DEFAULT 0,     -- 주요 특가 여부
             view_count INTEGER DEFAULT 0,
@@ -66,7 +66,7 @@ def init_db():
         )
     ''')
 
-    # Create news articles table (focused on promotions & Japan deals)
+    # Create news articles table (focused on promotions: Japan & New Zealand)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS news_articles (
             id TEXT PRIMARY KEY,               -- hash or link
@@ -75,12 +75,13 @@ def init_db():
             source TEXT NOT NULL,              -- 언론사명 (연합뉴스, 매일경제 등)
             link TEXT NOT NULL UNIQUE,
             published_at TEXT,
-            airline TEXT,                      -- 언급된 항공사 (제주항공, 진에어 등)
+            airline TEXT,                      -- 언급된 항공사
             is_japan INTEGER DEFAULT 0,        -- 🇯🇵 일본 관련 여부 (1 or 0)
-            japan_cities TEXT,                 -- "도쿄, 오사카, 후쿠오카"
-            region_category TEXT,
+            japan_cities TEXT,                 -- 대상 도시 (도쿄, 오클랜드 등)
+            region_category TEXT,              -- "일본", "뉴질랜드"
             promo_status TEXT DEFAULT 'ACTIVE', -- "ACTIVE" (진행중), "UPCOMING" (예정)
             promo_period_desc TEXT,            -- "가을·겨울 시즌 특가", "10~12월 출발" 등
+            promo_end TEXT,
             created_at TEXT NOT NULL
         )
     ''')
@@ -122,20 +123,7 @@ def init_db():
     except Exception:
         pass
 
-    # Automatically clean expired, irrelevant, or Google News articles
-    cursor.execute("""
-        DELETE FROM news_articles 
-        WHERE link LIKE '%google.com%'
-           OR link LIKE '%news.google.com%'
-           OR title LIKE '%숏트립%' 
-           OR title LIKE '%렌터카%' 
-           OR title LIKE '%카카오페이%' 
-           OR title LIKE '%맛집%'
-           OR (promo_end IS NOT NULL AND promo_end < '2026-09-29')
-           OR (promo_end IS NULL AND published_at < '2026-09-19')
-    """)
-
-    # Automatically clean non-Japan, irrelevant, or Japan domestic-only promotions
+    # Automatically clean non-target, irrelevant, or domestic-only promotions
     cursor.execute("""
         DELETE FROM promotions
         WHERE id = 'jin_guam_superlow'
@@ -183,11 +171,8 @@ def init_db():
         DELETE FROM promotions
         WHERE (destinations IS NULL OR destinations = '')
           AND title NOT LIKE '%일본%'
-          AND title NOT LIKE '%도쿄%'
-          AND title NOT LIKE '%오사카%'
-          AND title NOT LIKE '%후쿠오카%'
-          AND title NOT LIKE '%삿포로%'
-          AND title NOT LIKE '%오키나와%'
+          AND title NOT LIKE '%뉴질랜드%'
+          AND title NOT LIKE '%오클랜드%'
     """)
 
     # Permanently delete any expired promotions or news
@@ -207,11 +192,24 @@ def init_db():
     cursor.execute("""
         DELETE FROM promotions
         WHERE id IN (
+            'csair_akl_guangzhou_transit_deal',
+            'koreanair_akl_direct_2026',
+            'airnz_nz_all_deals_2026',
+            'airpremia_sapporo_inauguration',
+            'airbusan_october_coupon',
+            'airseoul_october_hurry',
+            'airseoul_takamatsu_10th',
+            'jin_october_newmember_baggage',
             'parata_japan_paranweek', 'peach_autumn_sale', 'airseoul_yonago_takamatsu',
             'airbusan_fukuoka_winter', 'jin_jinmarket_autumn', 'jin_japan_special',
             'jin_sapporo_okinawa_sale', 'zipair_narita_special', 'kal_japan_app_special',
             'asiana_japan_season_deal', 'jal_haneda_earlybird', 'ana_gimpo_sale'
         )
+        OR image_url LIKE '%unsplash.com%'
+        OR detail_url LIKE '%csair.com/kr/ko%'
+        OR detail_url LIKE '%/promotionList%'
+        OR detail_url LIKE '%flights-from-seoul-to-auckland%'
+        OR detail_url LIKE '%flight-deals-to-new-zealand%'
         OR airline LIKE '%파라타%'
         OR airline_code = 'PARATA'
     """)
@@ -225,13 +223,13 @@ def init_db():
 def clean_invalid_news() -> int:
     """
     Examines all news articles in the database and permanently deletes any that:
-    1. Lack airline or flight keywords in title (e.g. Samsung, generic card news, etc.)
-    2. Contain blacklist keywords (e.g. awards, stock, maintenance, drones, etc.)
+    1. Lack airline or flight keywords in title
+    2. Contain blacklist keywords
     3. Are press roundup/digest articles
-    4. Focus purely on non-Japan regions
+    4. Focus purely on non-target regions
     5. Have truncated/dangling titles
     """
-    from .news import is_valid_active_japan_promo
+    from .news import is_valid_active_promo
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id, title, summary, published_at FROM news_articles")
@@ -242,7 +240,7 @@ def clean_invalid_news() -> int:
         title = r['title']
         summary = r['summary'] or ''
         pub_at = r['published_at'] or ''
-        if not is_valid_active_japan_promo(title, summary, pub_at):
+        if not is_valid_active_promo(title, summary, pub_at):
             delete_ids.append(r['id'])
 
     if delete_ids:
@@ -254,17 +252,17 @@ def clean_invalid_news() -> int:
     return len(delete_ids)
 
 def upsert_news(news: Dict[str, Any]) -> bool:
-    # Strictly validate active Japan promo news: title, flight/airline relevance, keywords, dates
-    from .news import is_valid_active_japan_promo
-    if not is_valid_active_japan_promo(
+    # Strictly validate active promo news: title, flight/airline relevance, keywords, dates
+    from .news import is_valid_active_promo
+    if not is_valid_active_promo(
         news.get("title", ""),
         news.get("summary", ""),
         news.get("published_at", "") or ""
     ):
         return False
 
-    # Strictly reject non-Japan news
-    if news.get("is_japan", 0) != 1:
+    # Strictly reject non-target news (must be Japan or New Zealand)
+    if news.get("is_japan", 0) != 1 and news.get("region_category") != "뉴질랜드":
         return False
 
     # Reject if expired
@@ -306,9 +304,9 @@ def upsert_news(news: Dict[str, Any]) -> bool:
         "link": news["link"],
         "published_at": news.get("published_at"),
         "airline": news.get("airline", "전체"),
-        "is_japan": 1,
-        "japan_cities": news.get("japan_cities", "일본"),
-        "region_category": "일본",
+        "is_japan": news.get("is_japan", 0),
+        "japan_cities": news.get("japan_cities", "뉴질랜드" if news.get("region_category") == "뉴질랜드" else "일본"),
+        "region_category": news.get("region_category", "일본"),
         "promo_status": news.get("promo_status", "ACTIVE"),
         "promo_period_desc": news.get("promo_period_desc", "실시간 진행중"),
         "promo_end": news.get("promo_end"),
@@ -320,6 +318,29 @@ def upsert_news(news: Dict[str, Any]) -> bool:
     return True
 
 def upsert_promotion(promo: Dict[str, Any]) -> bool:
+    from .url_verifier import is_root_or_generic_url, is_fake_or_stock_image
+
+    # Zero-Guesswork Rule: Reject fake stock images (Unsplash)
+    if is_fake_or_stock_image(promo.get('image_url')):
+        print(f"[Guardrail] Rejected promo with fake/stock image: {promo.get('title')}")
+        return False
+
+    # Zero-Guesswork Rule: Reject airline homepage root or generic list URLs
+    is_generic, reason = is_root_or_generic_url(promo.get('detail_url', ''))
+    if is_generic:
+        print(f"[Guardrail] Rejected generic/root URL promo: {promo.get('title')} ({reason})")
+        return False
+
+    # Zero-Guesswork Rule: Reject blacklisted fake IDs
+    fake_ids = {
+        'csair_akl_guangzhou_transit_deal', 'koreanair_akl_direct_2026', 'airnz_nz_all_deals_2026',
+        'airpremia_sapporo_inauguration', 'airbusan_october_coupon', 'airseoul_october_hurry',
+        'airseoul_takamatsu_10th', 'jin_october_newmember_baggage'
+    }
+    if promo.get('id') in fake_ids:
+        print(f"[Guardrail] Rejected blacklisted fake ID: {promo.get('id')}")
+        return False
+
     # Strictly reject expired promotions
     today_str = today_kst_str()
     if promo.get("status") == "END":
@@ -327,7 +348,7 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
     if promo.get("promo_end") and promo["promo_end"] < today_str:
         return False
 
-    # Strictly reject non-Japan promotions
+    # Strictly reject non-target promotions
     title = promo.get('title', '')
     dests = promo.get('destinations', '')
     promo_id = promo.get('id', '')
@@ -339,7 +360,7 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
     if any(k in title for k in ['홍콩', '싱가포르', '국립항공박물관', '포인트 적립', '신한카드', '액티브 시니어', '우리 동네']):
         return False
 
-    # Strictly reject Japan domestic-only airlines and pure domestic routes
+    # Strictly reject domestic-only airlines and pure domestic routes
     domestic_airlines = [
         '스카이마크', '스타플라이어', '에어도', '솔라시드', '후지드림',
         '아이벡스', '토키에어', '아마쿠사', '오리엔탈', '홋카이도 에어',
@@ -351,15 +372,19 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
         return False
 
     full_text = f"{title} {promo.get('subtitle', '')} {dests} {promo.get('region_category', '')} {airline}"
-    from .destinations import is_japan_promo
-    if not is_japan_promo(full_text):
+    from .destinations import is_supported_promo, is_nz_promo
+    if not is_supported_promo(full_text):
         return False
+
+    region_cat = promo.get("region_category")
+    if not region_cat:
+        region_cat = "뉴질랜드" if is_nz_promo(full_text) else "일본"
 
     conn = get_connection()
     cursor = conn.cursor()
     now = now_kst_iso()
     
-    # Check if notification was EVER sent for this promo (permanent history check)
+    # Check if notification was EVER sent for this promo
     cursor.execute("SELECT id FROM sent_notifications WHERE id = ?", (promo["id"],))
     already_notified = cursor.fetchone() is not None
 
@@ -387,7 +412,7 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
             promo_end=COALESCE(excluded.promo_end, promotions.promo_end),
             travel_period=COALESCE(excluded.travel_period, promotions.travel_period),
             is_international=1,
-            region_category='일본',
+            region_category=excluded.region_category,
             destinations=excluded.destinations,
             status=excluded.status,
             updated_at=excluded.updated_at
@@ -404,8 +429,8 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
         "promo_end": promo.get("promo_end"),
         "travel_period": promo.get("travel_period", ""),
         "is_international": 1,
-        "region_category": "일본",
-        "destinations": promo.get("destinations", "일본"),
+        "region_category": region_cat,
+        "destinations": promo.get("destinations", "뉴질랜드 전역" if region_cat == "뉴질랜드" else "일본"),
         "status": promo.get("status", "ING"),
         "is_featured": promo.get("is_featured", 0),
         "created_at": now,
@@ -451,7 +476,7 @@ def export_data_to_json():
     promotions = [dict(row) for row in cursor.fetchall()]
 
     # 2. Fetch news articles
-    cursor.execute("SELECT * FROM news_articles ORDER BY is_japan DESC, published_at DESC, created_at DESC")
+    cursor.execute("SELECT * FROM news_articles ORDER BY published_at DESC, created_at DESC")
     news = [dict(row) for row in cursor.fetchall()]
     conn.close()
 

@@ -51,6 +51,7 @@ interface CalendarEvent {
   time?: string;     // HH:mm (옵션)
   location?: string;
   memo?: string;
+  isAppointment?: boolean; // 🤝 약속 여부 (참여 인원이 배정되어도 약속 칸에 유지되며 참여자들에게도 부여됨)
 }
 
 // 🛡️ 변경 이력 스냅샷 인터페이스 (절대 유실 방지용)
@@ -99,6 +100,12 @@ const sanitizeEvent = (ev: any): CalendarEvent => {
   const primaryFriendId = ev?.friendId ? String(ev.friendId).trim() : (friendIds[0] || '');
   const fallbackDate = getFormattedDate(new Date());
 
+  // 약속 여부 판별: 명시적 boolean이 있으면 그 값 사용, 없으면 참여자가 없는 경우 약속(true)으로 간주
+  const isAppointment =
+    typeof ev?.isAppointment === 'boolean'
+      ? ev.isAppointment
+      : (friendIds.length === 0 && !ev?.friendId);
+
   return {
     id: String(ev?.id || 'ev_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7)),
     friendId: primaryFriendId,
@@ -109,6 +116,7 @@ const sanitizeEvent = (ev: any): CalendarEvent => {
     time: String(ev?.time || ''),
     location: String(ev?.location || ''),
     memo: String(ev?.memo || ''),
+    isAppointment: Boolean(isAppointment),
   };
 };
 
@@ -707,6 +715,14 @@ export const FriendCalendar: React.FC = () => {
     return ids.map((id) => getFriend(id)).filter((f) => f && f.id !== 'unknown' && f.id !== 'unassigned');
   };
 
+  // 🤝 이벤트가 '약속'인지 확인하는 헬퍼 (인원이 참여해도 계속 약속 칸에 유지되며 해당 인원들에게도 부여됨)
+  const isEventAppointment = (ev?: CalendarEvent | null): boolean => {
+    if (!ev) return false;
+    if (typeof ev.isAppointment === 'boolean') return ev.isAppointment;
+    const ids = getEventFriendIds(ev);
+    return ids.length === 0 && !ev.friendId;
+  };
+
   // 이벤트 표시 정보 반환 (대표 색상, 라벨 문구 등)
   const getEventDisplayInfo = (ev: CalendarEvent) => {
     const pFriends = getEventFriends(ev);
@@ -906,9 +922,8 @@ export const FriendCalendar: React.FC = () => {
         const endStr = ev.endDate || ev.startDate;
         if (endStr < todayStr) return false; // 완전히 지난 과거 일정 제외
 
-        const evFriendIds = getEventFriendIds(ev);
-        // 🤝 '약속' (참여자 미정 오픈 약속)만 표시 (친구 개인 일정 제외)
-        return evFriendIds.length === 0;
+        // 🤝 '약속' (참여자 미정 오픈 약속 및 인원이 참여한 약속 모두 약속 칸에 영구 유지)
+        return isEventAppointment(ev);
       })
       .sort((a, b) => {
         if (a.startDate !== b.startDate) {
@@ -964,12 +979,16 @@ export const FriendCalendar: React.FC = () => {
       ? `'${targetFriend.name}'님이 약속에서 참여 취소`
       : `'${targetFriend.name}'님이 약속 참여 등록!`;
 
+    // 원래 약속이었던 일정은 참여자가 추가/삭제되어도 isAppointment: true 영구 유지!
+    const wasAppointment = isEventAppointment(targetEvent);
+
     const updatedEvents = events.map((ev) =>
       ev.id === eventId
         ? sanitizeEvent({
             ...ev,
             friendId: newIds[0] || '',
             friendIds: newIds,
+            isAppointment: wasAppointment ? true : ev.isAppointment,
           })
         : sanitizeEvent(ev)
     );
@@ -983,6 +1002,7 @@ export const FriendCalendar: React.FC = () => {
           ...selectedEvent,
           friendId: newIds[0] || '',
           friendIds: newIds,
+          isAppointment: wasAppointment ? true : selectedEvent.isAppointment,
         })
       );
     }
@@ -1008,6 +1028,8 @@ export const FriendCalendar: React.FC = () => {
 
     let updatedEvents: CalendarEvent[];
     if (editingEventId) {
+      const existing = events.find((e) => e.id === editingEventId);
+      const wasApp = existing ? isEventAppointment(existing) : formFriendIds.length === 0;
       updatedEvents = events.map((ev) =>
         ev.id === editingEventId
           ? sanitizeEvent({
@@ -1020,10 +1042,12 @@ export const FriendCalendar: React.FC = () => {
               time: formTime,
               location: formLocation,
               memo: formMemo,
+              isAppointment: wasApp,
             })
           : sanitizeEvent(ev)
       );
     } else {
+      const isApp = formFriendIds.length === 0;
       const newEv: CalendarEvent = sanitizeEvent({
         id: 'ev_' + Date.now(),
         friendId: primaryFriendId,
@@ -1034,6 +1058,7 @@ export const FriendCalendar: React.FC = () => {
         time: formTime,
         location: formLocation,
         memo: formMemo,
+        isAppointment: isApp,
       });
       updatedEvents = [...events, newEv];
     }
@@ -1247,6 +1272,7 @@ export const FriendCalendar: React.FC = () => {
     friend: Friend;
     friends: Friend[];
     isUnassigned: boolean;
+    isAppointment: boolean;
     displayTitle: string;
     startCol: number;      // 0 ~ 6
     endCol: number;        // 0 ~ 6
@@ -1284,7 +1310,8 @@ export const FriendCalendar: React.FC = () => {
 
       // 친구 필터
       if (activeFilterFriendId === 'UNASSIGNED') {
-        if (evFriendIds.length > 0) return false;
+        // 인원이 참여했더라도 약속이면 약속만 모아보기에 계속 표시
+        if (!isEventAppointment(ev)) return false;
       } else if (activeFilterFriendId !== 'ALL') {
         if (!evFriendIds.includes(activeFilterFriendId) && ev.friendId !== activeFilterFriendId) {
           return false;
@@ -1343,6 +1370,7 @@ export const FriendCalendar: React.FC = () => {
         friend,
         friends: displayInfo.friends,
         isUnassigned: displayInfo.isUnassigned,
+        isAppointment: isEventAppointment(ev),
         displayTitle: displayInfo.name,
         startCol,
         endCol,
@@ -1733,7 +1761,7 @@ export const FriendCalendar: React.FC = () => {
                       <span>🤝</span>
                       <span>약속만</span>
                       <span className="text-[10px] px-1 rounded-full bg-indigo-200 text-indigo-900 font-extrabold">
-                        {events.filter((e) => getEventFriendIds(e).length === 0).length}
+                        {events.filter((e) => isEventAppointment(e)).length}
                       </span>
                       <span
                         onClick={(e) => {
@@ -1827,7 +1855,7 @@ export const FriendCalendar: React.FC = () => {
                             : 'bg-indigo-100 text-indigo-800'
                         }`}
                       >
-                        {events.filter((e) => getEventFriendIds(e).length === 0).length}건
+                        {events.filter((e) => isEventAppointment(e)).length}건
                       </span>
                     </button>
 
@@ -1994,8 +2022,9 @@ export const FriendCalendar: React.FC = () => {
                     <div key={slotIdx} className="grid grid-cols-7 h-6 sm:h-7 items-center">
                       {slotEvents.map((seg) => {
                         const isMultiDay = seg.event.startDate !== (seg.event.endDate || seg.event.startDate);
+                        const isAppointment = seg.isAppointment;
                         const isUnassigned = seg.isUnassigned;
-                        const barColor = isUnassigned ? '#6366f1' : seg.friend.color;
+                        const barColor = isAppointment ? '#6366f1' : (isUnassigned ? '#6366f1' : seg.friend.color);
 
                         return (
                           <div
@@ -2008,8 +2037,8 @@ export const FriendCalendar: React.FC = () => {
                             style={{
                               gridColumnStart: seg.startCol + 1,
                               gridColumnEnd: `span ${seg.span}`,
-                              backgroundColor: isUnassigned ? '#eef2ff' : `${barColor}18`,
-                              borderColor: isUnassigned ? '#818cf8' : `${barColor}55`,
+                              backgroundColor: isAppointment ? '#eef2ff' : (isUnassigned ? '#eef2ff' : `${barColor}18`),
+                              borderColor: isAppointment ? '#818cf8' : (isUnassigned ? '#818cf8' : `${barColor}55`),
                             }}
                             title={`${seg.displayTitle} - ${seg.event.title} (${seg.event.startDate} ~ ${seg.event.endDate || seg.event.startDate}${seg.durationText ? ', ' + seg.durationText : ''})`}
                             className={`h-full my-0.5 border text-[11px] sm:text-xs font-medium cursor-pointer transition flex items-center gap-1.5 shadow-2xs pointer-events-auto hover:brightness-95 hover:shadow-xs overflow-hidden ${
@@ -2023,8 +2052,18 @@ export const FriendCalendar: React.FC = () => {
                               <span className="text-[10px] text-slate-400 font-bold shrink-0">◀</span>
                             )}
 
-                            {/* 인원 미정 약속인 경우와 친구 일정인 경우 구분 */}
-                            {isUnassigned ? (
+                            {/* 약속인 경우와 친구 일정인 경우 구분 */}
+                            {isAppointment ? (
+                              <span className="text-[11px] shrink-0 font-bold text-indigo-600 flex items-center gap-0.5">
+                                <span>🤝</span>
+                                <span className="text-[10px] px-1 py-0.2 rounded bg-indigo-100 text-indigo-700">약속</span>
+                                {seg.friends.length > 0 && (
+                                  <span className="text-[10px] text-indigo-800 font-bold max-w-[42px] sm:max-w-[100px] truncate ml-0.5">
+                                    ({seg.displayTitle}):
+                                  </span>
+                                )}
+                              </span>
+                            ) : isUnassigned ? (
                               <span className="text-[11px] shrink-0 font-bold text-indigo-600 flex items-center gap-0.5">
                                 <span>🤝</span>
                                 <span className="text-[10px] px-1 py-0.2 rounded bg-indigo-100 text-indigo-700">약속</span>
@@ -2374,7 +2413,12 @@ export const FriendCalendar: React.FC = () => {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    {isUnassigned ? (
+                    {isEventAppointment(selectedEvent) ? (
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-700 mb-1.5">
+                        <span>🤝</span>
+                        <span>{isUnassigned ? '오픈 약속 (인원 모집 중)' : `약속 (👥 ${pFriends.length}명 참여 중)`}</span>
+                      </span>
+                    ) : isUnassigned ? (
                       <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-bold bg-indigo-100 text-indigo-700 mb-1.5">
                         <span>🤝</span>
                         <span>오픈 약속 (인원 모집 중)</span>

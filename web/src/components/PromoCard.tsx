@@ -21,6 +21,17 @@ export const PromoCard: React.FC<PromoCardProps> = ({
   // Airline style helper
   const getAirlineBadge = (airline: string) => {
     switch (airline) {
+      case '에어뉴질랜드':
+      case '에어뉴질랜드 (Air New Zealand)':
+        return {
+          bg: 'bg-emerald-50 text-emerald-900 border-emerald-300',
+          dot: 'bg-emerald-600',
+        };
+      case '중국남방항공':
+        return {
+          bg: 'bg-cyan-50 text-cyan-900 border-cyan-300',
+          dot: 'bg-cyan-600',
+        };
       case '제주항공':
         return {
           bg: 'bg-orange-50 text-orange-700 border-orange-200',
@@ -100,95 +111,6 @@ export const PromoCard: React.FC<PromoCardProps> = ({
           bg: 'bg-cyan-50 text-cyan-900 border-cyan-300',
           dot: 'bg-cyan-600',
         };
-      case '제트스타 재팬 (Jetstar)':
-      case '제트스타':
-      case '제트스타 재팬':
-        return {
-          bg: 'bg-orange-50 text-orange-900 border-orange-300',
-          dot: 'bg-orange-600',
-        };
-      case '스카이마크 (Skymark)':
-      case '스카이마크':
-        return {
-          bg: 'bg-yellow-50 text-sky-900 border-yellow-300',
-          dot: 'bg-yellow-500',
-        };
-      case '스타플라이어 (StarFlyer)':
-      case '스타플라이어':
-        return {
-          bg: 'bg-slate-900 text-white border-slate-700',
-          dot: 'bg-slate-300',
-        };
-      case '에어도 (AIRDO)':
-      case '에어도':
-        return {
-          bg: 'bg-sky-50 text-sky-800 border-sky-200',
-          dot: 'bg-sky-400',
-        };
-      case '솔라시드 에어 (Solaseed Air)':
-      case '솔라시드 에어':
-      case '솔라시드':
-        return {
-          bg: 'bg-lime-50 text-emerald-800 border-emerald-300',
-          dot: 'bg-emerald-500',
-        };
-      case '후지드림 항공 (FDA)':
-      case '후지드림 항공':
-      case '후지드림':
-        return {
-          bg: 'bg-purple-50 text-purple-800 border-purple-300',
-          dot: 'bg-purple-600',
-        };
-      case '아이벡스 항공 (IBEX)':
-      case '아이벡스 항공':
-      case '아이벡스':
-        return {
-          bg: 'bg-indigo-50 text-indigo-800 border-indigo-300',
-          dot: 'bg-indigo-600',
-        };
-      case '스프링 재팬 (Spring Japan)':
-      case '스프링 재팬':
-        return {
-          bg: 'bg-emerald-50 text-emerald-800 border-emerald-300',
-          dot: 'bg-emerald-600',
-        };
-      case '일본 트랜스오션 항공 (JTA)':
-      case '일본 트랜스오션 항공':
-      case '일본 트랜스오션':
-        return {
-          bg: 'bg-cyan-50 text-cyan-900 border-cyan-300',
-          dot: 'bg-cyan-600',
-        };
-      case '류큐 에어 커뮤터 (RAC)':
-      case '류큐 에어 커뮤터':
-        return {
-          bg: 'bg-teal-50 text-teal-900 border-teal-300',
-          dot: 'bg-teal-600',
-        };
-      case '토키에어 (TOKI AIR)':
-      case '토키에어':
-        return {
-          bg: 'bg-red-50 text-red-700 border-red-200',
-          dot: 'bg-red-500',
-        };
-      case '아마쿠사 에어라인 (AMX)':
-      case '아마쿠사 에어라인':
-        return {
-          bg: 'bg-blue-50 text-blue-800 border-blue-200',
-          dot: 'bg-blue-500',
-        };
-      case '오리엔탈 에어 브릿지 (ORC)':
-      case '오리엔탈 에어 브릿지':
-        return {
-          bg: 'bg-sky-50 text-sky-900 border-sky-200',
-          dot: 'bg-sky-500',
-        };
-      case '홋카이도 에어 시스템 (HAC)':
-      case '홋카이도 에어 시스템':
-        return {
-          bg: 'bg-slate-100 text-slate-800 border-slate-300',
-          dot: 'bg-red-600',
-        };
       default:
         return {
           bg: 'bg-slate-50 text-slate-700 border-slate-200',
@@ -231,10 +153,8 @@ export const PromoCard: React.FC<PromoCardProps> = ({
   const defaultBg =
     promo.region_category === '일본'
       ? 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80'
-      : promo.region_category === '동남아'
-      ? 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80'
-      : promo.region_category === '중화권'
-      ? 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=600&q=80'
+      : promo.region_category === '뉴질랜드'
+      ? 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80'
       : 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80';
 
   const displayImage = promo.image_url && promo.image_url.startsWith('http')
@@ -289,9 +209,13 @@ export const PromoCard: React.FC<PromoCardProps> = ({
         </button>
 
         {/* Region Chip on image */}
-        <div className="absolute bottom-3 left-3">
-          <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-white/20 text-white backdrop-blur-md border border-white/20">
-            {promo.region_category || '국제선'}
+        <div className="absolute bottom-3 left-3 flex items-center gap-1">
+          <span className={`text-xs font-bold px-2.5 py-0.5 rounded-md backdrop-blur-md border ${
+            promo.region_category === '뉴질랜드'
+              ? 'bg-emerald-600/90 text-white border-emerald-400/40 shadow-sm'
+              : 'bg-white/20 text-white border-white/20'
+          }`}>
+            {promo.region_category === '뉴질랜드' ? '🇳🇿 뉴질랜드' : (promo.region_category ? `🇯🇵 ${promo.region_category}` : '국제선')}
           </span>
         </div>
       </div>

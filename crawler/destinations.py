@@ -36,6 +36,14 @@ JAPAN_DESTINATIONS = {
     "이바라키": ["이바라키"],
 }
 
+# New Zealand destination mapping - 한국 출발 직항/경유 뉴질랜드 전 도시
+NEW_ZEALAND_DESTINATIONS = {
+    "오클랜드": ["오클랜드", "Auckland", "AKL"],
+    "크라이스트처치": ["크라이스트처치", "Christchurch", "CHC"],
+    "퀸스타운": ["퀸스타운", "Queenstown", "ZQN"],
+    "웰링턴": ["웰링턴", "Wellington", "WLG"],
+}
+
 ALL_JAPAN_KEYWORDS = [
     "일본", "도쿄", "오사카", "후쿠오카", "삿포로", "오키나와", "나고야",
     "마쓰야마", "시즈오카", "히로시마", "가고시마", "다카마쓰", "타카마츠", "오이타",
@@ -46,12 +54,29 @@ ALL_JAPAN_KEYWORDS = [
     "피치항공", "Peach", "ZIPAIR", "집에어", "JAL", "일본항공", "ANA", "전일본공수"
 ]
 
+ALL_NZ_KEYWORDS = [
+    "뉴질랜드", "New Zealand", "오클랜드", "Auckland", "AKL",
+    "크라이스트처치", "Christchurch", "CHC", "퀸스타운", "Queenstown", "ZQN",
+    "웰링턴", "Wellington", "WLG", "에어뉴질랜드", "Air New Zealand",
+    "남섬", "북섬", "뉴질랜드 항공"
+]
+
 def is_japan_promo(text: str) -> bool:
     text_lower = text.lower()
     for kw in ALL_JAPAN_KEYWORDS:
         if kw.lower() in text_lower:
             return True
     return False
+
+def is_nz_promo(text: str) -> bool:
+    text_lower = text.lower()
+    for kw in ALL_NZ_KEYWORDS:
+        if kw.lower() in text_lower:
+            return True
+    return False
+
+def is_supported_promo(text: str) -> bool:
+    return is_japan_promo(text) or is_nz_promo(text)
 
 def analyze_japan_promotion(title: str, subtitle: str = "", content: str = "") -> Tuple[bool, str, str]:
     """
@@ -78,6 +103,33 @@ def analyze_japan_promotion(title: str, subtitle: str = "", content: str = "") -
 
     dest_str = ", ".join(matched_cities) if matched_cities else "일본 전역"
     best_cat = matched_categories[0] if len(matched_categories) == 1 else ("일본 전역" if len(matched_categories) > 1 else "일본 전역")
+
+    return True, best_cat, dest_str
+
+def analyze_nz_promotion(title: str, subtitle: str = "", content: str = "") -> Tuple[bool, str, str]:
+    """
+    Returns:
+        (is_nz: bool,
+         city_category: "오클랜드" | "크라이스트처치" | "퀸스타운" | "웰링턴" | "뉴질랜드 전역",
+         destinations: "오클랜드, 퀸스타운")
+    """
+    full_text = f"{title} {subtitle} {content}".strip()
+    if not is_nz_promo(full_text):
+        return False, "기타", ""
+
+    matched_categories = []
+    matched_cities = []
+
+    for cat, cities in NEW_ZEALAND_DESTINATIONS.items():
+        for city in cities:
+            if city.lower() in full_text.lower():
+                if cat not in matched_categories:
+                    matched_categories.append(cat)
+                if city not in matched_cities:
+                    matched_cities.append(city)
+
+    dest_str = ", ".join(matched_cities) if matched_cities else "뉴질랜드 전역"
+    best_cat = matched_categories[0] if len(matched_categories) == 1 else "뉴질랜드 전역"
 
     return True, best_cat, dest_str
 

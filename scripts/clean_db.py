@@ -2,7 +2,7 @@ import sqlite3
 import os
 import sys
 sys.path.insert(0, os.path.abspath("."))
-from crawler.destinations import is_japan_promo
+from crawler.destinations import is_supported_promo
 from crawler.db import DB_PATH, export_data_to_json
 
 conn = sqlite3.connect(DB_PATH)
@@ -41,36 +41,40 @@ cursor.execute("""
     OR airline LIKE '%홋카이도 에어%'
 """)
 
-# 3. Delete non-Japan items (empty dests and no japan in title)
-cursor.execute("DELETE FROM promotions WHERE (destinations IS NULL OR destinations = '') AND title NOT LIKE '%일본%'")
+# 3. Delete non-target items (empty dests and neither Japan nor NZ)
+cursor.execute("""
+    DELETE FROM promotions 
+    WHERE (destinations IS NULL OR destinations = '') 
+      AND title NOT LIKE '%일본%' 
+      AND title NOT LIKE '%뉴질랜드%'
+      AND title NOT LIKE '%오클랜드%'
+""")
 cursor.execute("DELETE FROM promotions WHERE title LIKE '%면세점%' OR title LIKE '%박물관%' OR title LIKE '%신한카드%' OR title LIKE '%멤버스%' OR title LIKE '%포인트%'")
 
-# 3. Clean any non-Japan destinations if mixed
+# 4. Zero-Guesswork: Delete all fake/mock promotions, root domain URLs, generic list URLs, and Unsplash stock images
 cursor.execute("""
-UPDATE promotions 
-SET destinations = '도쿄, 오사카, 후쿠오카, 삿포로, 오키나와'
-WHERE id = 'jin_jinmarket_autumn'
-""")
-
-# 4. Insert or update Jin Air Sapporo & Okinawa deal
-cursor.execute("""
-INSERT OR REPLACE INTO promotions (
-    id, airline, airline_code, title, subtitle, badge_text, detail_url, image_url,
-    promo_start, promo_end, travel_period, is_international, region_category, destinations,
-    status, is_featured, created_at, updated_at
-) VALUES (
-    'jin_sapporo_okinawa_sale', '진에어', 'JIN',
-    '진에어 인천/부산 ↔ 삿포로·오키나와 설경 & 휴양 특가 프로모션',
-    '겨울 홋카이도 설경부터 따뜻한 오키나와까지 전 노선 특가 운임',
-    '일본특가', 'https://www.jinair.com/promotion/eventList',
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
-    '2026-09-25', '2026-10-15', '2026-10-01 ~ 2026-12-31', 1, '일본', '삿포로, 오키나와',
-    'ING', 1, datetime('now'), datetime('now')
-)
+    DELETE FROM promotions
+    WHERE id IN (
+        'csair_akl_guangzhou_transit_deal',
+        'koreanair_akl_direct_2026',
+        'airnz_nz_all_deals_2026',
+        'airpremia_sapporo_inauguration',
+        'airbusan_october_coupon',
+        'airseoul_october_hurry',
+        'airseoul_takamatsu_10th',
+        'jin_october_newmember_baggage'
+    )
+    OR image_url LIKE '%unsplash.com%'
+    OR detail_url LIKE '%csair.com/kr/ko%'
+    OR detail_url LIKE '%/promotionList%'
+    OR detail_url LIKE '%flights-from-seoul-to-auckland%'
+    OR detail_url LIKE '%flight-deals-to-new-zealand%'
+    OR detail_url = 'https://www.csair.com/kr/ko/'
+    OR detail_url = 'https://www.jinair.com/promotion/eventList'
 """)
 
 conn.commit()
 conn.close()
 
 export_data_to_json()
-print("Successfully cleaned database and exported to JSON!")
+print("Clean DB script executed successfully.")

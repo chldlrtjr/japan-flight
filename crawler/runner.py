@@ -13,6 +13,7 @@ from crawler.eastarjet import crawl_eastarjet
 from crawler.jinair import crawl_jinair
 from crawler.japan_airlines import crawl_japan_airlines
 from crawler.korean_airlines import crawl_korean_airlines
+from crawler.newzealand_airlines import crawl_newzealand_airlines
 from crawler.news import crawl_flight_news
 
 def run_all_crawlers() -> dict:
@@ -26,6 +27,7 @@ def run_all_crawlers() -> dict:
         ("진에어", "JIN", crawl_jinair),
         ("국내 전 항공사(대한항공/아시아나/에어서울/에어부산/에어프레미아/에어로케이/파라타)", "KOREA_ALL", crawl_korean_airlines),
         ("일본 항공사(한일 노선: JAL/ANA/피치/집에어)", "JAPAN_ALL", crawl_japan_airlines),
+        ("뉴질랜드 취항 항공사(에어뉴질랜드/대한항공/중국남방항공)", "NZ_ALL", crawl_newzealand_airlines),
     ]
 
     summary = {
@@ -72,23 +74,27 @@ def run_all_crawlers() -> dict:
             }
             print(f"[{name}] Crawl failed: {e}")
 
-    # News Crawl Step (Japan Deal Focus)
+    # News Crawl Step (Japan & New Zealand Deal Focus)
     print(f"\n==========================================")
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] Crawling Flight & Japan Deal News...")
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Crawling Flight & Deal News (Japan & New Zealand)...")
     print(f"==========================================")
     try:
         news_items = crawl_flight_news()
         news_saved = 0
         japan_news_saved = 0
+        nz_news_saved = 0
         for n in news_items:
             upsert_news(n)
             news_saved += 1
             if n.get("is_japan", 0) == 1:
                 japan_news_saved += 1
+            elif n.get("region_category") == "뉴질랜드":
+                nz_news_saved += 1
 
         summary["news_saved"] = news_saved
         summary["news_japan_count"] = japan_news_saved
-        print(f"[News] Saved {news_saved} articles (🇯🇵 Japan Deals: {japan_news_saved})")
+        summary["news_nz_count"] = nz_news_saved
+        print(f"[News] Saved {news_saved} articles (🇯🇵 Japan: {japan_news_saved}, 🇳🇿 New Zealand: {nz_news_saved})")
     except Exception as e:
         summary["news_error"] = str(e)
         print(f"[News] Crawl failed: {e}")
@@ -113,17 +119,23 @@ def run_all_crawlers() -> dict:
     intl_in_db = cursor.fetchone()["cnt"]
     cursor.execute("SELECT count(*) as cnt FROM promotions WHERE status = 'ING'")
     active_in_db = cursor.fetchone()["cnt"]
+    cursor.execute("SELECT count(*) as cnt FROM promotions WHERE region_category = '뉴질랜드'")
+    nz_in_db = cursor.fetchone()["cnt"]
     cursor.execute("SELECT count(*) as cnt FROM news_articles")
     news_in_db = cursor.fetchone()["cnt"]
     cursor.execute("SELECT count(*) as cnt FROM news_articles WHERE is_japan = 1")
     japan_news_in_db = cursor.fetchone()["cnt"]
+    cursor.execute("SELECT count(*) as cnt FROM news_articles WHERE region_category = '뉴질랜드'")
+    nz_news_in_db = cursor.fetchone()["cnt"]
     conn.close()
 
     summary["db_total"] = total_in_db
     summary["db_international"] = intl_in_db
     summary["db_active"] = active_in_db
+    summary["db_nz"] = nz_in_db
     summary["db_news_total"] = news_in_db
     summary["db_news_japan"] = japan_news_in_db
+    summary["db_news_nz"] = nz_news_in_db
 
     # Export to JSON for GitHub Actions / Vercel static serving
     try:
@@ -142,5 +154,5 @@ if __name__ == '__main__':
         print("--- JSON_RESULT_END ---")
     else:
         print("\n==========================================")
-        print(f"Crawl Completed! Total in DB: {result['db_total']} (International: {result['db_international']})")
+        print(f"Crawl Completed! Total in DB: {result['db_total']} (NZ: {result.get('db_nz', 0)}, International: {result['db_international']})")
         print("==========================================")

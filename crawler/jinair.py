@@ -8,27 +8,7 @@ from .destinations import analyze_promotion, extract_dates
 JINAIR_URL = "https://www.jinair.com/promotion/eventList"
 JINAIR_BASE = "https://www.jinair.com"
 
-# Curated active/upcoming international promotions for Jin Air (as fallback/enhancer)
-JINAIR_FALLBACK_PROMOS = [
-    {
-        "id": "jin_october_newmember_baggage",
-        "airline": "진에어",
-        "airline_code": "JIN",
-        "title": "진에어 신규가입 혜택! 국제선 수하물팩 3만원 할인 쿠폰 및 왕복 항공권 추첨",
-        "subtitle": "한국·일본·대만 고객 대상 10월 한정 신규가입 프로모션 (기본 15kg + 추가 5kg 혜택)",
-        "badge_text": "수하물팩할인",
-        "detail_url": "https://www.jinair.com/promotion/eventList",
-        "image_url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
-        "promo_start": "2026-10-01",
-        "promo_end": "2026-10-31",
-        "travel_period": "2026-10-01 ~ 2027-01-31",
-        "is_international": 1,
-        "region_category": "일본",
-        "destinations": "도쿄, 오사카, 후쿠오카, 삿포로, 오키나와",
-        "status": "ING",
-        "is_featured": 1
-    }
-]
+# Zero-Guesswork Policy: Never inject fallback fake/mock promotions or generic eventList URLs.
 
 async def crawl_jinair_async() -> List[Dict[str, Any]]:
     print("[JinAir] Attempting Playwright crawl...")
@@ -66,10 +46,14 @@ async def crawl_jinair_async() -> List[Dict[str, Any]]:
             await browser.close()
             
             for c in raw_cards:
+                url = c.get('url', '').strip()
+                # Must be a specific event detail URL, not the generic eventList
+                if not url or url.rstrip('/') == JINAIR_URL.rstrip('/') or 'eventView' not in url:
+                    continue
+
                 lines = [l.strip() for l in c['fullText'].split('\n') if l.strip()]
                 title = lines[0] if lines else "진에어 프로모션"
                 sub = lines[1] if len(lines) > 1 else ""
-                url = c.get('url') or JINAIR_URL
                 start_date, end_date = extract_dates(c['fullText'])
                 is_intl, region, destinations = analyze_promotion(title, sub, c['fullText'])
                 
@@ -92,12 +76,7 @@ async def crawl_jinair_async() -> List[Dict[str, Any]]:
                     "is_featured": 1
                 })
     except Exception as e:
-        print(f"[JinAir] Playwright failed or challenge active: {e}. Using curated promo feeds.")
-
-    # If live crawl was blocked by WAF, use curated real Jin Air promos
-    if not items:
-        print("[JinAir] Falling back to verified Jin Air international promotions")
-        items = JINAIR_FALLBACK_PROMOS
+        print(f"[JinAir] Playwright failed or challenge active: {e}")
 
     print(f"[JinAir] Total {len(items)} promotions ready")
     return items

@@ -73,15 +73,14 @@ export default function Home() {
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<'ALL' | 'JAPAN' | 'NZ'>('ALL');
   const [selectedRegion, setSelectedRegion] = useState('ALL');
   const [selectedAirline, setSelectedAirline] = useState('ALL');
   const [sortOrder, setSortOrder] = useState('default');
   const [showOnlyBookmarks, setShowOnlyBookmarks] = useState(false);
 
   // News states
-  const [isJapanOnlyNews, setIsJapanOnlyNews] = useState(false);
   const [isGroupingEnabled, setIsGroupingEnabled] = useState(true);
-  const [newsStatusFilter, setNewsStatusFilter] = useState<'ALL' | 'ACTIVE' | 'UPCOMING'>('ALL');
 
   // Bookmarks (LocalStorage)
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
@@ -160,6 +159,7 @@ export default function Home() {
   // Computed: Filtered Promotions
   const displayedPromotions = useMemo(() => {
     return filterPromotions(rawPromotions, {
+      country: selectedCountry,
       airline: selectedAirline,
       region: selectedRegion,
       search: searchTerm,
@@ -167,19 +167,18 @@ export default function Home() {
       bookmarkedIds,
       showOnlyBookmarks,
     });
-  }, [rawPromotions, selectedAirline, selectedRegion, searchTerm, sortOrder, bookmarkedIds, showOnlyBookmarks]);
+  }, [rawPromotions, selectedCountry, selectedAirline, selectedRegion, searchTerm, sortOrder, bookmarkedIds, showOnlyBookmarks]);
 
   // Computed: Filtered News Articles
   const filteredNews = useMemo(() => {
     return filterNewsArticles(rawNewsArticles, {
-      isJapanOnly: isJapanOnlyNews,
+      country: selectedCountry,
       airline: selectedAirline,
       search: searchTerm,
     });
-  }, [rawNewsArticles, isJapanOnlyNews, selectedAirline, searchTerm]);
+  }, [rawNewsArticles, selectedCountry, selectedAirline, searchTerm]);
 
   const totalNewsCount = useMemo(() => rawNewsArticles.length, [rawNewsArticles]);
-  const japanNewsCount = useMemo(() => rawNewsArticles.filter((n) => n.is_japan === 1).length, [rawNewsArticles]);
 
   // Grouped news by topic
   const groupedNews = useMemo(() => clusterNewsArticles(filteredNews), [filteredNews]);
@@ -201,10 +200,7 @@ export default function Home() {
     }));
   }, [isGroupingEnabled, groupedNews, filteredNews]);
 
-  const displayNewsList = useMemo(() => {
-    if (newsStatusFilter === 'ALL') return rawDisplayList;
-    return rawDisplayList.filter((g) => g.promo_status === newsStatusFilter);
-  }, [rawDisplayList, newsStatusFilter]);
+  const displayNewsList = rawDisplayList;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans w-full max-w-full overflow-x-hidden">
@@ -216,7 +212,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Global Navbar (모바일 화면에서는 모든 카테고리에서 상단 헤더 숨김 처리) */}
+      {/* Global Navbar */}
       <Navbar
         className="hidden sm:block"
         onRefresh={handleRefresh}
@@ -282,7 +278,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Main Content View by Active Tab (하이드레이션 불일치 및 0.1초 탭 깜빡임 방지) */}
+        {/* Main Content View by Active Tab */}
         {!isMounted ? (
           <div className="min-h-[420px] bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center justify-center gap-3">
             <div className="w-7 h-7 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
@@ -296,6 +292,8 @@ export default function Home() {
             <FilterBar
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
+              selectedCountry={selectedCountry}
+              onCountryChange={setSelectedCountry}
               selectedRegion={selectedRegion}
               onSelectRegion={setSelectedRegion}
               selectedAirline={selectedAirline}
@@ -341,40 +339,42 @@ export default function Home() {
         ) : (
           /* News Feed Mode */
           <div className="space-y-4">
-            {/* Seamless Natural Filter Row */}
+            {/* Filter Row */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
-              {/* News Status Filter (All / Active / Upcoming) */}
-              <div className="inline-flex rounded-xl bg-slate-200/70 p-1 text-xs font-semibold text-slate-600 w-fit">
-                <button
-                  onClick={() => setNewsStatusFilter('ALL')}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                    newsStatusFilter === 'ALL'
-                      ? 'bg-white text-slate-900 shadow-sm font-bold'
-                      : 'hover:text-slate-900'
-                  }`}
-                >
-                  전체
-                </button>
-                <button
-                  onClick={() => setNewsStatusFilter('ACTIVE')}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                    newsStatusFilter === 'ACTIVE'
-                      ? 'bg-white text-emerald-600 shadow-sm font-bold'
-                      : 'hover:text-slate-900'
-                  }`}
-                >
-                  🔥 진행중
-                </button>
-                <button
-                  onClick={() => setNewsStatusFilter('UPCOMING')}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all ${
-                    newsStatusFilter === 'UPCOMING'
-                      ? 'bg-white text-amber-600 shadow-sm font-bold'
-                      : 'hover:text-slate-900'
-                  }`}
-                >
-                  ⏰ 오픈 예정
-                </button>
+              {/* Country Filter */}
+              <div className="flex items-center gap-2">
+                <div className="inline-flex rounded-xl bg-slate-200/70 p-1 text-xs font-semibold text-slate-600">
+                  <button
+                    onClick={() => setSelectedCountry('ALL')}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      selectedCountry === 'ALL'
+                        ? 'bg-white text-slate-900 shadow-sm font-bold'
+                        : 'hover:text-slate-900'
+                    }`}
+                  >
+                    🌏 전체
+                  </button>
+                  <button
+                    onClick={() => setSelectedCountry('JAPAN')}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      selectedCountry === 'JAPAN'
+                        ? 'bg-rose-600 text-white shadow-sm font-bold'
+                        : 'hover:text-slate-900'
+                    }`}
+                  >
+                    🇯🇵 일본
+                  </button>
+                  <button
+                    onClick={() => setSelectedCountry('NZ')}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      selectedCountry === 'NZ'
+                        ? 'bg-emerald-600 text-white shadow-sm font-bold'
+                        : 'hover:text-slate-900'
+                    }`}
+                  >
+                    🇳🇿 뉴질랜드
+                  </button>
+                </div>
               </div>
 
               {/* News Search */}
@@ -384,7 +384,7 @@ export default function Home() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="기사 검색 (도쿄, 오사카, 할인...)"
+                  placeholder="기사 검색 (오클랜드, 도쿄, 할인...)"
                   className="w-full pl-9 pr-9 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 shadow-xs placeholder:text-slate-400"
                 />
                 {searchTerm && (
@@ -422,23 +422,15 @@ export default function Home() {
         )}
       </main>
 
-      {/* Detail Modal */}
-      <PromoModal
-        promo={selectedPromo}
-        onClose={() => setSelectedPromo(null)}
-        isBookmarked={selectedPromo ? bookmarkedIds.includes(selectedPromo.id) : false}
-        onToggleBookmark={toggleBookmark}
-      />
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-16 py-8 text-center text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 모임 수첩. 모임 일정 및 프로모션 애그리게이터.</p>
-          <p className="text-slate-400">
-            각 프로모션의 세부 운임 규정 및 예약은 해당 항공사 공식 사이트를 기준으로 합니다.
-          </p>
-        </div>
-      </footer>
+      {/* Selected Promotion Modal */}
+      {selectedPromo && (
+        <PromoModal
+          promo={selectedPromo}
+          onClose={() => setSelectedPromo(null)}
+          isBookmarked={bookmarkedIds.includes(selectedPromo.id)}
+          onToggleBookmark={toggleBookmark}
+        />
+      )}
     </div>
   );
 }

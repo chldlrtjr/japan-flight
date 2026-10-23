@@ -11,38 +11,6 @@ export function isPromoExpired(promo: Promotion): boolean {
   }
 }
 
-export function calculatePromoStats(promotions: Promotion[]): CrawlStats {
-  const japanPromos = promotions.filter(isStrictJapanPromo);
-  let activeCount = 0;
-  let internationalCount = 0;
-  const airlineCounts: Record<string, number> = {};
-  const regionCounts: Record<string, number> = {};
-  let lastUpdated = '';
-
-  for (const r of japanPromos) {
-    const expired = isPromoExpired(r);
-    if (!expired && r.status === 'ING') activeCount++;
-    if (r.is_international === 1) internationalCount++;
-
-    airlineCounts[r.airline] = (airlineCounts[r.airline] || 0) + 1;
-    if (r.region_category) {
-      regionCounts[r.region_category] = (regionCounts[r.region_category] || 0) + 1;
-    }
-    if (!lastUpdated || (r.updated_at && r.updated_at > lastUpdated)) {
-      lastUpdated = r.updated_at;
-    }
-  }
-
-  return {
-    total: japanPromos.length,
-    activeCount,
-    internationalCount,
-    airlineCounts,
-    regionCounts,
-    lastUpdated: lastUpdated || new Date().toISOString(),
-  };
-}
-
 export const CITY_KEYWORDS: Record<string, string[]> = {
   도쿄: ['도쿄', '나리타', '하네다', 'Tokyo', 'NRT', 'HND'],
   오사카: ['오사카', '간사이', 'Osaka', 'KIX'],
@@ -77,7 +45,20 @@ export const CITY_KEYWORDS: Record<string, string[]> = {
   이바라키: ['이바라키', 'Ibaraki', 'IBR'],
 };
 
-const NON_JAPAN_DESTINATIONS = [
+export const NZ_CITY_KEYWORDS: Record<string, string[]> = {
+  오클랜드: ['오클랜드', 'Auckland', 'AKL'],
+  크라이스트처치: ['크라이스트처치', 'Christchurch', 'CHC'],
+  퀸스타운: ['퀸스타운', 'Queenstown', 'ZQN'],
+  웰링턴: ['웰링턴', 'Wellington', 'WLG'],
+  뉴질랜드: ['뉴질랜드', 'New Zealand', '에어뉴질랜드', 'Air New Zealand'],
+};
+
+export const ALL_CITY_KEYWORDS: Record<string, string[]> = {
+  ...CITY_KEYWORDS,
+  ...NZ_CITY_KEYWORDS,
+};
+
+const NON_TARGET_DESTINATIONS = [
   '괌', '사이판', '홍콩', '마카오', '타이베이', '가오슝', '대만',
   '다낭', '나트랑', '푸꾸옥', '하노이', '호치민', '방콕', '치앙마이',
   '푸켓', '싱가포르', '코타키나발루', '보라카이', '세부', '발리',
@@ -85,13 +66,14 @@ const NON_JAPAN_DESTINATIONS = [
 ];
 
 export function isStrictJapanPromo(promo: Promotion): boolean {
+  if (promo.region_category === '뉴질랜드') return false;
   const title = promo.title || '';
   const subtitle = promo.subtitle || '';
   const dests = promo.destinations || '';
   const fullText = `${title} ${subtitle} ${dests}`.toLowerCase();
 
-  // 1. Strictly reject pure non-Japan destinations (e.g. Guam, Hong Kong, Singapore)
-  for (const nonJp of NON_JAPAN_DESTINATIONS) {
+  // Reject non-target destinations
+  for (const nonJp of NON_TARGET_DESTINATIONS) {
     if (title.includes(nonJp)) {
       const hasJpCityInTitle = Object.values(CITY_KEYWORDS).some((kws) =>
         kws.some((kw) => title.toLowerCase().includes(kw.toLowerCase()))
@@ -100,15 +82,7 @@ export function isStrictJapanPromo(promo: Promotion): boolean {
     }
   }
 
-  // 2. Reject if destinations is purely non-Japan
-  if (dests === '괌' || dests.includes('괌,') || dests.includes('홍콩') || dests.includes('다낭')) {
-    const hasJpCityInDest = Object.values(CITY_KEYWORDS).some((kws) =>
-      kws.some((kw) => dests.toLowerCase().includes(kw.toLowerCase()))
-    );
-    if (!hasJpCityInDest) return false;
-  }
-
-  // 3. Strictly reject pure Japanese domestic-only airlines and routes
+  // Reject Japanese domestic-only airlines and routes
   const JAPAN_DOMESTIC_AIRLINES = [
     '스카이마크', '스타플라이어', '에어도', '솔라시드', '후지드림',
     '아이벡스', '토키에어', '아마쿠사', '오리엔탈 에어', '오리엔탈에어',
@@ -124,7 +98,6 @@ export function isStrictJapanPromo(promo: Promotion): boolean {
     return false;
   }
 
-  // 4. Must be relevant to Japan (Japan city, Japan airline, or explicitly '일본')
   const hasJapanCity = Object.values(CITY_KEYWORDS).some((kws) =>
     kws.some((kw) => fullText.includes(kw.toLowerCase()))
   );
@@ -143,7 +116,6 @@ export function isStrictJapanPromo(promo: Promotion): boolean {
     return false;
   }
 
-  // 5. Reject generic promotions (e.g. points, museum, general credit cards)
   const genericExclude = ['포인트 적립', '국립항공박물관', '신한카드', '액티브 시니어', '우리 동네', '체크인 혜택'];
   if (genericExclude.some((w) => title.includes(w)) && !hasJapanCity) {
     return false;
@@ -152,9 +124,61 @@ export function isStrictJapanPromo(promo: Promotion): boolean {
   return true;
 }
 
+export function isStrictNZPromo(promo: Promotion): boolean {
+  if (promo.region_category === '뉴질랜드') return true;
+  const title = promo.title || '';
+  const subtitle = promo.subtitle || '';
+  const dests = promo.destinations || '';
+  const airline = promo.airline || '';
+  const fullText = `${title} ${subtitle} ${dests} ${airline}`.toLowerCase();
+
+  return [
+    '뉴질랜드', 'new zealand', '오클랜드', 'auckland',
+    '크라이스트처치', 'christchurch', '퀸스타운', 'queenstown',
+    '웰링턴', 'wellington', '에어뉴질랜드', 'air new zealand'
+  ].some((kw) => fullText.includes(kw));
+}
+
+export function isStrictSupportedPromo(promo: Promotion): boolean {
+  return isStrictJapanPromo(promo) || isStrictNZPromo(promo);
+}
+
+export function calculatePromoStats(promotions: Promotion[]): CrawlStats {
+  const supportedPromos = promotions.filter(isStrictSupportedPromo);
+  let activeCount = 0;
+  let internationalCount = 0;
+  const airlineCounts: Record<string, number> = {};
+  const regionCounts: Record<string, number> = {};
+  let lastUpdated = '';
+
+  for (const r of supportedPromos) {
+    const expired = isPromoExpired(r);
+    if (!expired && r.status === 'ING') activeCount++;
+    if (r.is_international === 1) internationalCount++;
+
+    airlineCounts[r.airline] = (airlineCounts[r.airline] || 0) + 1;
+    if (r.region_category) {
+      regionCounts[r.region_category] = (regionCounts[r.region_category] || 0) + 1;
+    }
+    if (!lastUpdated || (r.updated_at && r.updated_at > lastUpdated)) {
+      lastUpdated = r.updated_at;
+    }
+  }
+
+  return {
+    total: supportedPromos.length,
+    activeCount,
+    internationalCount,
+    airlineCounts,
+    regionCounts,
+    lastUpdated: lastUpdated || new Date().toISOString(),
+  };
+}
+
 export function filterPromotions(
   allPromos: Promotion[],
   params: {
+    country?: 'ALL' | 'JAPAN' | 'NZ' | string;
     airline: string;
     region: string;
     status?: string;
@@ -164,21 +188,14 @@ export function filterPromotions(
     showOnlyBookmarks: boolean;
   }
 ): Promotion[] {
-  // 100% Strict Japan Only: filter out any Guam, SE Asia, HK or unrelated events, and exclude domestic routes
-  let list = allPromos.filter(isStrictJapanPromo);
+  let list = allPromos.filter(isStrictSupportedPromo);
 
-  // Clean destinations to remove non-Japan cities if mixed (e.g. "다낭, 괌, 나트랑")
-  list = list.map((p) => {
-    if (p.destinations && NON_JAPAN_DESTINATIONS.some((non) => p.destinations.includes(non))) {
-      const cleanedDests = p.destinations
-        .split(',')
-        .map((d) => d.trim())
-        .filter((d) => !NON_JAPAN_DESTINATIONS.includes(d))
-        .join(', ');
-      return { ...p, destinations: cleanedDests };
-    }
-    return p;
-  });
+  // Country filter
+  if (params.country === 'JAPAN') {
+    list = list.filter((p) => p.region_category === '일본' || isStrictJapanPromo(p));
+  } else if (params.country === 'NZ') {
+    list = list.filter((p) => p.region_category === '뉴질랜드' || isStrictNZPromo(p));
+  }
 
   // Bookmark filter
   if (params.showOnlyBookmarks) {
@@ -192,7 +209,9 @@ export function filterPromotions(
       list = list.filter((p) => jpCodes.includes(p.airline_code) || p.airline.includes('일본항공') || p.airline.includes('전일본공수') || p.airline.includes('피치') || p.airline.includes('집에어'));
     } else if (params.airline === 'KOREA_ALL') {
       const krCodes = ['KAL', 'AAR', 'JEJU', 'JIN', 'TWAY', 'EASTAR', 'AIR_SEOUL', 'AIR_BUSAN', 'AIR_PREMIA', 'AERO_K', 'PARATA'];
-      list = list.filter((p) => krCodes.includes(p.airline_code) || p.airline.includes('대한') || p.airline.includes('아시아나') || p.airline.includes('항공') || p.airline.includes('에어'));
+      list = list.filter((p) => krCodes.includes(p.airline_code) || (p.airline.includes('대한') || p.airline.includes('아시아나') || p.airline.includes('항공') || p.airline.includes('에어')) && !p.airline.includes('에어뉴질랜드'));
+    } else if (params.airline === 'NZ_ALL') {
+      list = list.filter((p) => p.region_category === '뉴질랜드' || p.airline.includes('에어뉴질랜드') || p.airline_code === 'AIR_NZ');
     } else {
       list = list.filter((p) => p.airline_code === params.airline || p.airline === params.airline || p.airline.includes(params.airline));
     }
@@ -200,14 +219,14 @@ export function filterPromotions(
 
   // Region / City filter
   if (params.region && params.region !== 'ALL') {
-    const keywords = CITY_KEYWORDS[params.region] || [params.region];
+    const keywords = ALL_CITY_KEYWORDS[params.region] || [params.region];
     list = list.filter((p) => {
       const targetStr = `${p.destinations || ''} ${p.title || ''} ${p.subtitle || ''}`.toLowerCase();
       return keywords.some((kw) => targetStr.includes(kw.toLowerCase()));
     });
   }
 
-  // Status filter: Completely eliminate ended or expired promotions
+  // Status filter
   list = list.filter((p) => p.status !== 'END' && !isPromoExpired(p));
 
   // Search term
@@ -221,7 +240,7 @@ export function filterPromotions(
     );
   }
 
-  // Sorting: 특가 시작일이 제일 늦은 것(최신 시작일)부터 순차적으로 정렬 (내림차순)
+  // Sorting
   const compareByPromoStartDesc = (a: Promotion, b: Promotion): number => {
     const startA = a.promo_start || '';
     const startB = b.promo_start || '';
@@ -242,7 +261,6 @@ export function filterPromotions(
   } else if (params.sort === 'created_recent') {
     list.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
   } else {
-    // default 및 start_recent: 특가 시작일이 제일 늦은 것부터 상단에 정렬
     list.sort(compareByPromoStartDesc);
   }
 
@@ -251,32 +269,37 @@ export function filterPromotions(
 
 const NEWS_ROUNDUP_PREFIXES = [
   '[산업소식]', '[산업 소식]', '[유통소식]', '[유통가]', '[기업소식]', '[기업브리프]',
-  '[주간 여행산업', '[TOP\'s Pick]', '[EBN 데이터센터]', '[여행한컷]', '[여행24시]',
+  '[주간 여행산업', "[TOP's Pick]", '[EBN 데이터센터]', '[여행한컷]', '[여행24시]',
   '[뉴스브리핑]', '[브리핑]', '[종합]', '[포토]', '[기획]'
 ];
 
 const NEWS_AIRLINE_OR_FLIGHT_KEYWORDS = [
-  '피치', 'peach', '집에어', 'zipair', '일본항공', 'jal', '전일본공수', 'ana',
-  '대한항공', '아시아나', '제주항공', '진에어', '티웨이', '트리니티', '이스타',
-  '에어부산', '에어서울', '에어프레미아', '에어로케이', '파라타',
+  '피치항공', '피치', 'peach', '집에어', 'zipair', '일본항공', 'jal', '전일본공수', 'ana',
+  '대한항공', '아시아나항공', '아시아나', '제주항공', '진에어', '티웨이항공', '티웨이',
+  '트리니티항공', '트리니티', '이스타항공', '이스타', '에어부산', '에어서울',
+  '에어프레미아', '에어로케이', '파라타항공', '파라타',
+  '에어뉴질랜드', '에어 뉴질랜드', 'air new zealand', '중국남방항공',
   '항공권', '비행기표', '비행기', '항공편', '탑승권', '하늘길', '노선', '취항', '운항',
   '항공사', '항공업계', 'lcc', 'fsc', '국제선', '항공'
 ];
 
 const NEWS_EXCLUDE_KEYWORDS = [
+  '지연', '결항', '기체 결함', '고장', '사고', '보상', '비상착륙', '난기류',
+  '회항', '환승객', '환불 거부', '승객 불편', '입국 사고', '슬롯', '사망', '피해',
+  '주가', '영업익', '영업이익', '당기순익', '순이익', '실적', '노조', '파업',
+  '채용', '국감', '국정감사', '과징금', '부채', '적자', '흑자',
   '삼성전자', '카드업계', '카드사', '신용카드', '체크카드', '마일리지 카드', '캐시백',
   '항공정비', '인재 양성', '사회공헌', '봉사활동', '장학금', '기부',
   '스카이트랙스', '고객만족도', '1위 선정', '수상', '인증',
   '드론', '군집비행', '무인기', '방산',
   'esim', '유심', '와이파이 도시락', '로밍', '렌터카', '카지노', '골프장',
-  '스키 시즌권', '숏트립', '카카오페이', '맛집', '숙소',
-  '항공주', '투자심리', '데이터센터', '과징금', '지연', '결항', '기체 결함', '고장'
+  '스키 시즌권', '숏트립', '카카오페이', '맛집', '숙소', '호텔'
 ];
 
-const NEWS_NON_JAPAN_DESTINATIONS = [
+const NEWS_NON_TARGET_DESTINATIONS = [
   '유럽', '미주', '미국', '하와이', '괌', '사이판', '동남아', '다낭', '나트랑', '푸꾸옥',
   '방콕', '치앙마이', '발리', '대만', '타이베이', '가오슝', '홍콩', '마카오', '중국',
-  '칭다오', '상하이', '베이징', '세부', '보라카이', '필리핀'
+  '칭다오', '상하이', '베이징', '장가계', '선전', '세부', '보라카이', '보홀', '필리핀', '코타키나발루'
 ];
 
 const NEWS_JAPAN_DESTINATIONS = [
@@ -286,39 +309,33 @@ const NEWS_JAPAN_DESTINATIONS = [
   '고베', '센다이', '아오모리', '니가타'
 ];
 
+const NEWS_NZ_DESTINATIONS = [
+  '뉴질랜드', '오클랜드', '크라이스트처치', '퀸스타운', '웰링턴'
+];
+
 export function isStrictJapanNewsArticle(n: NewsArticle): boolean {
   const title = (n.title || '').trim();
   const summary = (n.summary || '').trim();
   const titleLower = title.toLowerCase();
   const fullTextLower = `${title} ${summary}`.toLowerCase();
 
-  // 1. Minimum title length
   if (title.length < 12) return false;
-
-  // 2. Dangling/truncated titles
   if (title.endsWith(',') || title.endsWith(",'") || title.endsWith('최...') || title.endsWith("'인천") || title.endsWith('...外')) {
     return false;
   }
-
-  // 3. Reject roundup/digest prefix
   if (NEWS_ROUNDUP_PREFIXES.some((pfx) => title.startsWith(pfx))) {
     return false;
   }
-
-  // 4. Must contain airline or flight keyword in TITLE
   if (!NEWS_AIRLINE_OR_FLIGHT_KEYWORDS.some((kw) => titleLower.includes(kw))) {
     return false;
   }
-
-  // 5. Reject blacklisted keywords
   if (NEWS_EXCLUDE_KEYWORDS.some((kw) => fullTextLower.includes(kw))) {
     return false;
   }
 
-  // 6. Strict Japan relevance
-  const hasNonJapan = NEWS_NON_JAPAN_DESTINATIONS.some((nj) => titleLower.includes(nj));
+  const hasNonTarget = NEWS_NON_TARGET_DESTINATIONS.some((nj) => titleLower.includes(nj));
   const hasJapanInTitle = NEWS_JAPAN_DESTINATIONS.some((jd) => titleLower.includes(jd));
-  if (hasNonJapan && !hasJapanInTitle) {
+  if (hasNonTarget && !hasJapanInTitle) {
     return false;
   }
 
@@ -330,19 +347,39 @@ export function isStrictJapanNewsArticle(n: NewsArticle): boolean {
   return true;
 }
 
+export function isStrictNZNewsArticle(n: NewsArticle): boolean {
+  const title = (n.title || '').trim();
+  const summary = (n.summary || '').trim();
+  const titleLower = title.toLowerCase();
+  const fullTextLower = `${title} ${summary}`.toLowerCase();
+
+  if (title.length < 10) return false;
+  if (NEWS_EXCLUDE_KEYWORDS.some((kw) => fullTextLower.includes(kw))) {
+    return false;
+  }
+  return NEWS_NZ_DESTINATIONS.some((nz) => fullTextLower.includes(nz)) || fullTextLower.includes('에어뉴질랜드');
+}
+
+export function isStrictSupportedNewsArticle(n: NewsArticle): boolean {
+  return isStrictJapanNewsArticle(n) || isStrictNZNewsArticle(n);
+}
+
 export function filterNewsArticles(
   allNews: NewsArticle[],
   params: {
-    isJapanOnly: boolean;
+    country?: 'ALL' | 'JAPAN' | 'NZ' | string;
+    isJapanOnly?: boolean;
     airline: string;
     search: string;
   }
 ): NewsArticle[] {
   const todayStr = new Date().toISOString().slice(0, 10);
-  let list = allNews.filter((n) => (!n.promo_end || n.promo_end >= todayStr) && isStrictJapanNewsArticle(n));
+  let list = allNews.filter((n) => (!n.promo_end || n.promo_end >= todayStr) && isStrictSupportedNewsArticle(n));
 
-  if (params.isJapanOnly) {
-    list = list.filter((n) => n.is_japan === 1);
+  if (params.country === 'JAPAN' || params.isJapanOnly) {
+    list = list.filter((n) => n.region_category === '일본' || n.is_japan === 1);
+  } else if (params.country === 'NZ') {
+    list = list.filter((n) => n.region_category === '뉴질랜드' || isStrictNZNewsArticle(n));
   }
 
   if (params.airline && params.airline !== 'ALL') {
@@ -350,6 +387,8 @@ export function filterNewsArticles(
       list = list.filter((n) => n.is_japan === 1 || (n.airline && (n.airline.includes('일본') || n.airline.includes('피치') || n.airline.includes('집에어'))));
     } else if (params.airline === 'KOREA_ALL') {
       list = list.filter((n) => n.airline && (n.airline.includes('대한항공') || n.airline.includes('아시아나') || n.airline.includes('제주항공') || n.airline.includes('진에어') || n.airline.includes('티웨이') || n.airline.includes('이스타')));
+    } else if (params.airline === 'NZ_ALL') {
+      list = list.filter((n) => n.region_category === '뉴질랜드' || n.airline.includes('에어뉴질랜드'));
     } else {
       list = list.filter((n) => n.airline === params.airline || n.title.includes(params.airline));
     }
@@ -365,7 +404,7 @@ export function filterNewsArticles(
     );
   }
 
-  list.sort((a, b) => (b.is_japan || 0) - (a.is_japan || 0) || (b.published_at || '').localeCompare(a.published_at || '') || b.created_at.localeCompare(a.created_at));
+  list.sort((a, b) => (b.published_at || '').localeCompare(a.published_at || '') || b.created_at.localeCompare(a.created_at));
 
   return list;
 }
@@ -385,20 +424,20 @@ export const AIRLINE_OFFICIAL_EVENT_URLS: Record<string, string> = {
   ZIPAIR: 'https://www.zipair.net/ko/promotion',
   JAL: 'https://www.jal.co.jp/kr/ko/',
   ANA: 'https://www.ana.co.jp/ko/kr/plan-book/promotions/',
+  AIR_NZ: 'https://www.airnewzealand.co.kr/flight-deals-to-new-zealand',
+  CHINA_SOUTHERN: 'https://www.csair.com/kr/ko/',
 };
 
 export function getPromoEventUrl(promo: { detail_url?: string; airline_code?: string; airline?: string }): string {
   const url = (promo.detail_url || '').trim();
 
-  // If specific Tway Kumamoto event, use the verified real retrieve URL
   if (url.includes('2587') || (promo.airline?.includes('티웨이') && url.includes('being/now'))) {
     return 'https://www.trinityairways.com/app/promotion/event/retrieve/FGgszKGigc0ilcsI9frlEA==/being/n';
   }
 
-  // If a specific, working URL is available, use it directly
   if (
     url.startsWith('http') &&
-    !url.includes('eventList.do') && // excludes broken guessed air seoul path
+    !url.includes('eventList.do') &&
     !url.includes('trinityairways.com/app/promotion/event/main') &&
     !url.includes('parataair.com') &&
     !url.includes('error') &&
@@ -407,7 +446,6 @@ export function getPromoEventUrl(promo: { detail_url?: string; airline_code?: st
     return url;
   }
 
-  // Fallback to verified official airline promotion page
   const code = promo.airline_code || '';
   if (code && AIRLINE_OFFICIAL_EVENT_URLS[code]) {
     return AIRLINE_OFFICIAL_EVENT_URLS[code];
@@ -415,5 +453,3 @@ export function getPromoEventUrl(promo: { detail_url?: string; airline_code?: st
 
   return url || 'https://www.google.com';
 }
-
-
