@@ -2,13 +2,15 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Prevent layout shift caused by scrollbar appearance/disappearance and disable pinch zoom */
+/* Architectural Foundation: Prevent layout shift and tune typography rendering */
 html, body {
   touch-action: pan-x pan-y;
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
   max-width: 100vw;
   background-color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html {
@@ -18,39 +20,39 @@ html {
 
 :root {
   --background: #f8fafc;
-  --foreground: #0f172a;
+  --foreground: #090d16;
 }
 
 html.dark {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #030712;
+  --foreground: #f9fafb;
   color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
   overflow-x: hidden;
   width: 100%;
+  letter-spacing: -0.015em;
 }
 
 html.dark body {
-  background-color: #020617;
-  color: #f8fafc;
+  background-color: #030712;
+  color: #f9fafb;
 }
 
 /* Modern thin scrollbar styling */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -67,11 +69,11 @@ html.dark body {
 }
 
 html.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #1f2937;
 }
 
 html.dark ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #374151;
 }
 
 /* Hide scrollbar while keeping scroll functionality */
@@ -82,4 +84,14 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 .no-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+/* Architectural Layering & Light Accents */
+.arch-card-glow {
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+}
+
+.arch-card-glow:hover {
+  transform: translateY(-2px);
 }

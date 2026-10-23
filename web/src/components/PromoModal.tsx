@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, ExternalLink, Calendar, MapPin, Tag, Bookmark, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, ExternalLink, Calendar, MapPin, Tag, Bookmark, AlertCircle } from 'lucide-react';
 import { Promotion } from '@/types';
 import { getPromoEventUrl } from '@/lib/filterData';
 
@@ -31,33 +31,35 @@ export const PromoModal: React.FC<PromoModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col relative"
+        className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200/80 dark:border-white/[0.1] flex flex-col relative"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close & Action Buttons */}
-        <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+        {/* Floating Close & Bookmark Actions */}
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
           <button
             onClick={() => onToggleBookmark(promo.id)}
-            className="p-2.5 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 backdrop-blur-md shadow-md transition-all"
-            title={isBookmarked ? '북마크 해제' : '북마크 저장'}
+            className="p-2.5 rounded-full bg-black/50 hover:bg-black/75 text-white backdrop-blur-md border border-white/10 transition-all cursor-pointer"
+            title={isBookmarked ? '관심 특가 취소' : '관심 특가 저장'}
+            aria-label="북마크"
           >
-            <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-amber-500 text-amber-500' : ''}`} />
+            <Bookmark className={`w-4 h-4 stroke-[1.75] ${isBookmarked ? 'fill-amber-400 text-amber-400' : 'text-white'}`} />
           </button>
           <button
             onClick={onClose}
-            className="p-2.5 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 backdrop-blur-md shadow-md transition-all"
+            className="p-2.5 rounded-full bg-black/50 hover:bg-black/75 text-white backdrop-blur-md border border-white/10 transition-all cursor-pointer"
+            aria-label="닫기"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 stroke-[2]" />
           </button>
         </div>
 
-        {/* Modal Banner */}
-        {promo.image_url && (
-          <div className="relative h-64 sm:h-72 w-full bg-slate-100 overflow-hidden">
+        {/* Modal Banner Frame (차경 뷰) */}
+        {promo.image_url ? (
+          <div className="relative h-64 sm:h-72 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
             <img
               src={promo.image_url}
               alt={promo.title}
@@ -66,59 +68,58 @@ export const PromoModal: React.FC<PromoModalProps> = ({
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/20" />
-            
-            <div className="absolute bottom-4 left-6 right-6 text-white">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-600 text-white mb-2 shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-black/30 pointer-events-none" />
+
+            <div className="absolute bottom-5 left-6 right-6 text-white pointer-events-none">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/15 backdrop-blur-md border border-white/20 text-white mb-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 {promo.airline} · {regionLabel}
               </div>
-              <h2 className="text-xl sm:text-2xl font-black leading-tight drop-shadow-md">
+              <h2 className="text-xl sm:text-2xl font-black leading-snug tracking-tight">
                 {promo.title}
               </h2>
             </div>
+          </div>
+        ) : (
+          <div className="p-6 sm:p-8 border-b border-slate-100 dark:border-white/[0.06]">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 mb-3">
+              {promo.airline} · {regionLabel}
+            </span>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+              {promo.title}
+            </h2>
           </div>
         )}
 
         {/* Modal Content Body */}
         <div className="p-6 sm:p-8 space-y-6">
-          {!promo.image_url && (
-            <div>
-              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2.5 py-1 rounded-md">
-                {promo.airline} · {regionLabel}
-              </span>
-              <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-2">
-                {promo.title}
-              </h2>
-            </div>
-          )}
-
           {/* Subtitle / summary */}
           {promo.subtitle && (
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+            <p className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-white/[0.03] p-4 rounded-2xl border border-slate-200/60 dark:border-white/[0.06] leading-relaxed">
               {promo.subtitle}
             </p>
           )}
 
-          {/* Details Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 space-y-1">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+          {/* Details Grid (Simple Materials) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="p-4 rounded-2xl border border-slate-200/70 dark:border-white/[0.06] bg-slate-50/60 dark:bg-white/[0.02] space-y-1">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                <Calendar className="w-3.5 h-3.5 text-slate-500 stroke-[2]" />
                 <span>프로모션 기간</span>
               </div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 {promo.promo_start && promo.promo_end
                   ? `${promo.promo_start} ~ ${promo.promo_end}`
                   : '공식 사이트 확인 요망'}
               </p>
             </div>
 
-            <div className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 space-y-1">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                <Tag className="w-4 h-4 text-amber-500" />
-                <span>프로모션 혜택 유형</span>
+            <div className="p-4 rounded-2xl border border-slate-200/70 dark:border-white/[0.06] bg-slate-50/60 dark:bg-white/[0.02] space-y-1">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                <Tag className="w-3.5 h-3.5 text-slate-500 stroke-[2]" />
+                <span>혜택 유형</span>
               </div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 {promo.badge_text || '국제선 정기/특가 할인'}
               </p>
             </div>
@@ -127,15 +128,15 @@ export const PromoModal: React.FC<PromoModalProps> = ({
           {/* Target Destinations */}
           {destList.length > 0 && (
             <div>
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                <span>주요 대상 목적지</span>
+              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-slate-500 stroke-[2]" />
+                <span>주요 대상 노선</span>
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {destList.map((dest, i) => (
                   <span
                     key={i}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-200 text-xs font-bold border border-indigo-100 dark:border-indigo-800"
+                    className="px-3 py-1 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 text-xs font-medium border border-slate-200/60 dark:border-white/[0.05]"
                   >
                     {dest}
                   </span>
@@ -144,24 +145,24 @@ export const PromoModal: React.FC<PromoModalProps> = ({
             </div>
           )}
 
-          {/* Tip Notice */}
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-900 text-xs leading-relaxed">
-            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          {/* Verification Notice */}
+          <div className="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06] text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+            <AlertCircle className="w-4 h-4 text-slate-400 shrink-0 mt-0.5 stroke-[2]" />
             <div>
-              <span className="font-bold">항공권 예매 시 유의사항:</span> 특가 운임은 좌석 수에 따라 조기 매진될 수 있으며, 유류할증료 및 공항이용료가 별도 부과됩니다. 상세 규정 및 환불 조건은 {promo.airline} 공식 페이지를 확인해주세요.
+              <span className="font-bold text-slate-700 dark:text-slate-300">실시간 공식 이벤트 안내:</span> 특가 운임은 좌석 상황에 따라 조기 마감될 수 있으며, 유류할증료 및 공항세가 별도 적용됩니다. 상세 일정 및 예매 조건은 공식 이벤트 페이지에서 확인하실 수 있습니다.
             </div>
           </div>
 
-          {/* Direct CTA */}
+          {/* Direct CTA (AGENTS.md Standard) */}
           <div className="pt-2">
             <a
               href={eventUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 active:scale-[0.99] transition-all text-base"
+              className="w-full py-3.5 rounded-full bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold flex items-center justify-center gap-2 shadow-sm active:scale-[0.99] transition-all text-sm cursor-pointer"
             >
               <span>바로가기</span>
-              <ExternalLink className="w-5 h-5" />
+              <ExternalLink className="w-4 h-4 stroke-[2.5]" />
             </a>
           </div>
         </div>

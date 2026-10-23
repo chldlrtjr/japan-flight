@@ -34,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="h-full antialiased bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100" suppressHydrationWarning>
       <head>
+        <link rel="stylesheet" as="style" crossOrigin="anonymous" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

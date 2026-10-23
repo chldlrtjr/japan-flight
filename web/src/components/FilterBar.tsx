@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, SlidersHorizontal, Check, X, ChevronDown, ChevronUp, Globe } from 'lucide-react';
+import { Search, X, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FilterBarProps {
   searchTerm: string;
@@ -18,7 +18,7 @@ interface FilterBarProps {
 }
 
 export const JAPAN_CITIES = [
-  { id: 'ALL', label: '전체 일본 노선' },
+  { id: 'ALL', label: '전체 일본' },
   { id: '도쿄', label: '도쿄 (나리타/하네다)' },
   { id: '오사카', label: '오사카 (간사이)' },
   { id: '후쿠오카', label: '후쿠오카' },
@@ -79,7 +79,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   const [isCitiesExpanded, setIsCitiesExpanded] = useState(false);
   const isSelectedInSecondary = SECONDARY_JAPAN_CITIES.some((c) => c.id === selectedRegion);
 
-  // Get airlines based on current selected country
   const getAirlines = () => {
     if (selectedCountry === 'NZ') {
       return [
@@ -100,32 +99,33 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       { id: 'ALL', label: '전체 항공사' },
       { id: 'JAPAN_ALL', label: '일본 항공사' },
       { id: 'KOREA_ALL', label: '국내 항공사' },
-      { id: 'NZ_ALL', label: '뉴질랜드 노선사' },
+      { id: 'NZ_ALL', label: '뉴질랜드 취항사' },
     ];
   };
 
   const currentAirlines = getAirlines();
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm mb-6 space-y-4">
+    <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-200/70 dark:border-white/[0.07] p-4 sm:p-5 shadow-xs mb-8 space-y-4">
       {/* Top Search & Sort Row */}
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-        {/* Search input */}
+      <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+        {/* Minimal Search input */}
         <div className="relative flex-1">
-          <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2]" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="목적지(오클랜드, 도쿄, 삿포로...) 또는 항공사, 특가명 검색"
-            className="w-full pl-11 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="w-full pl-10 pr-9 py-2 rounded-xl border border-slate-200/80 dark:border-white/[0.08] text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 focus:border-slate-400 dark:focus:border-white/25 transition-all text-slate-900 dark:text-slate-100 bg-white/60 dark:bg-slate-950/50 placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
           {searchTerm && (
             <button
               onClick={() => onSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+              aria-label="검색어 지우기"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
@@ -135,7 +135,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           <select
             value={sortOrder}
             onChange={(e) => onSortChange(e.target.value)}
-            className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500/20 cursor-pointer shadow-2xs"
+            className="px-3.5 py-2 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white/60 dark:bg-slate-950/50 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-900/10 dark:focus:ring-white/10 cursor-pointer shadow-2xs"
           >
             <option value="default">특가 시작일순 (최신순)</option>
             <option value="end_soon">마감임박순</option>
@@ -144,23 +144,23 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
       </div>
 
-      {/* Country / Destination Section Switcher */}
+      {/* Country / Destination Section Switcher (Architectural Pill Group) */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1">
-        <span className="text-xs font-bold text-slate-500 shrink-0">국가/지역:</span>
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-950 border border-transparent dark:border-slate-800 rounded-xl">
+        <span className="text-xs font-semibold text-slate-400 shrink-0">노선 영역</span>
+        <div className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-white/[0.05] border border-slate-200/50 dark:border-white/[0.06] rounded-full">
           <button
             onClick={() => {
               onCountryChange('ALL');
               onSelectRegion('ALL');
               onSelectAirline('ALL');
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+            className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all shrink-0 ${
               selectedCountry === 'ALL'
-                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
-            전체 특가
+            전체 노선
           </button>
           <button
             onClick={() => {
@@ -168,10 +168,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               onSelectRegion('ALL');
               onSelectAirline('ALL');
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+            className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all shrink-0 ${
               selectedCountry === 'JAPAN'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             일본 노선 (31개 도시)
@@ -182,10 +182,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               onSelectRegion('ALL');
               onSelectAirline('ALL');
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+            className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all shrink-0 ${
               selectedCountry === 'NZ'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
           >
             뉴질랜드 노선 (오클랜드 등)
@@ -193,22 +193,22 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         </div>
       </div>
 
-      {/* New Zealand Destinations (when NZ is active or ALL) */}
+      {/* New Zealand Destinations (when NZ is active) */}
       {selectedCountry === 'NZ' && (
-        <div className="flex flex-col gap-2.5 border-t border-slate-100 dark:border-slate-800 dark:border-slate-800 pt-3">
+        <div className="flex flex-col gap-2 border-t border-slate-100 dark:border-white/[0.06] pt-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400">뉴질랜드 취항 도시:</span>
-              <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-800">
-                인천/부산 출발 직항 & 주요 연계 노선
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">뉴질랜드 취항 도시</span>
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full border border-slate-200/50 dark:border-white/[0.05]">
+                직항 및 주요 연계 노선
               </span>
             </div>
             {selectedRegion !== 'ALL' && (
               <button
                 onClick={() => onSelectRegion('ALL')}
-                className="text-xs text-slate-500 hover:text-emerald-700 flex items-center gap-1 font-medium transition-colors"
+                className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 font-medium transition-colors"
               >
-                <span>전체 뉴질랜드 보기</span>
+                <span>전체 노선 보기</span>
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
@@ -220,10 +220,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 <button
                   key={city.id}
                   onClick={() => onSelectRegion(city.id)}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all ${
+                  className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all ${
                     isSelected
-                      ? 'bg-indigo-600 text-white font-bold shadow-sm'
-                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-[#f0f6fc]'
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
+                      : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
                   }`}
                 >
                   {city.label}
@@ -236,18 +236,18 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
       {/* Japan City Tabs (when JAPAN or ALL) */}
       {(selectedCountry === 'JAPAN' || selectedCountry === 'ALL') && (
-        <div className="flex flex-col gap-2.5 border-t border-slate-100 dark:border-slate-800 dark:border-slate-800 pt-3">
+        <div className="flex flex-col gap-2 border-t border-slate-100 dark:border-white/[0.06] pt-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">일본 취항 도시:</span>
-              <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-800">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">일본 취항 도시</span>
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 rounded-full border border-slate-200/50 dark:border-white/[0.05]">
                 한국 직항 31개 도시
               </span>
             </div>
             {selectedRegion !== 'ALL' && (
               <button
                 onClick={() => onSelectRegion('ALL')}
-                className="text-xs text-slate-500 hover:text-rose-600 flex items-center gap-1 font-medium transition-colors"
+                className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 font-medium transition-colors"
               >
                 <span>전체 일본 노선 보기</span>
                 <X className="w-3.5 h-3.5" />
@@ -261,10 +261,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 <button
                   key={city.id}
                   onClick={() => onSelectRegion(city.id)}
-                  className={`text-xs px-2.5 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all ${
+                  className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all ${
                     isSelected
-                      ? 'bg-indigo-600 text-white font-bold shadow-sm'
-                      : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-[#f0f6fc]'
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
+                      : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
                   }`}
                 >
                   {city.label}
@@ -275,10 +275,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             {!isCitiesExpanded && isSelectedInSecondary && (
               <button
                 onClick={() => onSelectRegion(selectedRegion)}
-                className="text-xs px-2.5 py-1.5 rounded-lg font-bold whitespace-nowrap transition-all bg-indigo-600 text-white shadow-sm flex items-center gap-1"
+                className="text-xs px-3 py-1 rounded-full font-bold whitespace-nowrap transition-all bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xs flex items-center gap-1"
               >
                 <span>{JAPAN_CITIES.find((c) => c.id === selectedRegion)?.label}</span>
-                <span className="text-[10px] bg-indigo-700/80 px-1 py-0.2 rounded text-indigo-100 font-normal">선택됨</span>
+                <span className="text-[10px] bg-white/20 dark:bg-slate-800 px-1.5 py-0.2 rounded-full font-normal">선택됨</span>
               </button>
             )}
 
@@ -289,10 +289,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                   <button
                     key={city.id}
                     onClick={() => onSelectRegion(city.id)}
-                    className={`text-xs px-2.5 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all ${
+                    className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all ${
                       isSelected
-                        ? 'bg-indigo-600 text-white font-bold shadow-sm'
-                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-[#f0f6fc]'
+                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
+                        : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
                     }`}
                   >
                     {city.label}
@@ -302,7 +302,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
             <button
               onClick={() => setIsCitiesExpanded(!isCitiesExpanded)}
-              className="text-xs px-2.5 py-1.5 rounded-lg font-semibold whitespace-nowrap transition-all flex items-center gap-1 border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white shadow-2xs active:scale-95"
+              className="text-xs px-3 py-1 rounded-full font-semibold whitespace-nowrap transition-all flex items-center gap-1 border border-slate-200/80 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.03] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.07] cursor-pointer"
               aria-expanded={isCitiesExpanded}
             >
               {isCitiesExpanded ? (
@@ -322,39 +322,20 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       )}
 
       {/* Airline Tabs */}
-      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-white/[0.06]">
         <div className="flex flex-wrap items-center gap-1.5 flex-1">
-          <span className="text-xs font-bold text-slate-400 w-14 shrink-0">항공사:</span>
+          <span className="text-xs font-semibold text-slate-400 shrink-0 mr-1">항공사</span>
           {currentAirlines.map((air) => {
             const isSelected = selectedAirline === air.id;
-            const isJapanGroup = air.id === 'JAPAN_ALL';
-            const isKoreaGroup = air.id === 'KOREA_ALL';
-            const isNZGroup = air.id === 'NZ_ALL' || air.id === '에어뉴질랜드';
-
-            let btnClass = 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700';
-            if (isSelected) {
-              if (isJapanGroup) {
-                btnClass = 'bg-indigo-600 text-white font-bold shadow-sm';
-              } else if (isKoreaGroup) {
-                btnClass = 'bg-indigo-600 text-white font-bold shadow-sm';
-              } else if (isNZGroup) {
-                btnClass = 'bg-indigo-600 text-white font-bold shadow-sm';
-              } else {
-                btnClass = 'bg-indigo-600 text-white font-bold shadow-sm';
-              }
-            } else if (isJapanGroup) {
-              btnClass = 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold';
-            } else if (isKoreaGroup) {
-              btnClass = 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold';
-            } else if (isNZGroup) {
-              btnClass = 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold';
-            }
-
             return (
               <button
                 key={air.id}
                 onClick={() => onSelectAirline(air.id)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all ${btnClass}`}
+                className={`text-xs px-3 py-1 rounded-full font-medium whitespace-nowrap transition-all ${
+                  isSelected
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-bold shadow-xs'
+                    : 'bg-white dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.06] hover:border-slate-400 dark:hover:border-white/20'
+                }`}
               >
                 {air.label}
               </button>
@@ -362,8 +343,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           })}
         </div>
 
-        <div className="text-xs text-slate-500 whitespace-nowrap shrink-0 self-end lg:self-start lg:pt-1.5 pl-2">
-          검색 결과 <span className="font-bold text-indigo-600 dark:text-indigo-400">{totalFilteredCount}</span>개
+        <div className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0">
+          특가 <span className="font-bold text-slate-900 dark:text-white">{totalFilteredCount}</span>건
         </div>
       </div>
     </div>
