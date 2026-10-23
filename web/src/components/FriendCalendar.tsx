@@ -1478,7 +1478,15 @@ export const FriendCalendar: React.FC = () => {
           {/* 헤더 우측: 다음 일정 간략 힌트 및 접기/펼치기 */}
           <div className="flex items-center gap-2 shrink-0">
             {upcomingEvents.length > 0 && isCountdownCollapsed && (
-              <span className="text-[11px] text-indigo-700 font-bold bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200/60 hidden md:inline-block truncate max-w-[280px]">
+              <span
+                onClick={() => {
+                  jumpToDate(upcomingEvents[0].startDate);
+                  setSelectedEvent(upcomingEvents[0]);
+                  setIsViewModalOpen(true);
+                }}
+                className="text-[11px] text-indigo-700 font-bold bg-indigo-50 hover:bg-indigo-100 cursor-pointer px-2.5 py-1 rounded-lg border border-indigo-200/60 hidden md:inline-block truncate max-w-[280px] transition"
+                title="약속 상세 보기"
+              >
                 다음: {upcomingEvents[0].title} ({getEventCountdownDetail(upcomingEvents[0]).badge})
               </span>
             )}
@@ -1543,6 +1551,7 @@ export const FriendCalendar: React.FC = () => {
                       onClick={() => {
                         jumpToDate(ev.startDate);
                         setSelectedEvent(ev);
+                        setIsViewModalOpen(true);
                       }}
                       className={`min-w-[230px] max-w-[260px] sm:min-w-[250px] sm:max-w-[280px] shrink-0 rounded-xl p-3 sm:p-3.5 border transition cursor-pointer flex flex-col justify-between group shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
                         isFirst
