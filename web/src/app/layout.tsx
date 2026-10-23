@@ -40,8 +40,12 @@ export default function RootLayout({
               (function() {
                 try {
                   localStorage.removeItem('app_theme');
+                  var host = window.location.hostname;
+                  var isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+                  var devTheme = isLocal ? sessionStorage.getItem('dev_theme') : null;
                   var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  if (prefersDark) {
+                  var isDark = (devTheme === 'dark' || devTheme === 'light') ? (devTheme === 'dark') : prefersDark;
+                  if (isDark) {
                     document.documentElement.classList.add('dark');
                     document.documentElement.style.colorScheme = 'dark';
                   } else {

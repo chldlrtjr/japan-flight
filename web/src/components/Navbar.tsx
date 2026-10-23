@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { BookOpen, RefreshCw, Bookmark } from 'lucide-react';
+import { BookOpen, RefreshCw, Bookmark, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 interface NavbarProps {
   onRefresh: () => void;
@@ -22,6 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   lastUpdated,
   className = '',
 }) => {
+  const { resolvedTheme, isLocal, toggleTheme } = useTheme();
   let dateObj: Date | null = null;
   if (lastUpdated) {
     // 타임존 오프셋(Z 또는 +)이 없는 레거시 ISO 문자열은 GitHub 러너의 UTC 시간으로 보정
@@ -56,6 +58,29 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* 로컬 개발 환경 전용 다크/라이트 모드 변환 버튼 */}
+          {isLocal && (
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700 transition-all shadow-2xs cursor-pointer"
+              title={`로컬 테마 전환 (현재: ${resolvedTheme === 'dark' ? '다크 모드' : '라이트 모드'})`}
+              aria-label="로컬 개발용 테마 전환"
+            >
+              {resolvedTheme === 'dark' ? (
+                <Moon className="w-4 h-4 text-indigo-400" />
+              ) : (
+                <Sun className="w-4 h-4 text-indigo-600" />
+              )}
+              <span className="hidden md:inline font-mono text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
+                {resolvedTheme === 'dark' ? '다크' : '라이트'}
+              </span>
+              <span className="text-[9px] font-mono font-extrabold px-1 py-0.2 rounded bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                DEV
+              </span>
+            </button>
+          )}
+
           {/* Bookmark Filter Toggle */}
           <button
             onClick={onToggleBookmarks}
