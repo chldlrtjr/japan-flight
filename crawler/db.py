@@ -395,7 +395,7 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
         return False
 
     full_text = f"{title} {promo.get('subtitle', '')} {dests} {promo.get('region_category', '')} {airline}"
-    from .destinations import is_supported_promo, is_nz_promo
+    from .destinations import is_supported_promo, is_nz_promo, strip_emojis
     if not is_supported_promo(full_text):
         return False
 
@@ -443,9 +443,9 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
         "id": promo["id"],
         "airline": promo["airline"],
         "airline_code": promo["airline_code"],
-        "title": promo["title"],
-        "subtitle": promo.get("subtitle", ""),
-        "badge_text": promo.get("badge_text", ""),
+        "title": strip_emojis(promo["title"]),
+        "subtitle": strip_emojis(promo.get("subtitle", "")),
+        "badge_text": strip_emojis(promo.get("badge_text", "")),
         "detail_url": promo["detail_url"],
         "image_url": promo.get("image_url", ""),
         "promo_start": promo.get("promo_start"),

@@ -422,10 +422,7 @@ export const AIRLINE_OFFICIAL_EVENT_URLS: Record<string, string> = {
   EASTAR: 'https://www.eastarjet.com/newstar/PGWTA00001',
   PEACH: 'https://www.flypeach.com/kr/um/specials/int_shorttrip',
   ZIPAIR: 'https://www.zipair.net/ko/promotion',
-  JAL: 'https://www.jal.co.jp/kr/ko/',
   ANA: 'https://www.ana.co.jp/ko/kr/plan-book/promotions/',
-  AIR_NZ: 'https://www.airnewzealand.co.kr/flight-deals-to-new-zealand',
-  CHINA_SOUTHERN: 'https://www.csair.com/kr/ko/',
 };
 
 export function getPromoEventUrl(promo: { detail_url?: string; airline_code?: string; airline?: string }): string {

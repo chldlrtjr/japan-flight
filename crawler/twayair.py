@@ -65,6 +65,17 @@ def crawl_twayair() -> List[Dict[str, Any]]:
                 # Analyze destination and region
                 is_intl, region, destinations = analyze_promotion(title, subtitle, date_text)
 
+                # Deep route inspection: If title lacks explicit city names, fetch detail page content to verify Japanese/NZ routes
+                if not is_intl and detail_url and "/retrieve/" in detail_url and not is_ended:
+                    try:
+                        detail_res = requests.get(detail_url, headers=HEADERS, timeout=8)
+                        if detail_res.status_code == 200:
+                            d_soup = BeautifulSoup(detail_res.text, 'html.parser')
+                            d_text = ' '.join(d_soup.stripped_strings)
+                            is_intl, region, destinations = analyze_promotion(title, subtitle, f"{date_text} {d_text}")
+                    except Exception as e_detail:
+                        pass
+
                 status = "END" if is_ended else "ING"
                 if end_date and status == "ING":
                     today = datetime.now().strftime("%Y-%m-%d")
@@ -74,7 +85,7 @@ def crawl_twayair() -> List[Dict[str, Any]]:
                 badge = "특가 프로모션"
                 if "얼리버드" in title or "얼리버드" in subtitle:
                     badge = "얼리버드"
-                elif "쿠폰" in title or "쿠폰" in subtitle:
+                elif "쿠폰" in title or "쿠폰" in subtitle or "할인코드" in title:
                     badge = "쿠폰할인"
                 elif "신규" in title or "취항" in title:
                     badge = "신규취항"
@@ -91,7 +102,7 @@ def crawl_twayair() -> List[Dict[str, Any]]:
                     "promo_start": start_date,
                     "promo_end": end_date,
                     "travel_period": date_text,
-                    "is_international": is_intl,
+                    "is_international": 1 if is_intl else 0,
                     "region_category": region,
                     "destinations": destinations,
                     "status": status,
@@ -108,5 +119,6 @@ def crawl_twayair() -> List[Dict[str, Any]]:
 
 if __name__ == '__main__':
     res = crawl_twayair()
-    for r in res[:5]:
-        print(r['id'], r['title'], r['region_category'], r['status'])
+    for r in res:
+        if r['is_international']:
+            print(r['id'], r['title'], r['region_category'], r['destinations'], r['status'])

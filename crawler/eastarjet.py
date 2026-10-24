@@ -88,7 +88,7 @@ async def crawl_eastarjet_async() -> List[Dict[str, Any]]:
                     "image_url": card.get('img', ''),
                     "promo_start": start_date,
                     "promo_end": end_date,
-                    "travel_period": full_text,
+                    "travel_period": f"{start_date} ~ {end_date}" if start_date and end_date else (subtitle or title),
                     "is_international": is_intl,
                     "region_category": region,
                     "destinations": destinations,

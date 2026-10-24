@@ -1,5 +1,22 @@
 import re
+from datetime import datetime
 from typing import Tuple, List, Optional
+
+def strip_emojis(text: str) -> str:
+    """Removes all system emojis and pictographs to comply with AGENTS.md design rules."""
+    if not text:
+        return ""
+    emoji_pattern = re.compile(
+        r'[\U00010000-\U0010ffff]'
+        r'|[\u2600-\u27bf]'
+        r'|[\u2300-\u23ff]'
+        r'|[\u2b50-\u2b55]'
+        r'|[\ufe00-\ufe0f]'
+        r'|[\u200d]'
+    )
+    cleaned = emoji_pattern.sub('', text)
+    return ' '.join(cleaned.split())
+
 
 # Japan destination mapping - 한국 출발 직항/운항 일본 전 도시
 JAPAN_DESTINATIONS = {
@@ -145,6 +162,11 @@ def extract_dates(text: str) -> Tuple[Optional[str], Optional[str]]:
             if len(groups) == 6:
                 start_date = f"{groups[0]}-{groups[1]}-{groups[2]}"
                 end_date = f"{groups[3]}-{groups[4]}-{groups[5]}"
+                return start_date, end_date
+            elif len(groups) == 4:
+                year = datetime.now().year
+                start_date = f"{year}-{groups[0]}-{groups[1]}"
+                end_date = f"{year}-{groups[2]}-{groups[3]}"
                 return start_date, end_date
     return None, None
 

@@ -74,14 +74,12 @@ export const PromoCard: React.FC<PromoCardProps> = ({
     ? `${promo.promo_start} ~`
     : '상시 진행';
 
-  const defaultBg =
-    promo.region_category === '뉴질랜드'
-      ? 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80'
-      : 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80';
+  const fallbackSvg =
+    'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="%230f172a"/><circle cx="300" cy="200" r="120" fill="none" stroke="%23334155" stroke-width="1.5"/><path d="M260 200 L340 200 M300 160 L300 240" stroke="%23475569" stroke-width="1.5"/><text x="50%" y="82%" text-anchor="middle" fill="%2394a3b8" font-family="sans-serif" font-size="14" font-weight="600" letter-spacing="2">AIRLINE PROMOTION</text></svg>';
 
   const displayImage = promo.image_url && promo.image_url.startsWith('http')
     ? promo.image_url
-    : defaultBg;
+    : fallbackSvg;
 
   return (
     <div
@@ -95,7 +93,7 @@ export const PromoCard: React.FC<PromoCardProps> = ({
           alt={promo.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = defaultBg;
+            (e.target as HTMLImageElement).src = fallbackSvg;
           }}
         />
 

@@ -311,7 +311,7 @@ export default function Home() {
                 className="relative w-full h-48 sm:h-80 md:h-[360px] rounded-2xl sm:rounded-3xl overflow-hidden mb-6 sm:mb-8 border border-slate-200/80 dark:border-white/[0.1] shadow-md group cursor-pointer arch-card-glow"
               >
                 <img
-                  src={featuredPromo.image_url || 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80'}
+                  src={featuredPromo.image_url || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600"><rect width="1200" height="600" fill="%23090d16"/><circle cx="600" cy="300" r="220" fill="none" stroke="%231e293b" stroke-width="2"/><text x="50%" y="82%" text-anchor="middle" fill="%2364748b" font-family="sans-serif" font-size="20" font-weight="700" letter-spacing="4">FEATURED AIRLINE PROMOTION</text></svg>'}
                   alt={featuredPromo.title}
                   className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-1000 ease-out"
                 />

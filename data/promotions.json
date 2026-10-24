@@ -4,8 +4,8 @@
     "airline": "제주항공",
     "airline_code": "JEJU",
     "title": "일본 센다이 신규취항 특가",
-    "subtitle": "최대 20% 할인코드⭐",
-    "badge_text": "최대 20% 할인코드⭐",
+    "subtitle": "최대 20% 할인코드",
+    "badge_text": "최대 20% 할인코드",
     "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004363",
     "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261020170956260.jpg",
     "promo_start": "2026-10-23",
@@ -18,15 +18,15 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-23T14:21:31.463081+09:00",
-    "updated_at": "2026-10-25T00:00:09.965290+09:00"
+    "updated_at": "2026-10-25T00:18:04.675740+09:00"
   },
   {
     "id": "jeju_0000004413",
     "airline": "제주항공",
     "airline_code": "JEJU",
     "title": "일본 전 노선 항공+숙박 특가",
-    "subtitle": "엔저=일본 여행 그린라이트✨",
-    "badge_text": "엔저=일본 여행 그린라이트✨",
+    "subtitle": "엔저=일본 여행 그린라이트",
+    "badge_text": "엔저=일본 여행 그린라이트",
     "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004413",
     "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261020102702429.jpg",
     "promo_start": "2026-10-22",
@@ -39,7 +39,28 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-22T11:14:50.674610+09:00",
-    "updated_at": "2026-10-25T00:00:09.977278+09:00"
+    "updated_at": "2026-10-25T00:18:04.692573+09:00"
+  },
+  {
+    "id": "tway_2611",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "제46회 항공의 날 기념 특가",
+    "subtitle": "국제선 최대 22% 할인 + 3만원 쿠폰",
+    "badge_text": "쿠폰할인",
+    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/dUA-rGulcB413_OAVrBBVw==/being/n",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/1015/b32b641d-4d2e-4aea-be37-bd17cefccaa8.png",
+    "promo_start": "2026-10-20",
+    "promo_end": "2026-10-31",
+    "travel_period": "2026-10-20 ~ 2026-10-31",
+    "is_international": 1,
+    "region_category": "일본 전역",
+    "destinations": "도쿄, 나리타, 오사카, 간사이, 후쿠오카, 삿포로, 나고야, 오키나와, 구마모토, 사가, 고베",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-10-25T00:18:10.263591+09:00",
+    "updated_at": "2026-10-25T00:18:10.263591+09:00"
   },
   {
     "id": "jeju_0000004361",
@@ -60,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-14T02:29:10.448829",
-    "updated_at": "2026-10-25T00:00:09.979890+09:00"
+    "updated_at": "2026-10-25T00:18:04.708866+09:00"
   },
   {
     "id": "eastar_2645",
@@ -73,7 +94,7 @@
     "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20261001012012_%EB%AA%A8%EB%B0%94%EC%9D%BC_%EB%A9%94%EC%9D%B8%EB%B0%B0%EB%84%88%EA%B0%80%EC%9D%B4%EB%93%9C.jpg",
     "promo_start": "2026-10-01",
     "promo_end": "2026-12-31",
-    "travel_period": "특별한 여행, 엔믹스 x 이스타항공\n\n이벤트기간 : 2026-10-01~2026-12-31",
+    "travel_period": "2026-10-01 ~ 2026-12-31",
     "is_international": 1,
     "region_category": "일본",
     "destinations": "일본 전역",
@@ -94,7 +115,7 @@
     "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20260518024311_%EB%AA%A8%EB%B0%94%EC%9D%BC_%EB%A9%94%EC%9D%B8%EB%B0%B0%EB%84%88%EA%B0%80%EC%9D%B4%EB%93%9C.jpg",
     "promo_start": "2026-05-18",
     "promo_end": "2026-10-31",
-    "travel_period": "도쿠시마 버스투어로 여행준비 끝!\n\n이벤트기간 : 2026-05-18~2026-10-31",
+    "travel_period": "2026-05-18 ~ 2026-10-31",
     "is_international": 1,
     "region_category": "일본",
     "destinations": "도쿠시마",
