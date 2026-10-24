@@ -1,10 +1,9 @@
-import urllib.request
-import urllib.parse
+import requests
 import hashlib
 import re
 import time
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
 
 from .destinations import analyze_japan_promotion
@@ -19,6 +18,8 @@ PROMO_MUST_HAVE = [
 
 # Blacklist of non-promo, corporate PR, awards, incidents, or non-flight products
 EXCLUDE_KEYWORDS = [
+    # Reward App Quizzes (NOT airline promos)
+    '캐시워크', '돈버는퀴즈', '오퀴즈', '퀴즈 정답', '정답 공개', '캐시닥', '타임스프레드',
     # Incidents / Safety
     '지연', '결항', '기체 결함', '고장', '사고', '보상', '비상착륙', '난기류',
     '회항', '환승객', '환불 거부', '승객 불편', '입국 사고', '슬롯', '사망', '피해',
@@ -132,53 +133,45 @@ def normalize_title_key(title: str) -> str:
     cleaned = re.sub(r'[^가-힣a-zA-Z0-9]', '', cleaned)
     return cleaned[:20]
 
-def extract_naver_press(profile) -> str:
-    if not profile:
-        return '언론사'
-    img = profile.find('img')
-    if img and img.get('alt'):
-        alt = img['alt'].replace('의 프로필 이미지', '').replace('프로필 이미지', '').strip()
-        if alt:
-            return alt
-    for s in profile.stripped_strings:
-        s = s.strip()
-        if s in ('새 창 열림', 'Keep에 저장', 'Keep에 바로가기', '네이버뉴스') or '면' in s or '단' in s:
-            continue
-        if re.search(r'\d', s):
-            continue
-        return s
-    return '언론사'
-
-def extract_naver_date_str(profile) -> str:
-    if not profile:
-        return ''
-    for s in profile.stripped_strings:
-        s_clean = s.strip()
-        if re.search(r'(\d+)\s*(초|분|시간|일|주|달|개월|년)\s*전', s_clean):
-            return s_clean
-        if re.search(r'\d{4}[.-]\d{1,2}[.-]\d{1,2}', s_clean):
-            return s_clean
-    return ''
-
-def parse_naver_date(date_str: str) -> str:
+def parse_naver_date_robust(date_raw: str, link_url: str = '') -> Optional[str]:
+    """
+    Parses publication date accurately from raw date text or article link URL.
+    CRITICAL: Never fall back to 'today' if date is missing/unknown!
+    Returns None if date cannot be determined reliably.
+    """
     now = datetime.now()
-    if not date_str:
-        return now.strftime('%Y-%m-%d')
-    date_str = date_str.strip()
-    m_min = re.search(r'(\d+)\s*분\s*전', date_str)
-    if m_min:
-        return (now - timedelta(minutes=int(m_min.group(1)))).strftime('%Y-%m-%d')
-    m_hour = re.search(r'(\d+)\s*시간\s*전', date_str)
-    if m_hour:
-        return (now - timedelta(hours=int(m_hour.group(1)))).strftime('%Y-%m-%d')
-    m_day = re.search(r'(\d+)\s*일\s*전', date_str)
-    if m_day:
-        return (now - timedelta(days=int(m_day.group(1)))).strftime('%Y-%m-%d')
-    m_date = re.search(r'(\d{4})[.-](\d{1,2})[.-](\d{1,2})', date_str)
-    if m_date:
-        y, m, d = m_date.groups()
-        return f"{int(y):04d}-{int(m):02d}-{int(d):02d}"
-    return now.strftime('%Y-%m-%d')
+    if date_raw:
+        clean = date_raw.strip()
+        m_min = re.search(r'(\d+)\s*분\s*전', clean)
+        if m_min:
+            return (now - timedelta(minutes=int(m_min.group(1)))).strftime('%Y-%m-%d')
+        m_hour = re.search(r'(\d+)\s*시간\s*전', clean)
+        if m_hour:
+            return (now - timedelta(hours=int(m_hour.group(1)))).strftime('%Y-%m-%d')
+        m_day = re.search(r'(\d+)\s*일\s*전', clean)
+        if m_day:
+            return (now - timedelta(days=int(m_day.group(1)))).strftime('%Y-%m-%d')
+        m_week = re.search(r'(\d+)\s*주\s*전', clean)
+        if m_week:
+            return (now - timedelta(weeks=int(m_week.group(1)))).strftime('%Y-%m-%d')
+        m_month = re.search(r'(\d+)\s*(?:달|개월)\s*전', clean)
+        if m_month:
+            return (now - timedelta(days=int(m_month.group(1)) * 30)).strftime('%Y-%m-%d')
+        m_date = re.search(r'(\d{4})[.-](\d{1,2})[.-](\d{1,2})', clean)
+        if m_date:
+            y, m, d = m_date.groups()
+            return f"{int(y):04d}-{int(m):02d}-{int(d):02d}"
+
+    # Try link URL date pattern: e.g. 20261021, 2026-10-21, 2026/10/21
+    if link_url:
+        m_url = re.search(r'(202[4-9])[/-]?([01]\d)[/-]?([0-3]\d)', link_url)
+        if m_url:
+            y, mo, da = m_url.groups()
+            if 1 <= int(mo) <= 12 and 1 <= int(da) <= 31:
+                return f"{int(y):04d}-{int(mo):02d}-{int(da):02d}"
+
+    # DO NOT GUESS OR DEFAULT TO TODAY!
+    return None
 
 def detect_promo_status(title: str, summary: str, pub_date_str: str) -> tuple:
     """Detect promotion status (ACTIVE vs UPCOMING) and target travel period description."""
@@ -203,7 +196,7 @@ def detect_promo_status(title: str, summary: str, pub_date_str: str) -> tuple:
 
     return status, period_desc
 
-def is_valid_active_promo(title: str, summary: str, pub_date: str) -> bool:
+def is_valid_active_promo(title: str, summary: str, pub_date: Optional[str]) -> bool:
     clean_t = clean_news_title(title)
     clean_s = summary.strip() if summary else ''
     full_text = f"{clean_t} {clean_s}"
@@ -244,9 +237,12 @@ def is_valid_active_promo(title: str, summary: str, pub_date: str) -> bool:
     if not any(pm in full_text for pm in PROMO_MUST_HAVE):
         return False
 
-    # 8. Strict Date check: dynamic cutoff (past 14 days)
+    # 8. Strict Date check: Date MUST be verified and strictly within past 14 days
+    if not pub_date:
+        return False
+
     cutoff_date = (datetime.now() - timedelta(days=14)).strftime("%Y-%m-%d")
-    if pub_date and pub_date < cutoff_date:
+    if pub_date < cutoff_date:
         return False
 
     return True
@@ -261,106 +257,128 @@ def crawl_flight_news() -> List[Dict[str, Any]]:
     articles = []
 
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8',
-        'Referer': 'https://www.naver.com/'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Referer': 'https://search.naver.com/'
     }
+
+    session = requests.Session()
+    session.headers.update(headers)
 
     print(" -> Fetching Naver News articles...")
     for query in NAVER_QUERIES:
         try:
-            encoded_query = urllib.parse.quote(query)
-            url = f"https://search.naver.com/search.naver?where=news&query={encoded_query}&sm=tab_opt&sort=1"
-            req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=8) as resp:
-                soup = BeautifulSoup(resp.read().decode('utf-8', errors='ignore'), 'html.parser')
-                
-                raw_items = soup.select('.fds-news-item-list-tab > div')
-                if not raw_items:
-                    raw_items = soup.select('.list_news > li')
+            url = f"https://search.naver.com/search.naver?where=news&query={requests.utils.quote(query)}&sm=tab_opt&sort=1"
+            resp = session.get(url, timeout=10)
+            if resp.status_code != 200:
+                print(f"[NewsCrawler-Naver] Query '{query}' HTTP status {resp.status_code}")
+                continue
 
-                for it in raw_items:
-                    profile = it.find(attrs={'data-sds-comp': 'Profile'})
-                    press = extract_naver_press(profile)
-                    date_raw = extract_naver_date_str(profile)
-                    if not date_raw:
-                        date_el = it.select_one('.info_group span.info')
-                        if date_el:
-                            date_raw = date_el.text.strip()
+            soup = BeautifulSoup(resp.text, 'html.parser')
 
-                    links = it.find_all('a')
-                    art_link, title, desc = '', '', ''
-                    for a in links:
-                        href = a.get('href', '')
-                        text = a.text.strip().replace('새 창 열림', '').strip()
-                        if not href or href == '#' or 'keep.naver.com' in href or href.startswith('javascript:'):
-                            continue
-                        if href.startswith('http') and ('news' in href or 'article' in href or 'view' in href or len(text) > 10):
-                            if not title and len(text) > 5:
-                                title = text
-                                art_link = href
-                            elif title and not desc and len(text) > 10 and text != title:
-                                desc = text
+            # Select news item containers (supports new SDS and legacy markup)
+            raw_items = soup.select('.fds-news-item-list-tab > div')
+            if not raw_items:
+                raw_items = soup.select('.list_news > li')
 
-                    if not title or not art_link or art_link in seen_links:
+            for it in raw_items:
+                # 1. Extract Press source
+                press = '언론사'
+                source_tag = it.select_one('.sds-comps-profile img')
+                if source_tag and source_tag.get('alt'):
+                    press = source_tag['alt'].replace('의 프로필 이미지', '').replace('프로필 이미지', '').strip()
+                if not press or press == '언론사':
+                    source_a = it.select_one('.sds-comps-profile-source a, .info_group a.press')
+                    if source_a:
+                        press = source_a.text.strip().replace('새 창 열림', '').strip()
+
+                # 2. Extract Title, Description, and Link
+                title, art_link, desc = '', '', ''
+                for a in it.find_all('a'):
+                    href = a.get('href', '')
+                    txt = a.text.strip().replace('새 창 열림', '').strip()
+                    if not href or href == '#' or 'keep.naver.com' in href or href.startswith('javascript:'):
                         continue
+                    # Prioritize article links
+                    is_article_href = any(k in href for k in ['article', 'view', 'idxno', 'nid', 'news'])
+                    if href.startswith('http') and (is_article_href or len(txt) > 10):
+                        if not title and len(txt) > 8:
+                            title = txt
+                            art_link = href
+                        elif title and not desc and len(txt) > 12 and txt != title:
+                            desc = txt
 
-                    clean_title = clean_news_title(title)
-                    clean_desc = re.sub(r'새 창 열림', '', desc).strip()
+                if not title or not art_link or art_link in seen_links:
+                    continue
 
-                    t_key = normalize_title_key(clean_title)
-                    if t_key and t_key in seen_title_keys:
-                        continue
+                clean_title = clean_news_title(title)
+                clean_desc = re.sub(r'새 창 열림', '', desc).strip()
 
-                    pub_date_formatted = parse_naver_date(date_raw)
+                t_key = normalize_title_key(clean_title)
+                if t_key and t_key in seen_title_keys:
+                    continue
 
-                    # Strict active promo filter
-                    if not is_valid_active_promo(clean_title, clean_desc, pub_date_formatted):
-                        continue
-
-                    seen_links.add(art_link)
-                    if t_key:
-                        seen_title_keys.add(t_key)
-
-                    # Detect region (New Zealand vs Japan)
-                    is_nz = any(c in clean_title for c in NZ_CITIES) or any(c in clean_desc for c in NZ_CITIES) or '에어뉴질랜드' in clean_title or '에어뉴질랜드' in clean_desc
-                    if is_nz:
-                        region_category = "뉴질랜드"
-                        is_japan = 0
-                        matched_cities = [c for c in NZ_CITIES if c in clean_title and c not in ["뉴질랜드", "남섬", "북섬"]]
-                        dest_str = ", ".join(matched_cities) if matched_cities else "뉴질랜드 전역"
-                        default_airline = "뉴질랜드 노선 항공사"
-                    else:
-                        region_category = "일본"
-                        is_japan = 1
-                        matched_cities = [c for c in JAPAN_CITIES if c in clean_title and c != "일본"]
-                        dest_str = ", ".join(matched_cities) if matched_cities else "일본 전역"
-                        default_airline = "일본 노선 항공사"
-
-                    detected_airline = default_airline
-                    for air_name, syns in AIRLINE_KEYWORDS.items():
-                        if any(s in clean_title for s in syns):
-                            detected_airline = air_name
+                # 3. Extract Raw Date string
+                date_raw = ''
+                date_el = it.select_one('.sds-comps-profile-info-subtexts, .sds-comps-profile-info-subtext, .info_group span.info')
+                if date_el:
+                    date_raw = date_el.text.strip()
+                else:
+                    for s in it.stripped_strings:
+                        s_str = s.strip()
+                        if re.search(r'(\d+)\s*(초|분|시간|일|주|달|개월)\s*전', s_str) or re.search(r'\d{4}[.-]\d{1,2}[.-]\d{1,2}', s_str):
+                            date_raw = s_str
                             break
 
-                    promo_status, period_desc = detect_promo_status(clean_title, clean_desc, pub_date_formatted)
-                    art_id = hashlib.md5(art_link.encode('utf-8')).hexdigest()
+                pub_date_formatted = parse_naver_date_robust(date_raw, art_link)
 
-                    articles.append({
-                        "id": f"news_{art_id}",
-                        "title": clean_title,
-                        "summary": clean_desc if clean_desc else clean_title,
-                        "source": press,
-                        "link": art_link,
-                        "published_at": pub_date_formatted,
-                        "airline": detected_airline,
-                        "is_japan": is_japan,
-                        "japan_cities": dest_str,
-                        "region_category": region_category,
-                        "promo_status": promo_status,
-                        "promo_period_desc": period_desc
-                    })
+                # Strict active promo filter (rejects unknown date or > 14 days old)
+                if not is_valid_active_promo(clean_title, clean_desc, pub_date_formatted):
+                    continue
+
+                seen_links.add(art_link)
+                if t_key:
+                    seen_title_keys.add(t_key)
+
+                # Detect region (New Zealand vs Japan)
+                is_nz = any(c in clean_title for c in NZ_CITIES) or any(c in clean_desc for c in NZ_CITIES) or '에어뉴질랜드' in clean_title or '에어뉴질랜드' in clean_desc
+                if is_nz:
+                    region_category = "뉴질랜드"
+                    is_japan = 0
+                    matched_cities = [c for c in NZ_CITIES if c in clean_title and c not in ["뉴질랜드", "남섬", "북섬"]]
+                    dest_str = ", ".join(matched_cities) if matched_cities else "뉴질랜드 전역"
+                    default_airline = "뉴질랜드 노선 항공사"
+                else:
+                    region_category = "일본"
+                    is_japan = 1
+                    matched_cities = [c for c in JAPAN_CITIES if c in clean_title and c != "일본"]
+                    dest_str = ", ".join(matched_cities) if matched_cities else "일본 전역"
+                    default_airline = "일본 노선 항공사"
+
+                detected_airline = default_airline
+                for air_name, syns in AIRLINE_KEYWORDS.items():
+                    if any(s in clean_title for s in syns):
+                        detected_airline = air_name
+                        break
+
+                promo_status, period_desc = detect_promo_status(clean_title, clean_desc, pub_date_formatted)
+                art_id = hashlib.md5(art_link.encode('utf-8')).hexdigest()
+
+                articles.append({
+                    "id": f"news_{art_id}",
+                    "title": clean_title,
+                    "summary": clean_desc if clean_desc else clean_title,
+                    "source": press,
+                    "link": art_link,
+                    "published_at": pub_date_formatted,
+                    "airline": detected_airline,
+                    "is_japan": is_japan,
+                    "japan_cities": dest_str,
+                    "region_category": region_category,
+                    "promo_status": promo_status,
+                    "promo_period_desc": period_desc
+                })
             time.sleep(0.3)
         except Exception as e:
             print(f"[NewsCrawler-Naver] Error query '{query}': {e}")

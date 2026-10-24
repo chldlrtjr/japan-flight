@@ -1,6 +1,7 @@
 import os
 import json
 import sqlite3
+import re
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional
 
@@ -224,24 +225,46 @@ def clean_invalid_news() -> int:
     """
     Examines all news articles in the database and permanently deletes any that:
     1. Lack airline or flight keywords in title
-    2. Contain blacklist keywords
+    2. Contain blacklist keywords (e.g. reward quizzes, incidents)
     3. Are press roundup/digest articles
     4. Focus purely on non-target regions
     5. Have truncated/dangling titles
+    6. Have publication dates or link URLs older than 14 days (e.g. September news)
     """
     from .news import is_valid_active_promo
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, title, summary, published_at FROM news_articles")
+    cursor.execute("SELECT id, title, summary, published_at, link FROM news_articles")
     rows = cursor.fetchall()
+
+    today = datetime.now()
+    cutoff_date = (today - timedelta(days=14)).strftime("%Y-%m-%d")
 
     delete_ids = []
     for r in rows:
         title = r['title']
         summary = r['summary'] or ''
         pub_at = r['published_at'] or ''
+        link = r['link'] or ''
+
+        # 1. URL date check: if URL contains date older than 14 days, purge!
+        m_url = re.search(r'(202[4-9])[/-]?([01]\d)[/-]?([0-3]\d)', link)
+        if m_url:
+            y, mo, da = m_url.groups()
+            actual_url_date = f"{int(y):04d}-{int(mo):02d}-{int(da):02d}"
+            if actual_url_date < cutoff_date:
+                delete_ids.append(r['id'])
+                continue
+
+        # 2. Strict active promo check (title, keywords, quiz blacklist, cutoff date)
         if not is_valid_active_promo(title, summary, pub_at):
             delete_ids.append(r['id'])
+            continue
+
+        # 3. Direct cutoff date check
+        if pub_at < cutoff_date:
+            delete_ids.append(r['id'])
+            continue
 
     if delete_ids:
         cursor.executemany("DELETE FROM news_articles WHERE id = ?", [(did,) for did in delete_ids])

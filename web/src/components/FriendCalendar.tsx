@@ -346,6 +346,8 @@ export const FriendCalendar: React.FC = () => {
   const [selectedFriendForSchedule, setSelectedFriendForSchedule] = useState<Friend | null>(null);
   // 다가오는 약속 위젯 접기/펼치기 상태
   const [isCountdownCollapsed, setIsCountdownCollapsed] = useState<boolean>(false);
+  // 다가오는 약속 목록 전체 펼치기 토글 (3건 초과 시)
+  const [isUpcomingListExpanded, setIsUpcomingListExpanded] = useState<boolean>(false);
   // 친구 필터 드롭다운 상태 & Ref
   const [isFriendFilterDropdownOpen, setIsFriendFilterDropdownOpen] = useState(false);
   const friendFilterDropdownRef = useRef<HTMLDivElement>(null);
@@ -418,12 +420,10 @@ export const FriendCalendar: React.FC = () => {
         }
       }
 
-      // 0-0. 모바일 환경 기본 접힘 또는 이전 설정 복원
+      // 0-0. 다가오는 약속 위젯 이전 설정 복원 (기본값은 즉시 인지를 위해 펼침 유지)
       const savedCollapsed = localStorage.getItem('flypromo_countdown_collapsed');
       if (savedCollapsed !== null) {
         setIsCountdownCollapsed(savedCollapsed === 'true');
-      } else if (window.innerWidth < 768) {
-        setIsCountdownCollapsed(true);
       }
 
       // 0-1. 영구 안전 금고 캐시 우선 로드
@@ -819,7 +819,7 @@ export const FriendCalendar: React.FC = () => {
     return { label: `D-${diffDays}`, color: 'bg-indigo-600 text-white' };
   };
 
-  // 다가오는 약속 위젯용 정밀 카운트다운 및 상태 계산
+  // 다가오는 약속 위젯용 정밀 카운트다운 및 상태 계산 (초고속 인지 최적화)
   const getEventCountdownDetail = (event: CalendarEvent) => {
     const now = new Date();
     const todayStr = getFormattedDate(now);
@@ -829,9 +829,15 @@ export const FriendCalendar: React.FC = () => {
     // 1. 이미 종료된 과거 일정
     if (todayStr > endStr) {
       return {
-        type: 'past',
+        type: 'past' as const,
         badge: '종료됨',
-        badgeColor: 'bg-slate-100 text-slate-500 border border-slate-200',
+        badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700',
+        dDayText: '종료',
+        dDaySubText: '완료됨',
+        dDayNum: -1,
+        accentBg: 'bg-slate-50/80 dark:bg-slate-900/60',
+        accentBorder: 'border-slate-200 dark:border-slate-800',
+        accentText: 'text-slate-400 dark:text-slate-500',
         subText: '완료된 일정',
         isUrgent: false,
       };
@@ -843,9 +849,15 @@ export const FriendCalendar: React.FC = () => {
       const diffTime = now.getTime() - start.getTime();
       const currentDayNum = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
       return {
-        type: 'ongoing',
+        type: 'ongoing' as const,
         badge: '진행 중',
         badgeColor: 'bg-emerald-600 text-white animate-pulse shadow-2xs',
+        dDayText: '진행중',
+        dDaySubText: `${currentDayNum}일차`,
+        dDayNum: 0,
+        accentBg: 'bg-emerald-50/80 dark:bg-emerald-950/40',
+        accentBorder: 'border-emerald-300 dark:border-emerald-800',
+        accentText: 'text-emerald-700 dark:text-emerald-300',
         subText: `${currentDayNum}일차 진행 중`,
         isUrgent: true,
       };
@@ -854,6 +866,7 @@ export const FriendCalendar: React.FC = () => {
     // 3. 오늘 당일 (D-Day)
     if (event.startDate === todayStr) {
       let timeDetail = '오늘 일정';
+      let quickSub = '오늘';
       if (event.time) {
         const [h, m] = event.time.split(':').map(Number);
         if (!isNaN(h) && !isNaN(m)) {
@@ -863,19 +876,29 @@ export const FriendCalendar: React.FC = () => {
             const remH = Math.floor(diffMinutes / 60);
             const remM = diffMinutes % 60;
             timeDetail = remM > 0 ? `약 ${remH}시간 ${remM}분 후` : `약 ${remH}시간 후`;
+            quickSub = `${remH}시간 후`;
           } else if (diffMinutes > 0) {
             timeDetail = `${diffMinutes}분 후 시작`;
+            quickSub = `${diffMinutes}분 후`;
           } else if (diffMinutes >= -180) {
             timeDetail = '지금 약속 진행 중';
+            quickSub = '진행 중';
           } else {
             timeDetail = '오늘 완료';
+            quickSub = '오늘 완료';
           }
         }
       }
       return {
-        type: 'today',
+        type: 'today' as const,
         badge: 'D-Day 오늘',
-        badgeColor: 'bg-rose-500 text-white font-extrabold animate-pulse shadow-xs',
+        badgeColor: 'bg-rose-500 text-white font-black animate-pulse shadow-xs',
+        dDayText: 'D-DAY',
+        dDaySubText: quickSub,
+        dDayNum: 0,
+        accentBg: 'bg-rose-50/90 dark:bg-rose-950/50',
+        accentBorder: 'border-rose-300 dark:border-rose-800',
+        accentText: 'text-rose-600 dark:text-rose-400',
         subText: timeDetail,
         isUrgent: true,
       };
@@ -890,9 +913,15 @@ export const FriendCalendar: React.FC = () => {
 
     if (diffDays === 1) {
       return {
-        type: 'tomorrow',
+        type: 'tomorrow' as const,
         badge: 'D-1 내일',
-        badgeColor: 'bg-amber-500 text-white font-extrabold shadow-xs',
+        badgeColor: 'bg-amber-500 text-white font-black shadow-xs',
+        dDayText: 'D-1',
+        dDaySubText: '내일',
+        dDayNum: 1,
+        accentBg: 'bg-amber-50/90 dark:bg-amber-950/50',
+        accentBorder: 'border-amber-300 dark:border-amber-800',
+        accentText: 'text-amber-600 dark:text-amber-400',
         subText: event.time ? `내일 ${event.time}` : '내일 예정',
         isUrgent: true,
       };
@@ -900,18 +929,30 @@ export const FriendCalendar: React.FC = () => {
 
     if (diffDays <= 7) {
       return {
-        type: 'thisWeek',
+        type: 'thisWeek' as const,
         badge: `D-${diffDays}`,
-        badgeColor: 'bg-indigo-600 text-white font-extrabold shadow-xs',
+        badgeColor: 'bg-indigo-600 text-white font-black shadow-xs',
+        dDayText: `D-${diffDays}`,
+        dDaySubText: `${diffDays}일 남음`,
+        dDayNum: diffDays,
+        accentBg: 'bg-indigo-50/90 dark:bg-indigo-950/50',
+        accentBorder: 'border-indigo-200 dark:border-indigo-800',
+        accentText: 'text-indigo-600 dark:text-indigo-400',
         subText: `${diffDays}일 남음`,
         isUrgent: false,
       };
     }
 
     return {
-      type: 'upcoming',
+      type: 'upcoming' as const,
       badge: `D-${diffDays}`,
-      badgeColor: 'bg-slate-700 text-white font-semibold',
+      badgeColor: 'bg-slate-700 text-white font-black',
+      dDayText: `D-${diffDays}`,
+      dDaySubText: `${diffDays}일 남음`,
+      dDayNum: diffDays,
+      accentBg: 'bg-slate-100/80 dark:bg-slate-800/60',
+      accentBorder: 'border-slate-200 dark:border-slate-700',
+      accentText: 'text-slate-800 dark:text-slate-200',
       subText: `${diffDays}일 남음`,
       isUrgent: false,
     };
@@ -1532,43 +1573,47 @@ export const FriendCalendar: React.FC = () => {
         </div>
       )}
 
-      {/* 다가오는 약속 (D-Day 카운트다운) 위젯 */}
+      {/* 다가오는 약속 (D-Day 초고속 인지 스포트라이트 & 글랜스 보드) 위젯 */}
       <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-slate-200/70 dark:border-white/[0.08] shadow-xs overflow-hidden transition-all duration-200">
         {/* 위젯 헤더 */}
-        <div className="px-3.5 sm:px-5 py-2.5 sm:py-3.5 bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2.5">
+        <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 bg-slate-50/50 dark:bg-white/[0.02] border-b border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-950 flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
               <Clock className="w-3.5 h-3.5" />
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 다가오는 약속
               </h3>
-              <span className="px-2.5 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-full shrink-0">
+              <span className="px-2 py-0.5 bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 text-[11px] sm:text-xs font-bold rounded-full shrink-0">
                 {upcomingEvents.length}건
               </span>
             </div>
           </div>
 
-          {/* 헤더 우측: 다음 일정 간략 힌트 및 접기/펼치기 */}
+          {/* 헤더 우측: 접혀 있을 때도 즉시 인지 가능한 다음 일정 퀵 태그 & 접기/펼치기 토글 */}
           <div className="flex items-center gap-2 shrink-0">
             {upcomingEvents.length > 0 && isCountdownCollapsed && (
-              <span
+              <button
+                type="button"
                 onClick={() => {
                   jumpToDate(upcomingEvents[0].startDate);
                   setSelectedEvent(upcomingEvents[0]);
                   setIsViewModalOpen(true);
                 }}
-                className="text-[11px] text-indigo-700 font-bold bg-indigo-50 hover:bg-indigo-100 cursor-pointer px-2.5 py-1 rounded-lg border border-indigo-200/60 hidden md:inline-block truncate max-w-[280px] transition"
+                className="inline-flex items-center gap-1.5 text-xs text-indigo-700 dark:text-indigo-300 font-bold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 px-2.5 py-1 rounded-lg border border-indigo-200/70 dark:border-indigo-800/60 truncate max-w-[240px] sm:max-w-[340px] transition text-left cursor-pointer active:scale-95"
                 title="약속 상세 보기"
               >
-                다음: {upcomingEvents[0].title} ({getEventCountdownDetail(upcomingEvents[0]).badge})
-              </span>
+                <span className="px-1.5 py-0.2 rounded text-[10px] font-black bg-indigo-600 text-white shrink-0">
+                  {getEventCountdownDetail(upcomingEvents[0]).dDayText}
+                </span>
+                <span className="truncate">{upcomingEvents[0].title}</span>
+              </button>
             )}
             <button
               type="button"
               onClick={toggleCountdownCollapse}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer"
               title={isCountdownCollapsed ? '다가오는 약속 펼치기' : '다가오는 약속 접기'}
             >
               <span className="hidden sm:inline">{isCountdownCollapsed ? '펼치기' : '접기'}</span>
@@ -1581,148 +1626,229 @@ export const FriendCalendar: React.FC = () => {
           </div>
         </div>
 
-        {/* 위젯 본문: 카드 슬라이더 또는 빈 안내 */}
+        {/* 위젯 본문: 초고속 인지형 D-Day 스포트라이트 & 글랜스 스트립 */}
         {!isCountdownCollapsed && (
           <div className="p-3 sm:p-4">
             {upcomingEvents.length === 0 ? (
-              <div className="py-5 px-4 text-center rounded-xl bg-slate-50/70 dark:bg-slate-950/50 border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center mb-1.5">
-                  <Sparkles className="w-4 h-4" />
+              <div className="py-4 px-4 text-center rounded-xl bg-slate-50/70 dark:bg-slate-950/50 border border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 text-left">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-500 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {activeFilterFriendId === 'ALL'
+                        ? '예정된 다가오는 약속이 없습니다.'
+                        : '해당 필터 조건의 다가오는 약속이 없습니다.'}
+                    </p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                      새 일정을 등록하여 다가오는 약속의 D-Day를 확인해 보세요!
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs font-bold text-slate-700 mb-0.5">
-                  {activeFilterFriendId === 'ALL'
-                    ? '예정된 다가오는 약속이 없습니다.'
-                    : '해당 조건의 다가오는 약속이 없습니다.'}
-                </p>
-                <p className="text-[11px] text-slate-400 mb-2.5">
-                  새 일정을 등록하여 다가오는 약속의 D-Day를 확인해 보세요!
-                </p>
                 <button
                   type="button"
                   onClick={() => openAddEventModal()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition shadow-2xs active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition shadow-2xs active:scale-95 shrink-0 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>새 일정 등록</span>
+                  <span>새 약속 등록</span>
                 </button>
               </div>
             ) : (
-              <div
-                className="flex items-stretch gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar pb-1 pt-0.5"
-                onWheel={(e) => {
-                  if (e.deltaY !== 0) {
-                    e.currentTarget.scrollLeft += e.deltaY;
-                  }
-                }}
-              >
-                {upcomingEvents.map((ev, idx) => {
-                  const detail = getEventCountdownDetail(ev);
-                  const evFriends = getEventFriends(ev);
-                  const isFirst = idx === 0;
+              (() => {
+                const primaryEvent = upcomingEvents[0];
+                const primaryDetail = getEventCountdownDetail(primaryEvent);
+                const primaryFriends = getEventFriends(primaryEvent);
+                const secondaryEvents = upcomingEvents.slice(1);
+                const displayedSecondary = isUpcomingListExpanded
+                  ? secondaryEvents
+                  : secondaryEvents.slice(0, 3);
+                const hasMoreThanThree = secondaryEvents.length > 3;
 
-                  return (
+                return (
+                  <div className="flex flex-col lg:flex-row items-stretch gap-3 w-full">
+                    {/* [메인 포커스 액자: 가장 임박한 약속 (Next Spotlight)] */}
                     <div
-                      key={ev.id}
                       onClick={() => {
-                        jumpToDate(ev.startDate);
-                        setSelectedEvent(ev);
+                        jumpToDate(primaryEvent.startDate);
+                        setSelectedEvent(primaryEvent);
                         setIsViewModalOpen(true);
                       }}
-                      className={`min-w-[240px] max-w-[320px] sm:min-w-[260px] sm:max-w-[350px] shrink-0 rounded-2xl p-3.5 sm:p-4 border transition-all cursor-pointer flex flex-col justify-between group shadow-xs hover:shadow-md hover:-translate-y-0.5 bg-white dark:bg-white/[0.02] border-slate-200/80 dark:border-white/[0.08] ${
-                        isFirst
-                          ? 'ring-1 ring-slate-900/15 dark:ring-white/20 border-slate-400 dark:border-white/20'
-                          : 'hover:border-slate-400 dark:hover:border-white/20'
-                      }`}
+                      className={`rounded-2xl p-3.5 sm:p-4.5 border transition-all cursor-pointer group shadow-xs hover:shadow-md relative overflow-hidden flex items-center gap-3 sm:gap-4.5 bg-white dark:bg-white/[0.03] ${
+                        secondaryEvents.length > 0 ? 'w-full lg:w-[58%] shrink-0' : 'w-full'
+                      } ${primaryDetail.accentBorder} hover:border-slate-400 dark:hover:border-white/30`}
                     >
-                      {/* 카드 상단: D-Day 뱃지 & 날짜 */}
-                      <div>
-                        <div className="flex items-center justify-between gap-1.5 mb-2">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold flex items-center gap-1 shrink-0 ${detail.badgeColor}`}
-                          >
-                            {detail.badge}
-                          </span>
-                          <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 truncate text-right">
-                            {formatShortDateWithDay(ev.startDate)}
-                            {ev.endDate && ev.endDate !== ev.startDate
-                              ? ` ~ ${formatShortDateWithDay(ev.endDate)}`
+                      {/* 배경 미세 그라데이션 글로우 */}
+                      <div
+                        className={`absolute -right-8 -bottom-8 w-32 h-32 rounded-full opacity-10 pointer-events-none blur-2xl ${
+                          primaryDetail.type === 'today'
+                            ? 'bg-rose-500'
+                            : primaryDetail.type === 'tomorrow'
+                            ? 'bg-amber-500'
+                            : 'bg-indigo-500'
+                        }`}
+                      />
+
+                      {/* 1. 압도적 시인성의 거대 D-Day 앵커 타일 (망막에 바로 꽂히는 숫자) */}
+                      <div
+                        className={`rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 flex flex-col items-center justify-center min-w-[78px] sm:min-w-[102px] shrink-0 border text-center transition group-hover:scale-[1.02] shadow-2xs ${primaryDetail.accentBg} ${primaryDetail.accentBorder}`}
+                      >
+                        <span
+                          className={`text-2xl sm:text-3xl font-black tracking-tight leading-none ${primaryDetail.accentText}`}
+                        >
+                          {primaryDetail.dDayText}
+                        </span>
+                        <span
+                          className={`text-[10px] sm:text-xs font-extrabold mt-1.5 leading-none ${primaryDetail.accentText} opacity-90`}
+                        >
+                          {primaryDetail.dDaySubText}
+                        </span>
+                      </div>
+
+                      {/* 2. 약속 본문 (약속명, 일시, 참여 친구, 장소) */}
+                      <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                        {/* 상단: 레이블 뱃지 + 일시 */}
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60 shrink-0 flex items-center gap-1">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              <span>다음 약속</span>
+                            </span>
+                            {primaryEvent.time && (
+                              <span className="text-[11px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 shrink-0">
+                                {primaryEvent.time}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0 truncate">
+                            {formatShortDateWithDay(primaryEvent.startDate)}
+                            {primaryEvent.endDate && primaryEvent.endDate !== primaryEvent.startDate
+                              ? ` ~ ${formatShortDateWithDay(primaryEvent.endDate)}`
                               : ''}
                           </span>
                         </div>
 
-                        {/* 카드 제목 */}
-                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition line-clamp-1 mb-1.5">
-                          {ev.title}
+                        {/* 약속 제목 (대형 볼드 타이포) */}
+                        <h4 className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition line-clamp-1 mb-2 tracking-tight">
+                          {primaryEvent.title}
                         </h4>
 
-                        {/* 시간 / 장소 / 메모 세부 정보 */}
-                        {(ev.time || ev.location || ev.memo) ? (
-                          <div className="space-y-1 text-[11px] text-slate-500 min-h-[18px]">
-                            {ev.time && (
-                              <div className="flex items-center gap-1.5">
-                                <Clock className="w-3 h-3 text-indigo-500 shrink-0" />
-                                <span className="text-indigo-700 dark:text-indigo-300 font-bold bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.2 rounded text-[10px]">
-                                  {ev.time}
-                                </span>
-                                {ev.location && (
-                                  <span className="truncate text-slate-600 dark:text-slate-400">· {ev.location}</span>
-                                )}
-                              </div>
-                            )}
-                            {!ev.time && ev.location && (
-                              <div className="flex items-center gap-1.5 truncate text-slate-600 dark:text-slate-400">
-                                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                                <span className="truncate">{ev.location}</span>
-                              </div>
-                            )}
-                            {!ev.time && !ev.location && ev.memo && (
-                              <p className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1 truncate">
-                                {ev.memo}
-                              </p>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="min-h-[18px]" />
-                        )}
-                      </div>
-
-                      {/* 카드 하단: 참여 친구 전원 목록 & 바로가기 화살표 */}
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          {evFriends.length === 0 ? (
-                            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium flex items-center gap-1">
-                              
-                              <span>참여자 미정 (클릭하여 참여)</span>
-                            </span>
-                          ) : (
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              {evFriends.map((f) => (
+                        {/* 하단: 참여 친구 아바타 칩 & 장소 */}
+                        <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-100/90 dark:border-white/[0.06]">
+                          <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                            {primaryFriends.length === 0 ? (
+                              <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                                참여자 미정 (클릭하여 참여)
+                              </span>
+                            ) : (
+                              primaryFriends.map((f) => (
                                 <span
                                   key={f.id}
-                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/70 dark:hover:bg-slate-700 border border-slate-200/90 dark:border-slate-700 text-slate-800 dark:text-slate-200 shadow-2xs whitespace-nowrap transition"
+                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs whitespace-nowrap"
                                 >
                                   <span
-                                    className="w-2 h-2 rounded-full shrink-0 ring-1 ring-black/10"
+                                    className="w-1.5 h-1.5 rounded-full shrink-0"
                                     style={{ backgroundColor: f.color }}
                                   />
-                                  <span className="text-slate-800 dark:text-slate-200 font-semibold">{f.name}</span>
+                                  <span>{f.name}</span>
                                 </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                              ))
+                            )}
+                            {primaryEvent.location && (
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate flex items-center gap-1 ml-1">
+                                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="truncate">{primaryEvent.location}</span>
+                              </span>
+                            )}
+                          </div>
 
-                        <span
-                          className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-600 text-slate-400 dark:text-slate-400 group-hover:text-white flex items-center justify-center transition shrink-0 self-center"
-                          title="약속 상세 및 참여 관리"
-                        >
-                          <ArrowRight className="w-3 h-3" />
-                        </span>
+                          <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-600 text-slate-400 group-hover:text-white flex items-center justify-center transition shrink-0">
+                            <ArrowRight className="w-3 h-3" />
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+
+                    {/* [서브: 그 다음 다가오는 약속들 (Quick Glance Strips)] */}
+                    {secondaryEvents.length > 0 && (
+                      <div className="flex-1 min-w-0 flex flex-col justify-between gap-1.5">
+                        <div className="space-y-1.5">
+                          {displayedSecondary.map((ev) => {
+                            const detail = getEventCountdownDetail(ev);
+                            const evFriends = getEventFriends(ev);
+
+                            return (
+                              <div
+                                key={ev.id}
+                                onClick={() => {
+                                  jumpToDate(ev.startDate);
+                                  setSelectedEvent(ev);
+                                  setIsViewModalOpen(true);
+                                }}
+                                className="p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-white/[0.08] hover:border-indigo-300 dark:hover:border-indigo-800/80 bg-slate-50/40 hover:bg-white dark:bg-white/[0.02] dark:hover:bg-white/[0.05] transition-all cursor-pointer flex items-center justify-between gap-2.5 group shadow-2xs"
+                              >
+                                {/* D-Day 뱃지 */}
+                                <div
+                                  className={`px-2 py-1 rounded-lg text-xs font-black shrink-0 text-center min-w-[50px] leading-tight ${detail.accentBg} ${detail.accentBorder} ${detail.accentText} border`}
+                                >
+                                  {detail.dDayText}
+                                </div>
+
+                                {/* 약속 제목 & 날짜/친구 */}
+                                <div className="flex-1 min-w-0">
+                                  <h5 className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition truncate">
+                                    {ev.title}
+                                  </h5>
+                                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                    <span className="font-semibold text-slate-600 dark:text-slate-300 shrink-0">
+                                      {formatShortDateWithDay(ev.startDate)}
+                                      {ev.time ? ` ${ev.time}` : ''}
+                                    </span>
+                                    {evFriends.length > 0 && (
+                                      <span className="truncate text-slate-400 dark:text-slate-500">
+                                        · {evFriends.map((f) => f.name).join(', ')}
+                                      </span>
+                                    )}
+                                    {ev.location && (
+                                      <span className="truncate text-slate-400 dark:text-slate-500 hidden sm:inline">
+                                        · {ev.location}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* 화살표 */}
+                                <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition shrink-0" />
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* 3건 초과 시 '외 N건 더보기 / 접기' 토글 버튼 */}
+                        {hasMoreThanThree && (
+                          <button
+                            type="button"
+                            onClick={() => setIsUpcomingListExpanded((prev) => !prev)}
+                            className="w-full py-1.5 text-center text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 bg-indigo-50/60 hover:bg-indigo-50 dark:bg-indigo-950/40 rounded-lg transition border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center gap-1 mt-1 cursor-pointer"
+                          >
+                            <span>
+                              {isUpcomingListExpanded
+                                ? '접기'
+                                : `+ 외 ${secondaryEvents.length - 3}건 약속 더보기`}
+                            </span>
+                            {isUpcomingListExpanded ? (
+                              <ChevronUp className="w-3 h-3" />
+                            ) : (
+                              <ChevronDown className="w-3 h-3" />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()
             )}
           </div>
         )}

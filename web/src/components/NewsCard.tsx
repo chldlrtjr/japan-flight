@@ -19,6 +19,16 @@ export const NewsCard: React.FC<NewsCardProps> = ({ grouped }) => {
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '';
     try {
+      // YYYY-MM-DD 형식 우선 직접 분리 (타임존 왜곡 완전 방지)
+      const clean = dateStr.trim().split(/[ T]/)[0];
+      const parts = clean.split('-');
+      if (parts.length === 3) {
+        const m = parseInt(parts[1], 10);
+        const d = parseInt(parts[2], 10);
+        if (!isNaN(m) && !isNaN(d)) {
+          return `${m}월 ${d}일`;
+        }
+      }
       const d = new Date(dateStr);
       return `${d.getMonth() + 1}월 ${d.getDate()}일`;
     } catch {
