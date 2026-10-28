@@ -342,7 +342,13 @@ def crawl_flight_news() -> List[Dict[str, Any]]:
                     seen_title_keys.add(t_key)
 
                 # Detect region (New Zealand vs Japan)
-                is_nz = any(c in clean_title for c in NZ_CITIES) or any(c in clean_desc for c in NZ_CITIES) or '에어뉴질랜드' in clean_title or '에어뉴질랜드' in clean_desc
+                # Title decides first; the summary is only consulted when the title names neither region
+                title_nz = any(c in clean_title for c in NZ_CITIES)
+                title_jp = any(c in clean_title for c in JAPAN_CITIES)
+                if title_nz or title_jp:
+                    is_nz = title_nz
+                else:
+                    is_nz = any(c in clean_desc for c in NZ_CITIES) and not any(c in clean_desc for c in JAPAN_CITIES)
                 if is_nz:
                     region_category = "뉴질랜드"
                     is_japan = 0

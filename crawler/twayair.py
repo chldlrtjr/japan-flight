@@ -1,12 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
-import re
 from datetime import datetime
 from typing import List, Dict, Any
 from .destinations import analyze_promotion, extract_dates
 
 TWAY_URL = "https://www.twayair.com/app/promotion/event/being"
-TWAY_BASE = "https://www.twayair.com"
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
@@ -56,11 +54,12 @@ def crawl_twayair() -> List[Dict[str, Any]]:
 
                 event_id = f"tway_{event_seq}" if event_seq else f"tway_{hash(title)}"
                 add_info = a_tag.get('data-addinfo', '')
-                if add_info:
-                    encoded_info = add_info.replace('+', '-').replace('/', '_')
-                    detail_url = f"https://www.trinityairways.com/app/promotion/event/retrieve/{encoded_info}/being/n"
-                else:
-                    detail_url = "https://www.trinityairways.com/app/promotion/event/being"
+                if not add_info:
+                    # AGENTS.md Rule: Never register generic list or non-detail pages
+                    continue
+
+                encoded_info = add_info.replace('+', '-').replace('/', '_')
+                detail_url = f"https://www.trinityairways.com/app/promotion/event/retrieve/{encoded_info}/being/n"
 
                 # Analyze destination and region
                 is_intl, region, destinations = analyze_promotion(title, subtitle, date_text)
@@ -73,7 +72,7 @@ def crawl_twayair() -> List[Dict[str, Any]]:
                             d_soup = BeautifulSoup(detail_res.text, 'html.parser')
                             d_text = ' '.join(d_soup.stripped_strings)
                             is_intl, region, destinations = analyze_promotion(title, subtitle, f"{date_text} {d_text}")
-                    except Exception as e_detail:
+                    except Exception:
                         pass
 
                 status = "END" if is_ended else "ING"

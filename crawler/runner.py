@@ -15,6 +15,8 @@ from crawler.japan_airlines import crawl_japan_airlines
 from crawler.korean_airlines import crawl_korean_airlines
 from crawler.newzealand_airlines import crawl_newzealand_airlines
 from crawler.news import crawl_flight_news
+from crawler.manual_promotions import crawl_manual_promotions
+from crawler.sitemap_watcher import watch_sitemaps
 
 def run_all_crawlers() -> dict:
     started_all = datetime.now().isoformat()
@@ -25,9 +27,10 @@ def run_all_crawlers() -> dict:
         ("티웨이항공", "TWAY", crawl_twayair),
         ("이스타항공", "EASTAR", crawl_eastarjet),
         ("진에어", "JIN", crawl_jinair),
-        ("국내 전 항공사(대한항공/아시아나/에어서울/에어부산/에어프레미아/에어로케이/파라타)", "KOREA_ALL", crawl_korean_airlines),
+        ("국내 FSC/기타 항공사 [미구현]", "KOREA_ALL", crawl_korean_airlines),
         ("일본 항공사(한일 노선: JAL/ANA/피치/집에어)", "JAPAN_ALL", crawl_japan_airlines),
-        ("뉴질랜드 취항 항공사(에어뉴질랜드/대한항공/중국남방항공)", "NZ_ALL", crawl_newzealand_airlines),
+        ("뉴질랜드 취항 항공사 [미구현]", "NZ_ALL", crawl_newzealand_airlines),
+        ("수동 등록 (검증된 실제 이벤트)", "MANUAL", crawl_manual_promotions),
     ]
 
     summary = {
@@ -98,6 +101,13 @@ def run_all_crawlers() -> dict:
     except Exception as e:
         summary["news_error"] = str(e)
         print(f"[News] Crawl failed: {e}")
+
+    # Sitemap Watch Step (reports new campaign pages for human verification only)
+    try:
+        summary["sitemap_candidates"] = watch_sitemaps()
+    except Exception as e:
+        summary["sitemap_error"] = str(e)
+        print(f"[SitemapWatcher] Failed: {e}")
 
     # Check & Take down Expired Promotions
     print(f"\n==========================================")

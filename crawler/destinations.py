@@ -78,22 +78,36 @@ ALL_NZ_KEYWORDS = [
     "남섬", "북섬", "뉴질랜드 항공"
 ]
 
+def _kw_in(kw: str, text: str) -> bool:
+    """Short uppercase ASCII codes (AKL, ANA, JAL...) must stand alone, not inside other words."""
+    if re.fullmatch(r'[A-Z]{2,4}', kw):
+        return re.search(rf'(?<![A-Za-z]){kw}(?![A-Za-z])', text) is not None
+    return kw.lower() in text.lower()
+
 def is_japan_promo(text: str) -> bool:
-    text_lower = text.lower()
-    for kw in ALL_JAPAN_KEYWORDS:
-        if kw.lower() in text_lower:
-            return True
-    return False
+    return any(_kw_in(kw, text) for kw in ALL_JAPAN_KEYWORDS)
 
 def is_nz_promo(text: str) -> bool:
-    text_lower = text.lower()
-    for kw in ALL_NZ_KEYWORDS:
-        if kw.lower() in text_lower:
-            return True
-    return False
+    return any(_kw_in(kw, text) for kw in ALL_NZ_KEYWORDS)
 
 def is_supported_promo(text: str) -> bool:
     return is_japan_promo(text) or is_nz_promo(text)
+
+def classify_region(primary: str, secondary: str = "") -> Optional[str]:
+    """
+    Returns "뉴질랜드" | "일본" | None.
+    The primary text (title) decides first; secondary text (body) is only a fallback,
+    so a Japan deal whose body merely mentions New Zealand stays Japan.
+    """
+    for text in (primary, f"{primary} {secondary}"):
+        nz, jp = is_nz_promo(text), is_japan_promo(text)
+        if nz and not jp:
+            return "뉴질랜드"
+        if jp and not nz:
+            return "일본"
+        if nz and jp:
+            return "뉴질랜드"
+    return None
 
 def analyze_japan_promotion(title: str, subtitle: str = "", content: str = "") -> Tuple[bool, str, str]:
     """
@@ -119,7 +133,7 @@ def analyze_japan_promotion(title: str, subtitle: str = "", content: str = "") -
                     matched_cities.append(city)
 
     dest_str = ", ".join(matched_cities) if matched_cities else "일본 전역"
-    best_cat = matched_categories[0] if len(matched_categories) == 1 else ("일본 전역" if len(matched_categories) > 1 else "일본 전역")
+    best_cat = matched_categories[0] if len(matched_categories) == 1 else "일본 전역"
 
     return True, best_cat, dest_str
 
@@ -139,7 +153,7 @@ def analyze_nz_promotion(title: str, subtitle: str = "", content: str = "") -> T
 
     for cat, cities in NEW_ZEALAND_DESTINATIONS.items():
         for city in cities:
-            if city.lower() in full_text.lower():
+            if _kw_in(city, full_text):
                 if cat not in matched_categories:
                     matched_categories.append(cat)
                 if city not in matched_cities:
@@ -149,6 +163,15 @@ def analyze_nz_promotion(title: str, subtitle: str = "", content: str = "") -> T
     best_cat = matched_categories[0] if len(matched_categories) == 1 else "뉴질랜드 전역"
 
     return True, best_cat, dest_str
+
+def analyze_flight_promotion(title: str, subtitle: str = "", content: str = "") -> Tuple[bool, str, str]:
+    """
+    Unified analyzer supporting both Japan and New Zealand flight promotions.
+    """
+    region = classify_region(f"{title} {subtitle}", content)
+    if region == "뉴질랜드":
+        return analyze_nz_promotion(title, subtitle, content)
+    return analyze_japan_promotion(title, subtitle, content)
 
 def extract_dates(text: str) -> Tuple[Optional[str], Optional[str]]:
     patterns = [
@@ -170,5 +193,5 @@ def extract_dates(text: str) -> Tuple[Optional[str], Optional[str]]:
                 return start_date, end_date
     return None, None
 
-# Backwards compatibility alias
-analyze_promotion = analyze_japan_promotion
+# Alias for backwards compatibility across crawlers
+analyze_promotion = analyze_flight_promotion

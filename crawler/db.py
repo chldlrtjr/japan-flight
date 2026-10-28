@@ -1,9 +1,14 @@
 import os
+import sys
 import json
 import sqlite3
 import re
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional
+
+# Add root folder to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 KST = timezone(timedelta(hours=9))
 
@@ -18,6 +23,38 @@ def today_kst_str() -> str:
 DB_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
 DB_PATH = os.path.join(DB_DIR, "promotions.db")
 
+# Zero-Guesswork Blacklisted fake IDs and domestic-only carriers
+BLACKLIST_MOCK_PROMO_IDS = {
+    'csair_akl_guangzhou_transit_deal', 'koreanair_akl_direct_2026', 'airnz_nz_all_deals_2026',
+    'airpremia_sapporo_inauguration', 'airbusan_october_coupon', 'airseoul_october_hurry',
+    'airseoul_takamatsu_10th', 'jin_october_newmember_baggage', 'jin_guam_superlow',
+    'parata_japan_paranweek', 'peach_autumn_sale', 'airseoul_yonago_takamatsu',
+    'airbusan_fukuoka_winter', 'jin_jinmarket_autumn', 'jin_japan_special',
+    'jin_sapporo_okinawa_sale', 'zipair_narita_special', 'kal_japan_app_special',
+    'asiana_japan_season_deal', 'jal_haneda_earlybird', 'ana_gimpo_sale',
+    'skymark_imatoku_deal', 'starflyer_star_early', 'airdo_do_bargain',
+    'solaseed_bargain_series', 'fda_dream_early', 'ibex_tokuwari',
+    'jta_okinawa_island_special', 'rac_island_connect', 'tokiair_niigata_sapporo',
+    'amx_mizoka_deal', 'orc_nagasaki_tsushima', 'hac_hokkaido_okadama',
+    'spring_japan_tokyo_hiroshima', 'jetstar_super_star_sale'
+}
+
+JAPAN_DOMESTIC_AIRLINE_CODES = {
+    'SKYMARK', 'STARFLYER', 'AIRDO', 'SOLASEED', 'FDA', 'IBEX', 
+    'SPRING_JP', 'JETSTAR_JP', 'JTA', 'RAC', 'TOKI_AIR', 'AMX', 'ORC', 'HAC'
+}
+
+JAPAN_DOMESTIC_AIRLINE_NAMES = [
+    '스카이마크', '스타플라이어', '에어도', '솔라시드', '후지드림',
+    '아이벡스', '토키에어', '토키', '아마쿠사', '오리엔탈', '홋카이도 에어',
+    '류큐', '트랜스오션', '제트스타 재팬', '스프링 재팬'
+]
+
+IRRELEVANT_KEYWORDS = [
+    '홍콩', '싱가포르', '국립항공박물관', '포인트 적립', '신한카드',
+    '시니어', '우리 동네', '체크인 혜택', '면세점', '박물관'
+]
+
 def get_connection() -> sqlite3.Connection:
     os.makedirs(DB_DIR, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
@@ -31,22 +68,22 @@ def init_db():
     # Create promotions table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS promotions (
-            id TEXT PRIMARY KEY,               -- e.g. "jeju_0000004293" or hash
-            airline TEXT NOT NULL,             -- "제주항공", "티웨이항공", "에어뉴질랜드" 등
-            airline_code TEXT NOT NULL,        -- "JEJU", "TWAY", "AIR_NZ", "KAL"
-            title TEXT NOT NULL,               -- 프로모션 제목
-            subtitle TEXT,                     -- 부제목/요약
-            badge_text TEXT,                   -- "최대 82% 할인", "신규취항", "얼리버드"
-            detail_url TEXT NOT NULL,          -- 상세 링크
-            image_url TEXT,                    -- 배너/이미지 URL
-            promo_start TEXT,                  -- 프로모션 시작일 (YYYY-MM-DD)
-            promo_end TEXT,                    -- 프로모션 종료일 (YYYY-MM-DD)
-            travel_period TEXT,                -- 탑승 기간 텍스트
-            is_international INTEGER DEFAULT 1, -- 국제선 여부 (1=국제선, 0=국내선)
-            region_category TEXT,              -- "일본", "뉴질랜드", "대양주/기타"
-            destinations TEXT,                 -- 콤마 구분 목적지 (예: "도쿄,오사카", "오클랜드")
-            status TEXT DEFAULT 'ING',         -- "ING" (진행중), "UPCOMING" (예정), "END" (종료)
-            is_featured INTEGER DEFAULT 0,     -- 주요 특가 여부
+            id TEXT PRIMARY KEY,
+            airline TEXT NOT NULL,
+            airline_code TEXT NOT NULL,
+            title TEXT NOT NULL,
+            subtitle TEXT,
+            badge_text TEXT,
+            detail_url TEXT NOT NULL,
+            image_url TEXT,
+            promo_start TEXT,
+            promo_end TEXT,
+            travel_period TEXT,
+            is_international INTEGER DEFAULT 1,
+            region_category TEXT,
+            destinations TEXT,
+            status TEXT DEFAULT 'ING',
+            is_featured INTEGER DEFAULT 0,
             view_count INTEGER DEFAULT 0,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
@@ -58,7 +95,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS crawl_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             airline TEXT NOT NULL,
-            status TEXT NOT NULL,              -- "SUCCESS", "FAILED"
+            status TEXT NOT NULL,
             items_found INTEGER DEFAULT 0,
             items_saved INTEGER DEFAULT 0,
             error_message TEXT,
@@ -67,27 +104,27 @@ def init_db():
         )
     ''')
 
-    # Create news articles table (focused on promotions: Japan & New Zealand)
+    # Create news articles table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS news_articles (
-            id TEXT PRIMARY KEY,               -- hash or link
+            id TEXT PRIMARY KEY,
             title TEXT NOT NULL,
             summary TEXT,
-            source TEXT NOT NULL,              -- 언론사명 (연합뉴스, 매일경제 등)
+            source TEXT NOT NULL,
             link TEXT NOT NULL UNIQUE,
             published_at TEXT,
-            airline TEXT,                      -- 언급된 항공사
-            is_japan INTEGER DEFAULT 0,        -- 🇯🇵 일본 관련 여부 (1 or 0)
-            japan_cities TEXT,                 -- 대상 도시 (도쿄, 오클랜드 등)
-            region_category TEXT,              -- "일본", "뉴질랜드"
-            promo_status TEXT DEFAULT 'ACTIVE', -- "ACTIVE" (진행중), "UPCOMING" (예정)
-            promo_period_desc TEXT,            -- "가을·겨울 시즌 특가", "10~12월 출발" 등
+            airline TEXT,
+            is_japan INTEGER DEFAULT 0,
+            japan_cities TEXT,
+            region_category TEXT,
+            promo_status TEXT DEFAULT 'ACTIVE',
+            promo_period_desc TEXT,
             promo_end TEXT,
             created_at TEXT NOT NULL
         )
     ''')
 
-    # Create sent_notifications table to permanently prevent duplicate alerts across runs
+    # Create sent_notifications table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sent_notifications (
             id TEXT PRIMARY KEY,
@@ -98,74 +135,45 @@ def init_db():
         )
     ''')
 
-    # Seed existing promotions into sent_notifications so existing deals never trigger alerts
+    # Seed existing promotions into sent_notifications
     cursor.execute('''
         INSERT OR IGNORE INTO sent_notifications (id, airline, title, detail_url, sent_at)
         SELECT id, airline, title, detail_url, created_at FROM promotions
     ''')
 
-    # Permanently block alerts for dead dummy IDs
-    cursor.execute('''
-        INSERT OR IGNORE INTO sent_notifications (id, airline, title, detail_url, sent_at)
-        VALUES ('peach_int_shorttrip', '피치항공 (Peach)', '피치 특가', '', datetime('now'))
-    ''')
-
     # Migration: add columns if table already exists
-    try:
-        cursor.execute("ALTER TABLE news_articles ADD COLUMN promo_status TEXT DEFAULT 'ACTIVE'")
-    except Exception:
-        pass
-    try:
-        cursor.execute("ALTER TABLE news_articles ADD COLUMN promo_period_desc TEXT")
-    except Exception:
-        pass
-    try:
-        cursor.execute("ALTER TABLE news_articles ADD COLUMN promo_end TEXT")
-    except Exception:
-        pass
+    for col, col_type in [
+        ("promo_status", "TEXT DEFAULT 'ACTIVE'"),
+        ("promo_period_desc", "TEXT"),
+        ("promo_end", "TEXT")
+    ]:
+        try:
+            cursor.execute(f"ALTER TABLE news_articles ADD COLUMN {col} {col_type}")
+        except Exception:
+            pass
 
-    # Automatically clean non-target, irrelevant, or domestic-only promotions
+    # Purge blacklisted mock IDs and domestic airlines
+    placeholders = ','.join('?' for _ in BLACKLIST_MOCK_PROMO_IDS)
+    cursor.execute(f"DELETE FROM promotions WHERE id IN ({placeholders})", tuple(BLACKLIST_MOCK_PROMO_IDS))
+
+    code_placeholders = ','.join('?' for _ in JAPAN_DOMESTIC_AIRLINE_CODES)
+    cursor.execute(f"DELETE FROM promotions WHERE airline_code IN ({code_placeholders})", tuple(JAPAN_DOMESTIC_AIRLINE_CODES))
+
+    for da in JAPAN_DOMESTIC_AIRLINE_NAMES:
+        cursor.execute("DELETE FROM promotions WHERE airline LIKE ?", (f'%{da}%',))
+
+    for ik in IRRELEVANT_KEYWORDS:
+        cursor.execute("DELETE FROM promotions WHERE title LIKE ? OR subtitle LIKE ?", (f'%{ik}%', f'%{ik}%'))
+
     cursor.execute("""
         DELETE FROM promotions
-        WHERE id = 'jin_guam_superlow'
-           OR title LIKE '%괌%'
-           OR destinations = '괌'
-           OR destinations LIKE '%괌,%'
-           OR destinations LIKE '%, 괌%'
-           OR destinations LIKE '%,괌%'
-           OR title LIKE '%홍콩%'
-           OR title LIKE '%싱가포르%'
-           OR title LIKE '%포인트 적립%'
-           OR title LIKE '%국립항공박물관%'
-           OR title LIKE '%신한카드%'
-           OR title LIKE '%시니어%'
-           OR title LIKE '%우리 동네%'
-           OR title LIKE '%체크인 혜택%'
-           OR airline_code IN (
-               'SKYMARK', 'STARFLYER', 'AIRDO', 'SOLASEED', 'FDA', 'IBEX', 
-               'SPRING_JP', 'JETSTAR_JP', 'JTA', 'RAC', 'TOKI_AIR', 'AMX', 'ORC', 'HAC'
-           )
-           OR id IN (
-               'skymark_imatoku_deal', 'starflyer_star_early', 'airdo_do_bargain',
-               'solaseed_bargain_series', 'fda_dream_early', 'ibex_tokuwari',
-               'jta_okinawa_island_special', 'rac_island_connect', 'tokiair_niigata_sapporo',
-               'amx_mizoka_deal', 'orc_nagasaki_tsushima', 'hac_hokkaido_okadama',
-               'spring_japan_tokyo_hiroshima', 'jetstar_super_star_sale'
-           )
-           OR airline LIKE '%스카이마크%'
-           OR airline LIKE '%스타플라이어%'
-           OR airline LIKE '%에어도%'
-           OR airline LIKE '%솔라시드%'
-           OR airline LIKE '%후지드림%'
-           OR airline LIKE '%아이벡스%'
-           OR airline LIKE '%제트스타%'
-           OR airline LIKE '%스프링%'
-           OR airline LIKE '%트랜스오션%'
-           OR airline LIKE '%류큐%'
-           OR airline LIKE '%토키%'
-           OR airline LIKE '%아마쿠사%'
-           OR airline LIKE '%오리엔탈%'
-           OR airline LIKE '%홋카이도 에어%'
+        WHERE image_url LIKE '%unsplash.com%'
+           OR detail_url LIKE '%csair.com/kr/ko%'
+           OR detail_url LIKE '%/promotionList%'
+           OR detail_url LIKE '%flights-from-seoul-to-auckland%'
+           OR detail_url LIKE '%flight-deals-to-new-zealand%'
+           OR airline LIKE '%파라타%'
+           OR airline_code = 'PARATA'
     """)
 
     cursor.execute("""
@@ -174,64 +182,35 @@ def init_db():
           AND title NOT LIKE '%일본%'
           AND title NOT LIKE '%뉴질랜드%'
           AND title NOT LIKE '%오클랜드%'
+          AND title NOT LIKE '%크라이스트처치%'
+          AND title NOT LIKE '%퀸스타운%'
+          AND title NOT LIKE '%웰링턴%'
     """)
+
+    # Normalize legacy rows where region_category held a city name (e.g. '센다이', '오클랜드')
+    cursor.execute("""
+        UPDATE promotions SET region_category = '일본'
+        WHERE region_category IS NULL OR region_category NOT IN ('일본', '뉴질랜드')
+    """)
+    for kw in ('뉴질랜드', '오클랜드', '크라이스트처치', '퀸스타운', '웰링턴', 'Auckland', 'New Zealand'):
+        cursor.execute(
+            "UPDATE promotions SET region_category = '뉴질랜드' WHERE title LIKE ? OR subtitle LIKE ? OR destinations LIKE ?",
+            (f'%{kw}%', f'%{kw}%', f'%{kw}%')
+        )
 
     # Permanently delete any expired promotions or news
     today_str = today_kst_str()
-    cursor.execute("""
-        DELETE FROM promotions
-        WHERE status = 'END'
-           OR (promo_end IS NOT NULL AND promo_end < ?)
-    """, (today_str,))
-
-    cursor.execute("""
-        DELETE FROM news_articles
-        WHERE promo_status = 'END'
-           OR (promo_end IS NOT NULL AND promo_end < ?)
-    """, (today_str,))
-
-    cursor.execute("""
-        DELETE FROM promotions
-        WHERE id IN (
-            'csair_akl_guangzhou_transit_deal',
-            'koreanair_akl_direct_2026',
-            'airnz_nz_all_deals_2026',
-            'airpremia_sapporo_inauguration',
-            'airbusan_october_coupon',
-            'airseoul_october_hurry',
-            'airseoul_takamatsu_10th',
-            'jin_october_newmember_baggage',
-            'parata_japan_paranweek', 'peach_autumn_sale', 'airseoul_yonago_takamatsu',
-            'airbusan_fukuoka_winter', 'jin_jinmarket_autumn', 'jin_japan_special',
-            'jin_sapporo_okinawa_sale', 'zipair_narita_special', 'kal_japan_app_special',
-            'asiana_japan_season_deal', 'jal_haneda_earlybird', 'ana_gimpo_sale'
-        )
-        OR image_url LIKE '%unsplash.com%'
-        OR detail_url LIKE '%csair.com/kr/ko%'
-        OR detail_url LIKE '%/promotionList%'
-        OR detail_url LIKE '%flights-from-seoul-to-auckland%'
-        OR detail_url LIKE '%flight-deals-to-new-zealand%'
-        OR airline LIKE '%파라타%'
-        OR airline_code = 'PARATA'
-    """)
+    cursor.execute("DELETE FROM promotions WHERE status = 'END' OR (promo_end IS NOT NULL AND promo_end < ?)", (today_str,))
+    cursor.execute("DELETE FROM news_articles WHERE promo_status = 'END' OR (promo_end IS NOT NULL AND promo_end < ?)", (today_str,))
 
     conn.commit()
     conn.close()
 
-    # Automatically purge any irrelevant, non-flight, or noisy news articles
     clean_invalid_news()
 
 def clean_invalid_news() -> int:
-    """
-    Examines all news articles in the database and permanently deletes any that:
-    1. Lack airline or flight keywords in title
-    2. Contain blacklist keywords (e.g. reward quizzes, incidents)
-    3. Are press roundup/digest articles
-    4. Focus purely on non-target regions
-    5. Have truncated/dangling titles
-    6. Have publication dates or link URLs older than 14 days (e.g. September news)
-    """
-    from .news import is_valid_active_promo
+    """Examines all news articles in the database and permanently deletes invalid/expired ones."""
+    from crawler.news import is_valid_active_promo
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id, title, summary, published_at, link FROM news_articles")
@@ -247,7 +226,7 @@ def clean_invalid_news() -> int:
         pub_at = r['published_at'] or ''
         link = r['link'] or ''
 
-        # 1. URL date check: if URL contains date older than 14 days, purge!
+        # URL date check
         m_url = re.search(r'(202[4-9])[/-]?([01]\d)[/-]?([0-3]\d)', link)
         if m_url:
             y, mo, da = m_url.groups()
@@ -256,12 +235,12 @@ def clean_invalid_news() -> int:
                 delete_ids.append(r['id'])
                 continue
 
-        # 2. Strict active promo check (title, keywords, quiz blacklist, cutoff date)
+        # Strict active promo check
         if not is_valid_active_promo(title, summary, pub_at):
             delete_ids.append(r['id'])
             continue
 
-        # 3. Direct cutoff date check
+        # Direct cutoff date check
         if pub_at < cutoff_date:
             delete_ids.append(r['id'])
             continue
@@ -275,8 +254,7 @@ def clean_invalid_news() -> int:
     return len(delete_ids)
 
 def upsert_news(news: Dict[str, Any]) -> bool:
-    # Strictly validate active promo news: title, flight/airline relevance, keywords, dates
-    from .news import is_valid_active_promo
+    from crawler.news import is_valid_active_promo
     if not is_valid_active_promo(
         news.get("title", ""),
         news.get("summary", ""),
@@ -284,11 +262,9 @@ def upsert_news(news: Dict[str, Any]) -> bool:
     ):
         return False
 
-    # Strictly reject non-target news (must be Japan or New Zealand)
     if news.get("is_japan", 0) != 1 and news.get("region_category") != "뉴질랜드":
         return False
 
-    # Reject if expired
     today_str = today_kst_str()
     if news.get("promo_status") == "END":
         return False
@@ -341,27 +317,19 @@ def upsert_news(news: Dict[str, Any]) -> bool:
     return True
 
 def upsert_promotion(promo: Dict[str, Any]) -> bool:
-    from .url_verifier import is_root_or_generic_url, is_fake_or_stock_image
+    from crawler.url_verifier import is_root_or_generic_url, is_fake_or_stock_image
 
     # Zero-Guesswork Rule: Reject fake stock images (Unsplash)
     if is_fake_or_stock_image(promo.get('image_url')):
-        print(f"[Guardrail] Rejected promo with fake/stock image: {promo.get('title')}")
         return False
 
     # Zero-Guesswork Rule: Reject airline homepage root or generic list URLs
-    is_generic, reason = is_root_or_generic_url(promo.get('detail_url', ''))
+    is_generic, _ = is_root_or_generic_url(promo.get('detail_url', ''))
     if is_generic:
-        print(f"[Guardrail] Rejected generic/root URL promo: {promo.get('title')} ({reason})")
         return False
 
     # Zero-Guesswork Rule: Reject blacklisted fake IDs
-    fake_ids = {
-        'csair_akl_guangzhou_transit_deal', 'koreanair_akl_direct_2026', 'airnz_nz_all_deals_2026',
-        'airpremia_sapporo_inauguration', 'airbusan_october_coupon', 'airseoul_october_hurry',
-        'airseoul_takamatsu_10th', 'jin_october_newmember_baggage'
-    }
-    if promo.get('id') in fake_ids:
-        print(f"[Guardrail] Rejected blacklisted fake ID: {promo.get('id')}")
+    if promo.get('id') in BLACKLIST_MOCK_PROMO_IDS:
         return False
 
     # Strictly reject expired promotions
@@ -371,47 +339,34 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
     if promo.get("promo_end") and promo["promo_end"] < today_str:
         return False
 
-    # Strictly reject non-target promotions
     title = promo.get('title', '')
     dests = promo.get('destinations', '')
-    promo_id = promo.get('id', '')
     airline = promo.get('airline', '')
     airline_code = promo.get('airline_code', '')
 
-    if promo_id == 'jin_guam_superlow' or '괌' in title or dests == '괌':
-        return False
-    if any(k in title for k in ['홍콩', '싱가포르', '국립항공박물관', '포인트 적립', '신한카드', '액티브 시니어', '우리 동네']):
+    if any(k in title for k in IRRELEVANT_KEYWORDS):
         return False
 
     # Strictly reject domestic-only airlines and pure domestic routes
-    domestic_airlines = [
-        '스카이마크', '스타플라이어', '에어도', '솔라시드', '후지드림',
-        '아이벡스', '토키에어', '아마쿠사', '오리엔탈', '홋카이도 에어',
-        '류큐', '트랜스오션', '제트스타 재팬', '스프링 재팬'
-    ]
-    if any(da in airline for da in domestic_airlines):
+    if any(da in airline for da in JAPAN_DOMESTIC_AIRLINE_NAMES):
         return False
-    if airline_code in ['SKYMARK', 'STARFLYER', 'AIRDO', 'SOLASEED', 'FDA', 'IBEX', 'SPRING_JP', 'JETSTAR_JP', 'JTA', 'RAC', 'TOKI_AIR', 'AMX', 'ORC', 'HAC']:
+    if airline_code in JAPAN_DOMESTIC_AIRLINE_CODES:
         return False
 
     full_text = f"{title} {promo.get('subtitle', '')} {dests} {promo.get('region_category', '')} {airline}"
-    from .destinations import is_supported_promo, is_nz_promo, strip_emojis
-    if not is_supported_promo(full_text):
+    from crawler.destinations import classify_region, strip_emojis
+    # region_category is strictly "뉴질랜드" | "일본"; city detail lives in destinations
+    region_cat = classify_region(f"{title} {promo.get('subtitle', '')}", full_text)
+    if region_cat is None:
         return False
-
-    region_cat = promo.get("region_category")
-    if not region_cat:
-        region_cat = "뉴질랜드" if is_nz_promo(full_text) else "일본"
 
     conn = get_connection()
     cursor = conn.cursor()
     now = now_kst_iso()
     
-    # Check if notification was EVER sent for this promo
     cursor.execute("SELECT id FROM sent_notifications WHERE id = ?", (promo["id"],))
     already_notified = cursor.fetchone() is not None
 
-    # Check if this promotion currently exists in promotions table
     cursor.execute("SELECT id FROM promotions WHERE id = ?", (promo["id"],))
     is_new = cursor.fetchone() is None
     
@@ -465,7 +420,7 @@ def upsert_promotion(promo: Dict[str, Any]) -> bool:
     # Send instant push alert ONLY if it is truly new AND never sent before
     if is_new and not already_notified:
         try:
-            from .notifier import send_promotion_alert
+            from crawler.notifier import send_promotion_alert
             sent_ok = send_promotion_alert(promo)
             if sent_ok:
                 cursor.execute(
@@ -490,20 +445,17 @@ def log_crawl(airline: str, status: str, items_found: int, items_saved: int, err
     conn.close()
 
 def export_data_to_json():
-    """Exports promotions and news articles from SQLite DB to JSON files for GitHub hosting, Vercel, and static deployment."""
+    """Exports promotions and news articles from SQLite DB to JSON files for GitHub hosting and static deployment."""
     conn = get_connection()
     cursor = conn.cursor()
 
-    # 1. Fetch promotions: 특가 시작일이 제일 늦은 것부터 내림차순 정렬
     cursor.execute("SELECT * FROM promotions ORDER BY promo_start DESC NULLS LAST, created_at DESC")
     promotions = [dict(row) for row in cursor.fetchall()]
 
-    # 2. Fetch news articles
     cursor.execute("SELECT * FROM news_articles ORDER BY published_at DESC, created_at DESC")
     news = [dict(row) for row in cursor.fetchall()]
     conn.close()
 
-    # Paths to export
     export_dirs = [
         DB_DIR,
         os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "web", "public", "data"))

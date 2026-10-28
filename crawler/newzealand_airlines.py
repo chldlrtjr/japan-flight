@@ -13,5 +13,9 @@ def crawl_newzealand_airlines() -> List[Dict[str, Any]]:
     """
     print("[NewZealandAirlines] Checking official New Zealand flight promotions...")
     items: List[Dict[str, Any]] = []
-    # Currently no verified active event pages from scrapers; returning empty list
+    # Source survey (2026-10-28) - no crawlable event-specific page exists yet:
+    # - Air New Zealand KR: only a standing fare table at /flight-deals-to-new-zealand
+    #   (generic list page, blocked by AGENTS.md); sitemap has no per-promotion pages.
+    # - Korean Air: WAF rejects automated browsers (ERR_HTTP2_PROTOCOL_ERROR / timeout).
+    # - China Southern KR: only a China-bound special-offer SPA list, nothing NZ-specific.
     return items

@@ -1,25 +1,12 @@
 import os
 import sys
-import re
 from datetime import datetime
-from typing import Dict, Any, List, Optional, Tuple
-import requests
+from typing import Dict, Any, Optional, Tuple
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from crawler.db import get_connection, export_data_to_json
-
-EXPIRED_PAGE_KEYWORDS = [
-    '종료된 이벤트', '종료된 프로모션', '이벤트가 종료', '해당 이벤트는 종료',
-    '판매가 마감', '판매가 종료', '마감되었습니다', '이벤트 기간이 만료',
-    '종료된 행사', '존재하지 않는 이벤트'
-]
-
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'Accept-Language': 'ko-KR,ko;q=0.9,ja;q=0.8,en;q=0.7'
-}
-
-from crawler.url_verifier import is_promotion_valid, verify_url_with_browser
+from crawler.url_verifier import is_promotion_valid
+from crawler.news import is_valid_active_promo
 
 def check_live_url_expired(url: str) -> Tuple[bool, str]:
     """Check if the detail page is invalid, empty, or expired."""
@@ -86,7 +73,6 @@ def check_and_expire_promotions(today_str: Optional[str] = None, check_live: boo
         cursor.executemany("DELETE FROM promotions WHERE id = ?", [(pid,) for pid in delete_promo_ids])
 
     # 2. Check and delete expired or invalid/irrelevant news articles
-    from crawler.news import is_valid_active_japan_promo
     cursor.execute("""
         SELECT id, title, summary, promo_end, promo_status, published_at
         FROM news_articles
@@ -102,7 +88,7 @@ def check_and_expire_promotions(today_str: Optional[str] = None, check_live: boo
         n_title = nrow['title']
         n_summary = nrow['summary'] or ''
 
-        if not is_valid_active_japan_promo(n_title, n_summary, n_pub or ''):
+        if not is_valid_active_promo(n_title, n_summary, n_pub or ''):
             delete_news_ids.append(n_id)
         elif n_status == 'END':
             delete_news_ids.append(n_id)
