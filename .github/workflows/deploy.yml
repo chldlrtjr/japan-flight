@@ -65,6 +65,8 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          NAVER_API_KEY_ID: ${{ secrets.NAVER_API_KEY_ID }}
+          NAVER_API_KEY: ${{ secrets.NAVER_API_KEY }}
         run: |
           python crawler/runner.py
 

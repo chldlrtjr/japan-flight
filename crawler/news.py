@@ -1,8 +1,12 @@
 import requests
 import hashlib
+import html
+import os
 import re
 import time
 from datetime import datetime, timedelta
+from email.utils import parsedate_to_datetime
+from urllib.parse import urlparse
 from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
 
@@ -250,10 +254,120 @@ def is_valid_active_promo(title: str, summary: str, pub_date: Optional[str]) -> 
 # Backwards compatibility alias
 is_valid_active_japan_promo = is_valid_active_promo
 
+NAVER_NEWS_API_URL = "https://naverapihub.apigw.ntruss.com/search/v1/news"
+
+def _naver_api_keys() -> tuple:
+    # notifier loads the project .env into os.environ on import
+    from . import notifier  # noqa: F401
+    return os.getenv("NAVER_API_KEY_ID", "").strip(), os.getenv("NAVER_API_KEY", "").strip()
+
+def _strip_api_markup(text: str) -> str:
+    return html.unescape(re.sub(r'</?b>', '', text or '')).strip()
+
+def _fetch_api_items(session: requests.Session, query: str, key_id: str, key: str):
+    """Yields (title, desc, link, pub_date, press) from NAVER API HUB news search."""
+    resp = session.get(
+        NAVER_NEWS_API_URL,
+        params={"query": query, "display": 100, "sort": "date", "format": "json"},
+        headers={"X-NCP-APIGW-API-KEY-ID": key_id, "X-NCP-APIGW-API-KEY": key},
+        timeout=10,
+    )
+    if resp.status_code != 200:
+        print(f"[NewsCrawler-API] Query '{query}' HTTP status {resp.status_code}: {resp.text[:200]}")
+        return
+    for it in resp.json().get("items", []):
+        link = it.get("originallink") or it.get("link") or ''
+        try:
+            pub_date = parsedate_to_datetime(it["pubDate"]).strftime('%Y-%m-%d')
+        except (KeyError, TypeError, ValueError):
+            pub_date = None
+        # The API carries no press name; resolved later only for accepted articles
+        yield _strip_api_markup(it.get("title")), _strip_api_markup(it.get("description")), link, pub_date, None
+
+def _fetch_html_items(session: requests.Session, query: str):
+    """Fallback when API keys are absent: parses Naver search result HTML."""
+    url = f"https://search.naver.com/search.naver?where=news&query={requests.utils.quote(query)}&sm=tab_opt&sort=1"
+    resp = session.get(url, timeout=10)
+    if resp.status_code != 200:
+        print(f"[NewsCrawler-Naver] Query '{query}' HTTP status {resp.status_code}")
+        return
+
+    soup = BeautifulSoup(resp.text, 'html.parser')
+
+    # Select news item containers (supports new SDS and legacy markup)
+    raw_items = soup.select('.fds-news-item-list-tab > div')
+    if not raw_items:
+        raw_items = soup.select('.list_news > li')
+
+    for it in raw_items:
+        # 1. Extract Press source
+        press = '언론사'
+        source_tag = it.select_one('.sds-comps-profile img')
+        if source_tag and source_tag.get('alt'):
+            press = source_tag['alt'].replace('의 프로필 이미지', '').replace('프로필 이미지', '').strip()
+        if not press or press == '언론사':
+            source_a = it.select_one('.sds-comps-profile-source a, .info_group a.press')
+            if source_a:
+                press = source_a.text.strip().replace('새 창 열림', '').strip()
+
+        # 2. Extract Title, Description, and Link
+        title, art_link, desc = '', '', ''
+        for a in it.find_all('a'):
+            href = a.get('href', '')
+            txt = a.text.strip().replace('새 창 열림', '').strip()
+            if not href or href == '#' or 'keep.naver.com' in href or href.startswith('javascript:'):
+                continue
+            # Prioritize article links
+            is_article_href = any(k in href for k in ['article', 'view', 'idxno', 'nid', 'news'])
+            if href.startswith('http') and (is_article_href or len(txt) > 10):
+                if not title and len(txt) > 8:
+                    title = txt
+                    art_link = href
+                elif title and not desc and len(txt) > 12 and txt != title:
+                    desc = txt
+
+        if not title or not art_link:
+            continue
+
+        # 3. Extract Raw Date string
+        date_raw = ''
+        date_el = it.select_one('.sds-comps-profile-info-subtexts, .sds-comps-profile-info-subtext, .info_group span.info')
+        if date_el:
+            date_raw = date_el.text.strip()
+        else:
+            for s in it.stripped_strings:
+                s_str = s.strip()
+                if re.search(r'(\d+)\s*(초|분|시간|일|주|달|개월)\s*전', s_str) or re.search(r'\d{4}[.-]\d{1,2}[.-]\d{1,2}', s_str):
+                    date_raw = s_str
+                    break
+
+        yield title, re.sub(r'새 창 열림', '', desc).strip(), art_link, parse_naver_date_robust(date_raw, art_link), press
+
+def _resolve_press_name(session: requests.Session, link: str, cache: Dict[str, str]) -> str:
+    """Reads the publisher's own og:site_name; falls back to the bare hostname."""
+    host = urlparse(link).netloc.lower().removeprefix('www.')
+    if host in cache:
+        return cache[host]
+    name = host or '언론사'
+    try:
+        resp = session.get(link, timeout=6)
+        if resp.status_code == 200:
+            if not resp.encoding or resp.encoding.lower() == 'iso-8859-1':
+                resp.encoding = resp.apparent_encoding
+            meta = BeautifulSoup(resp.text, 'html.parser').select_one('meta[property="og:site_name"]')
+            site = (meta.get('content') or '').strip() if meta else ''
+            if 1 < len(site) <= 30:
+                name = site
+    except Exception:
+        pass
+    cache[host] = name
+    return name
+
 def crawl_flight_news() -> List[Dict[str, Any]]:
     print("[NewsCrawler] Starting flight promotion crawl (Japan & New Zealand Deals)...")
     seen_links = set()
     seen_title_keys = set()
+    press_cache: Dict[str, str] = {}
     articles = []
 
     headers = {
@@ -266,72 +380,21 @@ def crawl_flight_news() -> List[Dict[str, Any]]:
     session = requests.Session()
     session.headers.update(headers)
 
-    print(" -> Fetching Naver News articles...")
+    key_id, key = _naver_api_keys()
+    use_api = bool(key_id and key)
+    print(f" -> Fetching Naver News articles via {'NAVER API HUB' if use_api else 'search HTML (no API keys)'}...")
     for query in NAVER_QUERIES:
         try:
-            url = f"https://search.naver.com/search.naver?where=news&query={requests.utils.quote(query)}&sm=tab_opt&sort=1"
-            resp = session.get(url, timeout=10)
-            if resp.status_code != 200:
-                print(f"[NewsCrawler-Naver] Query '{query}' HTTP status {resp.status_code}")
-                continue
-
-            soup = BeautifulSoup(resp.text, 'html.parser')
-
-            # Select news item containers (supports new SDS and legacy markup)
-            raw_items = soup.select('.fds-news-item-list-tab > div')
-            if not raw_items:
-                raw_items = soup.select('.list_news > li')
-
-            for it in raw_items:
-                # 1. Extract Press source
-                press = '언론사'
-                source_tag = it.select_one('.sds-comps-profile img')
-                if source_tag and source_tag.get('alt'):
-                    press = source_tag['alt'].replace('의 프로필 이미지', '').replace('프로필 이미지', '').strip()
-                if not press or press == '언론사':
-                    source_a = it.select_one('.sds-comps-profile-source a, .info_group a.press')
-                    if source_a:
-                        press = source_a.text.strip().replace('새 창 열림', '').strip()
-
-                # 2. Extract Title, Description, and Link
-                title, art_link, desc = '', '', ''
-                for a in it.find_all('a'):
-                    href = a.get('href', '')
-                    txt = a.text.strip().replace('새 창 열림', '').strip()
-                    if not href or href == '#' or 'keep.naver.com' in href or href.startswith('javascript:'):
-                        continue
-                    # Prioritize article links
-                    is_article_href = any(k in href for k in ['article', 'view', 'idxno', 'nid', 'news'])
-                    if href.startswith('http') and (is_article_href or len(txt) > 10):
-                        if not title and len(txt) > 8:
-                            title = txt
-                            art_link = href
-                        elif title and not desc and len(txt) > 12 and txt != title:
-                            desc = txt
-
+            items = _fetch_api_items(session, query, key_id, key) if use_api else _fetch_html_items(session, query)
+            for title, clean_desc, art_link, pub_date_formatted, press in items:
                 if not title or not art_link or art_link in seen_links:
                     continue
 
                 clean_title = clean_news_title(title)
-                clean_desc = re.sub(r'새 창 열림', '', desc).strip()
 
                 t_key = normalize_title_key(clean_title)
                 if t_key and t_key in seen_title_keys:
                     continue
-
-                # 3. Extract Raw Date string
-                date_raw = ''
-                date_el = it.select_one('.sds-comps-profile-info-subtexts, .sds-comps-profile-info-subtext, .info_group span.info')
-                if date_el:
-                    date_raw = date_el.text.strip()
-                else:
-                    for s in it.stripped_strings:
-                        s_str = s.strip()
-                        if re.search(r'(\d+)\s*(초|분|시간|일|주|달|개월)\s*전', s_str) or re.search(r'\d{4}[.-]\d{1,2}[.-]\d{1,2}', s_str):
-                            date_raw = s_str
-                            break
-
-                pub_date_formatted = parse_naver_date_robust(date_raw, art_link)
 
                 # Strict active promo filter (rejects unknown date or > 14 days old)
                 if not is_valid_active_promo(clean_title, clean_desc, pub_date_formatted):
@@ -340,6 +403,9 @@ def crawl_flight_news() -> List[Dict[str, Any]]:
                 seen_links.add(art_link)
                 if t_key:
                     seen_title_keys.add(t_key)
+
+                if not press:
+                    press = _resolve_press_name(session, art_link, press_cache)
 
                 # Detect region (New Zealand vs Japan)
                 # Title decides first; the summary is only consulted when the title names neither region
