@@ -120,6 +120,8 @@ def run() -> int:
             offers += got
             ok_sources += 1 if got else 0
             print(f"[FlightWatch] {name}: {len(got)} offers")
+        except ImportError as e:
+            print(f"[FlightWatch] {name}: failed (missing module {e.name})")
         except Exception as e:
             print(f"[FlightWatch] {name}: failed ({type(e).__name__})")
 
