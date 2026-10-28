@@ -58,6 +58,8 @@ def fetch_serpapi(cfg: Dict[str, Any]) -> List[Dict[str, Any]]:
         "departure_id": cfg["origin"], "arrival_id": cfg["dest"],
         "outbound_date": cfg["out_date"], "return_date": cfg["ret_date"],
         "currency": "KRW", "hl": "ko", "gl": "kr", "api_key": key,
+        # stops=0 means any number of stops; deep_search returns the full browser result set
+        "stops": 0, "deep_search": "true",
     }, timeout=60)
     r.raise_for_status()
     data = r.json()
