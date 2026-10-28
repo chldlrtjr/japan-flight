@@ -1,0 +1,43 @@
+name: Flight Price Watch
+
+on:
+  schedule:
+    # 09:00 / 21:00 KST
+    - cron: '0 0,12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: 'flight-watch'
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install requests fast-flights
+
+      # Lowest-price state lives in the Actions cache, not the (public) repository
+      - name: Restore watch state
+        uses: actions/cache@v4
+        with:
+          path: .flight_watch_state.json
+          key: flight-watch-${{ github.run_id }}
+          restore-keys: flight-watch-
+
+      - name: Check fares
+        env:
+          FLIGHT_WATCH_CONFIG: ${{ secrets.FLIGHT_WATCH_CONFIG }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python crawler/flight_watch.py
