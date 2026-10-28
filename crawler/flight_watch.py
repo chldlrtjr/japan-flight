@@ -15,7 +15,8 @@ from typing import List, Dict, Any, Optional
 #   "out_dates": ["2027-01-08", "2027-01-09"],   (or a single "out_date")
 #   "ret_date": "2027-02-06",
 #   "arrive_on": "2027-01-10",        (optional: keep only itineraries landing on this date)
-#   "target_price": 1300000            (KRW, round trip, 1 adult)
+#   "target_price": 1300000,           (KRW, round trip, 1 adult, checked bag included)
+#   "bag_fee_per_segment": {"젯스타": 50000}   (optional override of LCC_BAG_FEE_PER_SEGMENT)
 # }
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -23,6 +24,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 STATE_PATH = os.getenv("FLIGHT_WATCH_STATE", os.path.join(os.path.dirname(__file__), "..", ".flight_watch_state.json"))
 KST = timezone(timedelta(hours=9))
 FAIL_ALERT_AFTER = 3
+
+# Neither source prices a checked bag on this route, so LCC fares get an estimated
+# per-segment fee (one 20kg bag, prepaid online). Full-service economy fares are assumed
+# to include a checked bag; the alert tells the user to confirm the fare class.
+LCC_BAG_FEE_PER_SEGMENT = {
+    "젯스타": 50000, "Jetstar": 50000,
+    "스쿠트": 50000, "Scoot": 50000,
+    "에어아시아": 50000, "AirAsia": 50000,
+}
 
 def _fmt_dt(d: str) -> str:
     # "2027-01-09 21:30" -> "01/09 21:30"
@@ -40,7 +50,10 @@ def fetch_fast_flights(cfg: Dict[str, Any]) -> List[Dict[str, Any]]:
     )
     results = []
     for f in get_flights(q):
+        # fast-flights reports airlines per itinerary; only a single carrier can be mapped to legs
+        leg_airline = f.airlines[0] if len(f.airlines) == 1 else ""
         legs = [{
+            "airline": leg_airline,
             "from": s.from_airport.code,
             "to": s.to_airport.code,
             "dep": "%04d-%02d-%02d %02d:%02d" % (*s.departure.date, *s.departure.time),
@@ -69,6 +82,7 @@ def fetch_serpapi(cfg: Dict[str, Any]) -> List[Dict[str, Any]]:
         if not opt.get("price"):
             continue
         legs = [{
+            "airline": s.get("airline", ""),
             "from": s["departure_airport"]["id"], "to": s["arrival_airport"]["id"],
             "dep": s["departure_airport"]["time"], "arr": s["arrival_airport"]["time"],
         } for s in opt.get("flights", [])]
@@ -86,11 +100,23 @@ def links(cfg: Dict[str, Any]) -> str:
     sky = f"https://www.skyscanner.co.kr/transport/flights/{o.lower()}/{d.lower()}/{out_s}/{ret_s}/"
     return f'<a href="{google}">Google 항공편</a> · <a href="{sky}">스카이스캐너</a>'
 
+def apply_bag_fee(o: Dict[str, Any], fees: Dict[str, int]) -> Dict[str, Any]:
+    """price := fare + estimated checked-bag fee (LCC legs, return assumed to mirror outbound)."""
+    per_way = sum(fees.get(l.get("airline", ""), 0) for l in o["legs"])
+    o["fare"] = o["price"]
+    o["bag_fee"] = per_way * 2
+    o["price"] = o["fare"] + o["bag_fee"]
+    return o
+
 def format_offer(o: Dict[str, Any]) -> str:
     route = " → ".join([o["legs"][0]["from"]] + [l["to"] for l in o["legs"]]) if o["legs"] else ""
     first, last = (o["legs"][0], o["legs"][-1]) if o["legs"] else ({}, {})
     times = f"{_fmt_dt(first['dep'])} 출발 · {_fmt_dt(last['arr'])} 도착" if o["legs"] else ""
-    return (f"<b>₩{o['price']:,}</b> (왕복 1인)\n"
+    if o.get("bag_fee"):
+        bag = f"운임 ₩{o['fare']:,} + 위탁수하물 예상 ₩{o['bag_fee']:,} (구간당 추정치)"
+    else:
+        bag = "대형항공사 운임 - 위탁수하물 포함 등급인지 예매 시 확인"
+    return (f"<b>₩{o['price']:,}</b> (왕복 1인, 위탁수하물 포함 기준)\n{bag}\n"
             f"{html.escape(o['airlines'])}\n{route}\n{times}\n"
             f"<i>{html.escape(o['source'])}</i>")
 
@@ -136,6 +162,8 @@ def run() -> int:
     arrive_on = cfg.get("arrive_on")
     if arrive_on:
         offers = [o for o in offers if o["legs"] and o["legs"][-1]["arr"][:10] == arrive_on]
+    fees = dict(LCC_BAG_FEE_PER_SEGMENT, **cfg.get("bag_fee_per_segment", {}))
+    offers = [apply_bag_fee(o, fees) for o in offers]
 
     if not offers:
         state["fail_count"] = state.get("fail_count", 0) + 1
