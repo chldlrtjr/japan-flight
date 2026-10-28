@@ -12,7 +12,8 @@ from typing import List, Dict, Any, Optional
 #
 # FLIGHT_WATCH_CONFIG = {
 #   "origin": "ICN", "dest": "CHC",
-#   "out_date": "2027-01-09", "ret_date": "2027-02-06",
+#   "out_dates": ["2027-01-08", "2027-01-09"],   (or a single "out_date")
+#   "ret_date": "2027-02-06",
 #   "arrive_on": "2027-01-10",        (optional: keep only itineraries landing on this date)
 #   "target_price": 1300000            (KRW, round trip, 1 adult)
 # }
@@ -109,23 +110,28 @@ def run() -> int:
 
     cfg = json.loads(os.environ["FLIGHT_WATCH_CONFIG"])
     target = int(cfg.get("target_price", 0))
-    if datetime.now(KST).strftime("%Y-%m-%d") >= cfg["out_date"]:
+    today = datetime.now(KST).strftime("%Y-%m-%d")
+    out_dates = [d for d in sorted(cfg.get("out_dates") or [cfg["out_date"]]) if d > today]
+    if not out_dates:
         print("[FlightWatch] departure date reached; watch finished")
         return 0
+    cfg["out_date"] = out_dates[-1]
     state = load_state()
 
     offers: List[Dict[str, Any]] = []
-    ok_sources = 0
-    for name, fn in (("serpapi", fetch_serpapi), ("fast_flights", fetch_fast_flights)):
-        try:
-            got = fn(cfg)
-            offers += got
-            ok_sources += 1 if got else 0
-            print(f"[FlightWatch] {name}: {len(got)} offers")
-        except ImportError as e:
-            print(f"[FlightWatch] {name}: failed (missing module {e.name})")
-        except Exception as e:
-            print(f"[FlightWatch] {name}: failed ({type(e).__name__})")
+    for i, out_date in enumerate(out_dates, 1):
+        day_cfg = dict(cfg, out_date=out_date)
+        for name, fn in (("serpapi", fetch_serpapi), ("fast_flights", fetch_fast_flights)):
+            try:
+                got = fn(day_cfg)
+                for o in got:
+                    o["out_date"] = out_date
+                offers += got
+                print(f"[FlightWatch] date#{i} {name}: {len(got)} offers")
+            except ImportError as e:
+                print(f"[FlightWatch] date#{i} {name}: failed (missing module {e.name})")
+            except Exception as e:
+                print(f"[FlightWatch] date#{i} {name}: failed ({type(e).__name__})")
 
     arrive_on = cfg.get("arrive_on")
     if arrive_on:
@@ -153,7 +159,8 @@ def run() -> int:
             head = f"<b>[목표가 달성]</b> ₩{target:,} 이하 · 이전 최저 ₩{lowest:,}"
         else:
             head = f"<b>[최저가 갱신]</b> 이전 최저 ₩{lowest:,}"
-        sent = send_telegram_message(f"{head}\n\n{format_offer(best)}\n\n{links(cfg)}")
+        best_links = links(dict(cfg, out_date=best["out_date"]))
+        sent = send_telegram_message(f"{head}\n\n{format_offer(best)}\n\n{best_links}")
         state["lowest"] = best["price"]
         state["lowest_at"] = now
         print(f"[FlightWatch] new lowest recorded; alert sent: {sent}")
