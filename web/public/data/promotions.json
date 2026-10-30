@@ -1,5 +1,26 @@
 [
   {
+    "id": "tway_2626",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "지금, 제주를 만나다",
+    "subtitle": "제주행 국내선 최대 2만원 할인",
+    "badge_text": "특가 프로모션",
+    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/AL3iwUKMqZIsnJ3q5Y8r1A==/being/n",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/1028/086bf983-7fb2-47a1-9af7-744880f25911.png",
+    "promo_start": "2026-10-30",
+    "promo_end": "2026-11-30",
+    "travel_period": "2026-10-30 ~ 2026-11-30",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "사가",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-10-30T11:14:41.732323+09:00",
+    "updated_at": "2026-10-30T11:14:41.732323+09:00"
+  },
+  {
     "id": "jeju_0000004363",
     "airline": "제주항공",
     "airline_code": "JEJU",
@@ -18,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-23T14:21:31.463081+09:00",
-    "updated_at": "2026-10-30T07:09:27.493743+09:00"
+    "updated_at": "2026-10-30T11:14:36.293107+09:00"
   },
   {
     "id": "jeju_0000004413",
@@ -39,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-22T11:14:50.674610+09:00",
-    "updated_at": "2026-10-30T07:09:27.497004+09:00"
+    "updated_at": "2026-10-30T11:14:36.295188+09:00"
   },
   {
     "id": "tway_2611",
@@ -60,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-25T00:18:10.263591+09:00",
-    "updated_at": "2026-10-30T07:09:35.061950+09:00"
+    "updated_at": "2026-10-30T11:14:42.414521+09:00"
   },
   {
     "id": "jeju_0000004361",
@@ -81,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-14T02:29:10.448829",
-    "updated_at": "2026-10-30T07:09:27.500192+09:00"
+    "updated_at": "2026-10-30T11:14:36.297696+09:00"
   },
   {
     "id": "eastar_2645",
