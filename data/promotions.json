@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-30T11:14:41.732323+09:00",
-    "updated_at": "2026-10-30T18:12:56.653277+09:00"
+    "updated_at": "2026-10-31T01:21:08.700242+09:00"
   },
   {
     "id": "jeju_0000004363",
@@ -39,28 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-23T14:21:31.463081+09:00",
-    "updated_at": "2026-10-30T18:12:51.192335+09:00"
-  },
-  {
-    "id": "jeju_0000004413",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "일본 전 노선 항공+숙박 특가",
-    "subtitle": "엔저=일본 여행 그린라이트",
-    "badge_text": "엔저=일본 여행 그린라이트",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004413",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261020102702429.jpg",
-    "promo_start": "2026-10-22",
-    "promo_end": "2026-10-30",
-    "travel_period": "2026.10.22 ~ 2026.10.30",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "일본 전역",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-22T11:14:50.674610+09:00",
-    "updated_at": "2026-10-30T11:14:36.295188+09:00"
+    "updated_at": "2026-10-31T01:21:02.486157+09:00"
   },
   {
     "id": "tway_2611",
@@ -81,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-25T00:18:10.263591+09:00",
-    "updated_at": "2026-10-30T18:12:56.654823+09:00"
+    "updated_at": "2026-10-31T01:21:08.702803+09:00"
   },
   {
     "id": "jeju_0000004361",
@@ -102,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-14T02:29:10.448829",
-    "updated_at": "2026-10-30T18:12:51.194765+09:00"
+    "updated_at": "2026-10-31T01:21:02.489455+09:00"
   },
   {
     "id": "eastar_2645",
