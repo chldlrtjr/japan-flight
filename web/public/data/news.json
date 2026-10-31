@@ -622,37 +622,5 @@
     "promo_status": "ACTIVE",
     "promo_period_desc": "실시간 진행중",
     "promo_end": null
-  },
-  {
-    "id": "news_1f38710ad67d9640d899f23ef1536443",
-    "title": "에어로케이, 동계 국제선 항공권 프로모션 펼쳐",
-    "summary": "특가 항공권은 판매 기간 초반 사흘간 매일 오전 11시에 노선별로 순차 공개된다. 일본 노선을 시작으로 삿포로·오키나와 등 일본 주요 지역과 베트남·필리핀·대만 노선이 차례로 판매된다. 운임은 노선과 출발일, 예약...",
-    "source": "megaeconomy.co.kr",
-    "link": "https://www.megaeconomy.co.kr/news/newsview.php?ncode=1065603260080933",
-    "published_at": "2026-10-16",
-    "airline": "에어로케이",
-    "is_japan": 1,
-    "japan_cities": "일본 전역",
-    "region_category": "일본",
-    "created_at": "2026-10-17T02:20:53.233683+09:00",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "실시간 진행중",
-    "promo_end": null
-  },
-  {
-    "id": "news_1603d2dbe257bbaa2c3a2d9b33ec27d6",
-    "title": "에어로케이, 19일부터 동계 항공권 최대 98% 할인",
-    "summary": "시즌 항공권 특가 할인 행사 '앵콜 에케세일'을 연다. 이번 행사는 겨울철 해외여행 수요를 겨냥해 마련됐다. 일본과 대만, 베트남, 필리핀 등 국제선 15개 노선의 한국 출발 항공권을 최대 98% 할인된 가격에 내놓는다....",
-    "source": "중부매일 - 충청권 대표 뉴스 플랫폼",
-    "link": "https://www.jbnews.com/news/articleView.html?idxno=1513670",
-    "published_at": "2026-10-16",
-    "airline": "에어로케이",
-    "is_japan": 1,
-    "japan_cities": "일본 전역",
-    "region_category": "일본",
-    "created_at": "2026-10-16T06:50:12.548898",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "겨울·온천 시즌 특가",
-    "promo_end": null
   }
 ]
