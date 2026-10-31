@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-30T11:14:41.732323+09:00",
-    "updated_at": "2026-10-31T22:59:00.383097+09:00"
+    "updated_at": "2026-11-01T03:10:34.694487+09:00"
   },
   {
     "id": "jeju_0000004363",
@@ -39,49 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-23T14:21:31.463081+09:00",
-    "updated_at": "2026-10-31T22:58:52.565266+09:00"
-  },
-  {
-    "id": "tway_2611",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "제46회 항공의 날 기념 특가",
-    "subtitle": "국제선 최대 22% 할인 + 3만원 쿠폰",
-    "badge_text": "쿠폰할인",
-    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/dUA-rGulcB413_OAVrBBVw==/being/n",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/1015/b32b641d-4d2e-4aea-be37-bd17cefccaa8.png",
-    "promo_start": "2026-10-20",
-    "promo_end": "2026-10-31",
-    "travel_period": "2026-10-20 ~ 2026-10-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿄, 나리타, 오사카, 간사이, 후쿠오카, 삿포로, 나고야, 오키나와, 구마모토, 사가, 고베",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-25T00:18:10.263591+09:00",
-    "updated_at": "2026-10-31T22:59:00.385890+09:00"
-  },
-  {
-    "id": "jeju_0000004361",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "환상 속 겨울 도시 하코다테 특가",
-    "subtitle": "낭만 일번지 하코다테",
-    "badge_text": "낭만 일번지 하코다테",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004361",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261007175720609.jpg",
-    "promo_start": "2026-10-14",
-    "promo_end": "2026-10-31",
-    "travel_period": "2026.10.14 ~ 2026.10.31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "하코다테",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-14T02:29:10.448829",
-    "updated_at": "2026-10-31T16:40:02.244698+09:00"
+    "updated_at": "2026-11-01T03:10:29.604125+09:00"
   },
   {
     "id": "eastar_2645",
@@ -103,26 +61,5 @@
     "view_count": 0,
     "created_at": "2026-10-03T18:00:44.137009",
     "updated_at": "2026-10-03T18:00:44.137009"
-  },
-  {
-    "id": "eastar_2505",
-    "airline": "이스타항공",
-    "airline_code": "EASTAR",
-    "title": "도쿠시마 버스투어로 여행준비 끝!",
-    "subtitle": "이벤트기간 : 2026-05-18~2026-10-31",
-    "badge_text": "특가",
-    "detail_url": "https://www.eastarjet.com/newstar/PGWTA00002?eventNo=2505&gubun=I&searchIndex=1",
-    "image_url": "https://zeimage.eastarjet.com/newstar/images/admin/event/20260518024311_%EB%AA%A8%EB%B0%94%EC%9D%BC_%EB%A9%94%EC%9D%B8%EB%B0%B0%EB%84%88%EA%B0%80%EC%9D%B4%EB%93%9C.jpg",
-    "promo_start": "2026-05-18",
-    "promo_end": "2026-10-31",
-    "travel_period": "2026-05-18 ~ 2026-10-31",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿠시마",
-    "status": "ING",
-    "is_featured": 0,
-    "view_count": 0,
-    "created_at": "2026-09-29T00:18:06.121932",
-    "updated_at": "2026-10-22T02:44:35.057291+09:00"
   }
 ]
