@@ -1,5 +1,26 @@
 [
   {
+    "id": "tway_2627",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "11월 맞이 더블 혜택",
+    "subtitle": "국제선 할인+최대 3만원 쿠폰 지급!",
+    "badge_text": "쿠폰할인",
+    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/l5rwg0wgaNHQWFu5E3-93Q==/being/n",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/1030/51649142-4e3a-4639-b54b-b3b942a34964.png",
+    "promo_start": "2026-11-01",
+    "promo_end": "2026-11-13",
+    "travel_period": "2026-11-01 ~ 2026-11-13",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "도쿄, 나리타, 오사카, 간사이, 후쿠오카, 삿포로, 나고야, 오키나와, 구마모토, 사가, 고베",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-11-01T15:58:53.945962+09:00",
+    "updated_at": "2026-11-01T15:58:53.945962+09:00"
+  },
+  {
     "id": "tway_2626",
     "airline": "티웨이항공",
     "airline_code": "TWAY",
@@ -18,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-30T11:14:41.732323+09:00",
-    "updated_at": "2026-11-01T09:46:11.589217+09:00"
+    "updated_at": "2026-11-01T15:58:54.597835+09:00"
   },
   {
     "id": "jeju_0000004363",
@@ -39,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-23T14:21:31.463081+09:00",
-    "updated_at": "2026-11-01T09:46:02.150020+09:00"
+    "updated_at": "2026-11-01T15:58:49.411568+09:00"
   },
   {
     "id": "eastar_2645",
