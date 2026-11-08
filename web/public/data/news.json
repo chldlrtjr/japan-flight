@@ -558,21 +558,5 @@
     "promo_status": "UPCOMING",
     "promo_period_desc": "실시간 진행중",
     "promo_end": null
-  },
-  {
-    "id": "news_83cf916ee334abd888cafce8a1674f66",
-    "title": "국내 골프 '주춤', 일본 골프여행 '활기'…LCC '틈새전략' 펼친다",
-    "summary": "다카마쓰 노선은 특가 운임에도 무료 위탁수하물 15㎏을 제공한다. 최근에는 취항 11주년을 기념해 왕복 항공권과 숙박, 그린피 등을 결합한 일본 골프여행 패키지 프로모션도 진행 중이다. 항공업계 관계자는 \"엔저...",
-    "source": "신아일보",
-    "link": "https://www.shinailbo.co.kr/news/articleView.html?idxno=5074552",
-    "published_at": "2026-10-24",
-    "airline": "일본 노선 항공사",
-    "is_japan": 1,
-    "japan_cities": "일본 전역",
-    "region_category": "일본",
-    "created_at": "2026-10-25T00:02:52.674198+09:00",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "실시간 진행중",
-    "promo_end": null
   }
 ]
