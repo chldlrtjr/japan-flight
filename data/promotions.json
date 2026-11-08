@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-02T12:05:46.140418+09:00",
-    "updated_at": "2026-11-08T19:50:17.723081+09:00"
+    "updated_at": "2026-11-09T01:49:19.400569+09:00"
   },
   {
     "id": "tway_2627",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-01T15:58:53.945962+09:00",
-    "updated_at": "2026-11-08T19:50:22.775816+09:00"
+    "updated_at": "2026-11-09T01:49:23.672664+09:00"
   },
   {
     "id": "tway_2626",
@@ -60,27 +60,6 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-30T11:14:41.732323+09:00",
-    "updated_at": "2026-11-08T19:50:22.799874+09:00"
-  },
-  {
-    "id": "jeju_0000004363",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "일본 센다이 신규취항 특가",
-    "subtitle": "최대 20% 할인코드",
-    "badge_text": "최대 20% 할인코드",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004363",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261020170956260.jpg",
-    "promo_start": "2026-10-23",
-    "promo_end": "2026-11-08",
-    "travel_period": "2026.10.23 ~ 2026.11.08",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "센다이",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-23T14:21:31.463081+09:00",
-    "updated_at": "2026-11-08T19:50:17.725358+09:00"
+    "updated_at": "2026-11-09T01:49:23.674861+09:00"
   }
 ]
