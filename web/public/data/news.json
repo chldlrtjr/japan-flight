@@ -115,7 +115,7 @@
     "id": "news_0f73e77a9031ac0d8fa90168c244c951",
     "title": "에어로케이, 청주-고베 주 4회 운항…간사이 하늘길 확대",
     "summary": "에어로케이항공이 겨울 여행 수요에 맞춰 청주와 일본 고베를 잇는 항공편을 주 4회 운항한다. 하루 3회... 에어로케이는 항공권 판매 개시에 맞춰 오는 12월 31일까지 고베 노선 특가 행사를 진행한다. 에어로케이...",
-    "source": "에너지경제신문",
+    "source": "ekn.kr",
     "link": "https://www.ekn.kr/web/view.php?key=20261106027416566",
     "published_at": "2026-11-06",
     "airline": "에어로케이",
@@ -605,22 +605,6 @@
     "created_at": "2026-10-27T15:58:38.540912+09:00",
     "promo_status": "ACTIVE",
     "promo_period_desc": "10~12월 출발 특가",
-    "promo_end": null
-  },
-  {
-    "id": "news_bcd2aaecd8077a7a64d1e23ab29a4fbf",
-    "title": "\"도쿄보다 한국\"...에어로케이 청주~마쓰야마, 日 수요 주목",
-    "summary": "협력해 항공권 가격을 내리는 프로모션도 추가로 진행할 예정이기도 하다. 에어로케이가 내년 첫 취항 노선으로 청주~마쓰야마를 택한 이유가 여기에 있다. 국내 소도시 여행 유행은 물론 일본 현지의 대대적인...",
-    "source": "파이낸셜뉴스",
-    "link": "https://www.fnnews.com/news/202610251355261301",
-    "published_at": "2026-10-26",
-    "airline": "에어로케이",
-    "is_japan": 1,
-    "japan_cities": "도쿄, 마쓰야마",
-    "region_category": "일본",
-    "created_at": "2026-11-10T02:57:13.086324+09:00",
-    "promo_status": "UPCOMING",
-    "promo_period_desc": "실시간 진행중",
     "promo_end": null
   }
 ]
