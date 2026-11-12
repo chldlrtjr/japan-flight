@@ -1,5 +1,26 @@
 [
   {
+    "id": "tway_2640",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "지금, 제주를 만나다",
+    "subtitle": "제주행 국내선 최대 2만원 할인",
+    "badge_text": "특가 프로모션",
+    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/cMU_aF4suGXWtKU-sVfp8A==/being/n",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/1112/1dc72997-b6e0-430b-9728-a25c7eda5779.png",
+    "promo_start": "2026-11-13",
+    "promo_end": "2026-11-30",
+    "travel_period": "2026-11-13 ~ 2026-11-30",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "사가",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-11-13T06:13:16.226737+09:00",
+    "updated_at": "2026-11-13T06:13:16.226737+09:00"
+  },
+  {
     "id": "tway_2636",
     "airline": "티웨이항공",
     "airline_code": "TWAY",
@@ -18,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-12T13:42:44.019404+09:00",
-    "updated_at": "2026-11-12T22:25:15.233214+09:00"
+    "updated_at": "2026-11-13T06:13:16.903277+09:00"
   },
   {
     "id": "jeju_0000004463",
@@ -39,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-10T16:55:36.633306+09:00",
-    "updated_at": "2026-11-12T22:25:10.482301+09:00"
+    "updated_at": "2026-11-13T06:13:10.276904+09:00"
   },
   {
     "id": "jeju_0000004411",
@@ -60,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-02T12:05:46.140418+09:00",
-    "updated_at": "2026-11-12T22:25:10.484856+09:00"
+    "updated_at": "2026-11-13T06:13:10.279659+09:00"
   },
   {
     "id": "tway_2627",
@@ -81,27 +102,6 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-01T15:58:53.945962+09:00",
-    "updated_at": "2026-11-12T22:25:15.422888+09:00"
-  },
-  {
-    "id": "tway_2626",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "지금, 제주를 만나다",
-    "subtitle": "제주행 국내선 최대 2만원 할인",
-    "badge_text": "특가 프로모션",
-    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/AL3iwUKMqZIsnJ3q5Y8r1A==/being/n",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/1028/086bf983-7fb2-47a1-9af7-744880f25911.png",
-    "promo_start": "2026-10-30",
-    "promo_end": "2026-11-12",
-    "travel_period": "2026-10-30 ~ 2026-11-12",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "사가",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-10-30T11:14:41.732323+09:00",
-    "updated_at": "2026-11-12T22:25:15.424673+09:00"
+    "updated_at": "2026-11-13T06:13:16.904762+09:00"
   }
 ]
