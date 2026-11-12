@@ -1,5 +1,26 @@
 [
   {
+    "id": "tway_2636",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "2027년 수능 수험생 최대 25% 할인",
+    "subtitle": "동반 1인까지 함께 할인받고 떠나요!",
+    "badge_text": "특가 프로모션",
+    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/p2O0vlJ77PySOOxsebWTkw==/being/n",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/1109/8cb72896-0551-4e9b-adbe-74785ec2beef.png",
+    "promo_start": "2026-11-12",
+    "promo_end": "2027-01-31",
+    "travel_period": "2026-11-12 ~ 2027-01-31",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "일본 전역",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-11-12T13:42:44.019404+09:00",
+    "updated_at": "2026-11-12T13:42:44.019404+09:00"
+  },
+  {
     "id": "jeju_0000004463",
     "airline": "제주항공",
     "airline_code": "JEJU",
@@ -18,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-10T16:55:36.633306+09:00",
-    "updated_at": "2026-11-12T08:12:13.425104+09:00"
+    "updated_at": "2026-11-12T13:42:38.740319+09:00"
   },
   {
     "id": "jeju_0000004411",
@@ -39,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-02T12:05:46.140418+09:00",
-    "updated_at": "2026-11-12T08:12:13.428046+09:00"
+    "updated_at": "2026-11-12T13:42:38.743025+09:00"
   },
   {
     "id": "tway_2627",
@@ -60,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-01T15:58:53.945962+09:00",
-    "updated_at": "2026-11-12T08:12:18.015704+09:00"
+    "updated_at": "2026-11-12T13:42:45.506606+09:00"
   },
   {
     "id": "tway_2626",
@@ -81,6 +102,6 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-10-30T11:14:41.732323+09:00",
-    "updated_at": "2026-11-12T08:12:18.017241+09:00"
+    "updated_at": "2026-11-12T13:42:45.508562+09:00"
   }
 ]
