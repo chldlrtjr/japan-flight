@@ -1,5 +1,26 @@
 [
   {
+    "id": "jeju_0000004456",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "일본 전 노선 맛있는 특가",
+    "subtitle": "겨울방학 일본여행은 제주항공",
+    "badge_text": "겨울방학 일본여행은 제주항공",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004456",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261112111102469.jpg",
+    "promo_start": "2026-11-13",
+    "promo_end": "2026-11-24",
+    "travel_period": "2026.11.13 ~ 2026.11.24",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "일본 전역",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-11-13T11:14:29.939187+09:00",
+    "updated_at": "2026-11-13T11:14:30.600134+09:00"
+  },
+  {
     "id": "tway_2640",
     "airline": "티웨이항공",
     "airline_code": "TWAY",
@@ -18,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-13T06:13:16.226737+09:00",
-    "updated_at": "2026-11-13T06:13:16.226737+09:00"
+    "updated_at": "2026-11-13T11:14:36.109874+09:00"
   },
   {
     "id": "tway_2636",
@@ -39,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-12T13:42:44.019404+09:00",
-    "updated_at": "2026-11-13T06:13:16.903277+09:00"
+    "updated_at": "2026-11-13T11:14:36.111585+09:00"
   },
   {
     "id": "jeju_0000004463",
@@ -60,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-10T16:55:36.633306+09:00",
-    "updated_at": "2026-11-13T06:13:10.276904+09:00"
+    "updated_at": "2026-11-13T11:14:30.603749+09:00"
   },
   {
     "id": "jeju_0000004411",
@@ -81,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-02T12:05:46.140418+09:00",
-    "updated_at": "2026-11-13T06:13:10.279659+09:00"
+    "updated_at": "2026-11-13T11:14:30.605684+09:00"
   },
   {
     "id": "tway_2627",
@@ -102,6 +123,6 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-01T15:58:53.945962+09:00",
-    "updated_at": "2026-11-13T06:13:16.904762+09:00"
+    "updated_at": "2026-11-13T11:14:36.113709+09:00"
   }
 ]
