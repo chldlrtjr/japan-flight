@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-13T11:14:29.939187+09:00",
-    "updated_at": "2026-11-13T19:14:41.111235+09:00"
+    "updated_at": "2026-11-14T03:15:15.248473+09:00"
   },
   {
     "id": "tway_2640",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-13T06:13:16.226737+09:00",
-    "updated_at": "2026-11-13T19:14:47.252737+09:00"
+    "updated_at": "2026-11-14T03:15:20.507432+09:00"
   },
   {
     "id": "tway_2636",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-12T13:42:44.019404+09:00",
-    "updated_at": "2026-11-13T19:14:47.254183+09:00"
+    "updated_at": "2026-11-14T03:15:20.509502+09:00"
   },
   {
     "id": "jeju_0000004463",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-10T16:55:36.633306+09:00",
-    "updated_at": "2026-11-13T19:14:41.131707+09:00"
+    "updated_at": "2026-11-14T03:15:15.252483+09:00"
   },
   {
     "id": "jeju_0000004411",
@@ -102,27 +102,6 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-02T12:05:46.140418+09:00",
-    "updated_at": "2026-11-13T19:14:41.133860+09:00"
-  },
-  {
-    "id": "tway_2627",
-    "airline": "티웨이항공",
-    "airline_code": "TWAY",
-    "title": "11월 맞이 더블 혜택",
-    "subtitle": "국제선 할인+최대 3만원 쿠폰 지급!",
-    "badge_text": "쿠폰할인",
-    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/l5rwg0wgaNHQWFu5E3-93Q==/being/n",
-    "image_url": "https://contents-image.trinityairways.com/contents/2026/1030/51649142-4e3a-4639-b54b-b3b942a34964.png",
-    "promo_start": "2026-11-01",
-    "promo_end": "2026-11-13",
-    "travel_period": "2026-11-01 ~ 2026-11-13",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "도쿄, 나리타, 오사카, 간사이, 후쿠오카, 삿포로, 나고야, 오키나와, 구마모토, 사가, 고베",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-11-01T15:58:53.945962+09:00",
-    "updated_at": "2026-11-13T19:14:47.255676+09:00"
+    "updated_at": "2026-11-14T03:15:15.255207+09:00"
   }
 ]
