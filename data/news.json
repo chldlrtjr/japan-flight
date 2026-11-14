@@ -595,7 +595,7 @@
     "id": "news_3134cbfe34de8628393446ba13222491",
     "title": "트리니티항공, 가을 맞이 '더블 혜택' 프로모션…\"최대 25% 할인\"",
     "summary": "혜택 프로모션을 진행한다고 2일 밝혔습니다. 기간은 오는 13일부터 내년 1월 31일까지이며, 일본, 동남아... 트리니티항공 홈페이지에서 할인 코드 'NOV26'을 입력하면 노선별로 최대 25% 즉시 할인된 가격에 항공권을...",
-    "source": "paxetv.com",
+    "source": "팍스경제TV",
     "link": "http://www.paxetv.com/news/articleView.html?idxno=285801",
     "published_at": "2026-11-02",
     "airline": "티웨이항공",
@@ -701,22 +701,6 @@
     "created_at": "2026-11-02T12:07:06.571790+09:00",
     "promo_status": "ACTIVE",
     "promo_period_desc": "10~12월 출발 특가",
-    "promo_end": null
-  },
-  {
-    "id": "news_a3f1a97b9bf8da4766c5fdc9510526d1",
-    "title": "“여행계획 다 짰는데 20만원 더 내라네요”…제맘대로 변하는 비행기표...",
-    "summary": "항공사는 새 노선의 인지도를 높이고 초기 수요를 확보하고자 취항 기념 할인이나 한정 특가를 내놓기도 한다. 제주항공의 경우 내년 1월 8일 인천~일본 센다이 노선을 신규 취항하는데, 이를 앞두고 현재 항공권 최대 20...",
-    "source": "매일경제",
-    "link": "https://www.mk.co.kr/article/12191548",
-    "published_at": "2026-10-30",
-    "airline": "일본 노선 항공사",
-    "is_japan": 1,
-    "japan_cities": "일본 전역",
-    "region_category": "일본",
-    "created_at": "2026-10-30T18:14:11.055073+09:00",
-    "promo_status": "UPCOMING",
-    "promo_period_desc": "실시간 진행중",
     "promo_end": null
   }
 ]
