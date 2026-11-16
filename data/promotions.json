@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-13T11:14:29.939187+09:00",
-    "updated_at": "2026-11-16T07:13:40.125710+09:00"
+    "updated_at": "2026-11-16T11:27:46.352849+09:00"
   },
   {
     "id": "tway_2640",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-13T06:13:16.226737+09:00",
-    "updated_at": "2026-11-16T07:13:46.159222+09:00"
+    "updated_at": "2026-11-16T11:27:51.359740+09:00"
   },
   {
     "id": "tway_2636",
@@ -60,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-12T13:42:44.019404+09:00",
-    "updated_at": "2026-11-16T07:13:46.161734+09:00"
+    "updated_at": "2026-11-16T11:27:51.360593+09:00"
   },
   {
     "id": "jeju_0000004463",
@@ -81,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-10T16:55:36.633306+09:00",
-    "updated_at": "2026-11-16T07:13:40.129941+09:00"
+    "updated_at": "2026-11-16T11:27:46.355508+09:00"
   },
   {
     "id": "jeju_0000004411",
@@ -102,6 +102,27 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-02T12:05:46.140418+09:00",
-    "updated_at": "2026-11-16T07:13:40.133431+09:00"
+    "updated_at": "2026-11-16T11:27:46.356979+09:00"
+  },
+  {
+    "id": "tway_2637",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "2026 블랙 프라이데이",
+    "subtitle": "~2027년 10월 항공권 OPEN!",
+    "badge_text": "특가 프로모션",
+    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/BVOxHUd1R21za2JsjOL2Ow==/being/n",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/1109/7edc9759-fbc4-412c-8381-fae345a0e235.jpg",
+    "promo_start": null,
+    "promo_end": null,
+    "travel_period": "~2027년 10월 항공권 OPEN!",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "도쿄, 나리타, 하네다, 오사카, 간사이, 후쿠오카, 삿포로, 치토세, 나고야, 오키나와, 구마모토, 사가, 고베",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-11-16T11:27:50.659493+09:00",
+    "updated_at": "2026-11-16T11:27:50.659493+09:00"
   }
 ]
