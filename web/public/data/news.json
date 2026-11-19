@@ -1,5 +1,21 @@
 [
   {
+    "id": "news_e5b21fd03a53cde88869963e76797f3a",
+    "title": "[특징주] 트리니티항공, 한한령 완화 훈풍 속 11.28%↑…LCC 테마 강세 합...",
+    "summary": "31일까지 일본·대만·홍콩·싱가포르·호주·유럽·캐나다 현지 홈페이지와 애플리케이션에서 항공권 7~9% 할인 프로모션을 진행한다고 밝혔다. 다만 시장 일각에서는 이번 합의를 즉각적인 규제 해제로 단정하기에는...",
+    "source": "와이드경제",
+    "link": "https://www.widedaily.com/news/articleView.html?idxno=304115",
+    "published_at": "2026-11-19",
+    "airline": "티웨이항공",
+    "is_japan": 1,
+    "japan_cities": "일본 전역",
+    "region_category": "일본",
+    "created_at": "2026-11-19T11:14:20.291975+09:00",
+    "promo_status": "ACTIVE",
+    "promo_period_desc": "실시간 진행중",
+    "promo_end": null
+  },
+  {
     "id": "news_45b31def5fe8fb6f9fbf20665edfdc28",
     "title": "트리니티항공, 페이팔 결제 시 항공권 최대 9% 할인…해외 고객 대상",
     "summary": "트리니티항공은 한국을 방문하는 해외 여행객의 항공권 결제 편의를 높이기 위해 이번 프로모션을 마련했다고 18일 밝혔다. 행사는 오는 12월 31일까지 일본·대만·홍콩·싱가포르·호주·유럽·캐나다 등 7개 지역의...",
@@ -893,22 +909,6 @@
     "created_at": "2026-11-07T01:28:19.455592+09:00",
     "promo_status": "ACTIVE",
     "promo_period_desc": "겨울·온천 시즌 특가",
-    "promo_end": null
-  },
-  {
-    "id": "news_ec036691611d324fe5a5cbd79dbfdeee",
-    "title": "\"아직 늦지 않았다\" 11월 화·수요일 출발 항공권, 1년 중 가장 싸다",
-    "summary": "여름 휴가철 동남아·일본 항공권의 평균 가격이다. 같은 노선이 11월에는 10만~20만 원대로 떨어진다는... 공휴일이 하나도 없는 11월은 직장인과 가족 단위 여행객 수요가 급감해, 항공사들이 빈 좌석을 채우기 위해 특가...",
-    "source": "인사이트",
-    "link": "https://www.insight.co.kr/news/580681",
-    "published_at": "2026-11-04",
-    "airline": "일본 노선 항공사",
-    "is_japan": 1,
-    "japan_cities": "일본 전역",
-    "region_category": "일본",
-    "created_at": "2026-11-04T20:43:31.312058+09:00",
-    "promo_status": "ACTIVE",
-    "promo_period_desc": "10~12월 출발 특가",
     "promo_end": null
   }
 ]
