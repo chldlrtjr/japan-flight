@@ -1,5 +1,47 @@
 [
   {
+    "id": "tway_2644",
+    "airline": "티웨이항공",
+    "airline_code": "TWAY",
+    "title": "인천-나고야 신규 취항",
+    "subtitle": "2만원 쿠폰+8% 즉시 할인",
+    "badge_text": "쿠폰할인",
+    "detail_url": "https://www.trinityairways.com/app/promotion/event/retrieve/SsKueR48aiicuKUbxj17Tg==/being/n",
+    "image_url": "https://contents-image.trinityairways.com/contents/2026/1118/012422d4-995c-4b8a-9d28-5541400529b7.png",
+    "promo_start": "2026-11-23",
+    "promo_end": "2026-12-06",
+    "travel_period": "2026-11-23 ~ 2026-12-06",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "나고야",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-11-23T12:19:47.914363+09:00",
+    "updated_at": "2026-11-23T12:19:47.914363+09:00"
+  },
+  {
+    "id": "jeju_0000004448",
+    "airline": "제주항공",
+    "airline_code": "JEJU",
+    "title": "일본 센다이 신규취항 특가 [2탄]",
+    "subtitle": "최대 20% 할인코드",
+    "badge_text": "최대 20% 할인코드",
+    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004448",
+    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261110091327846.png",
+    "promo_start": "2026-11-23",
+    "promo_end": "2026-12-06",
+    "travel_period": "2026.11.23 ~ 2026.12.06",
+    "is_international": 1,
+    "region_category": "일본",
+    "destinations": "센다이",
+    "status": "ING",
+    "is_featured": 1,
+    "view_count": 0,
+    "created_at": "2026-11-23T12:19:42.012742+09:00",
+    "updated_at": "2026-11-23T12:19:43.358249+09:00"
+  },
+  {
     "id": "tway_2645",
     "airline": "티웨이항공",
     "airline_code": "TWAY",
@@ -18,7 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-20T10:29:22.938066+09:00",
-    "updated_at": "2026-11-23T07:12:52.141709+09:00"
+    "updated_at": "2026-11-23T12:19:48.560402+09:00"
   },
   {
     "id": "jeju_0000004456",
@@ -39,7 +81,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-13T11:14:29.939187+09:00",
-    "updated_at": "2026-11-23T07:12:47.485561+09:00"
+    "updated_at": "2026-11-23T12:19:43.363495+09:00"
   },
   {
     "id": "tway_2640",
@@ -81,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-12T13:42:44.019404+09:00",
-    "updated_at": "2026-11-23T07:12:52.145267+09:00"
+    "updated_at": "2026-11-23T12:19:48.563441+09:00"
   },
   {
     "id": "jeju_0000004411",
@@ -102,7 +144,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-02T12:05:46.140418+09:00",
-    "updated_at": "2026-11-23T07:12:47.488936+09:00"
+    "updated_at": "2026-11-23T12:19:43.367077+09:00"
   },
   {
     "id": "tway_2637",
@@ -123,6 +165,6 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-16T11:27:50.659493+09:00",
-    "updated_at": "2026-11-23T07:12:52.143871+09:00"
+    "updated_at": "2026-11-23T12:19:48.561977+09:00"
   }
 ]
