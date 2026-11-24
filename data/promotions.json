@@ -18,7 +18,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-23T12:19:47.914363+09:00",
-    "updated_at": "2026-11-24T20:44:55.448539+09:00"
+    "updated_at": "2026-11-25T06:39:46.665270+09:00"
   },
   {
     "id": "jeju_0000004448",
@@ -39,7 +39,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-23T12:19:42.012742+09:00",
-    "updated_at": "2026-11-24T20:44:49.921049+09:00"
+    "updated_at": "2026-11-25T06:39:38.213145+09:00"
   },
   {
     "id": "tway_2645",
@@ -60,28 +60,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-20T10:29:22.938066+09:00",
-    "updated_at": "2026-11-24T20:44:55.451442+09:00"
-  },
-  {
-    "id": "jeju_0000004456",
-    "airline": "제주항공",
-    "airline_code": "JEJU",
-    "title": "일본 전 노선 맛있는 특가",
-    "subtitle": "겨울방학 일본여행은 제주항공",
-    "badge_text": "겨울방학 일본여행은 제주항공",
-    "detail_url": "https://www.jejuair.net/ko/event/eventDetail.do?eventNo=0000004456",
-    "image_url": "https://static.jejuair.net/cms/images/event_scrn/20261112111102469.jpg",
-    "promo_start": "2026-11-13",
-    "promo_end": "2026-11-24",
-    "travel_period": "2026.11.13 ~ 2026.11.24",
-    "is_international": 1,
-    "region_category": "일본",
-    "destinations": "일본 전역",
-    "status": "ING",
-    "is_featured": 1,
-    "view_count": 0,
-    "created_at": "2026-11-13T11:14:29.939187+09:00",
-    "updated_at": "2026-11-24T10:19:38.880153+09:00"
+    "updated_at": "2026-11-25T06:39:46.666919+09:00"
   },
   {
     "id": "tway_2640",
@@ -123,7 +102,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-12T13:42:44.019404+09:00",
-    "updated_at": "2026-11-24T20:44:55.454489+09:00"
+    "updated_at": "2026-11-25T06:39:46.668689+09:00"
   },
   {
     "id": "jeju_0000004411",
@@ -144,7 +123,7 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-02T12:05:46.140418+09:00",
-    "updated_at": "2026-11-24T20:44:49.924737+09:00"
+    "updated_at": "2026-11-25T06:39:38.215141+09:00"
   },
   {
     "id": "tway_2637",
@@ -165,6 +144,6 @@
     "is_featured": 1,
     "view_count": 0,
     "created_at": "2026-11-16T11:27:50.659493+09:00",
-    "updated_at": "2026-11-24T20:44:55.453207+09:00"
+    "updated_at": "2026-11-25T06:39:46.667911+09:00"
   }
 ]

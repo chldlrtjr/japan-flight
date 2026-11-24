@@ -1,5 +1,21 @@
 [
   {
+    "id": "news_0fdc1ec840dedf8f17dab4ded9be56cc",
+    "title": "트리니티항공, 인천~나고야 취항 앞두고 할인",
+    "summary": "앞두고 항공권 할인 행사를 진행한다. 회사 홈페이지에 게시된 프로모션은 지난 23일부터 12월 6일까지... 일본 중부국제공항의 2026년 11월 발표 자료에도 트리니티항공의 인천 노선 신규 취항일이 12월 18일로...",
+    "source": "vegannews.co.kr",
+    "link": "https://www.vegannews.co.kr/news/article.html?no=410632",
+    "published_at": "2026-11-24",
+    "airline": "티웨이항공",
+    "is_japan": 1,
+    "japan_cities": "나고야",
+    "region_category": "일본",
+    "created_at": "2026-11-25T06:41:25.423622+09:00",
+    "promo_status": "UPCOMING",
+    "promo_period_desc": "10~12월 출발 특가",
+    "promo_end": null
+  },
+  {
     "id": "news_fd9694ecfc341fd1dfd8563c2f566602",
     "title": "에어서울, 일본 3개 노선 탑승객에 쇼핑 혜택 제공",
     "summary": "에어서울은 미쓰이 쇼핑 제휴와 코리아그랜드세일 참여 등 프로모션을 진행한다고 24일 밝혔다. 한국인 여행객에게는 일본 쇼핑 혜택을, 일본인 등 해외 여행객에게는 항공권 할인과 한국 관광 제휴 혜택을 제공한다....",
@@ -147,7 +163,7 @@
     "id": "news_7e983c83280087c3ffa5c1e087ccc0d7",
     "title": "[항공 레이더] 트리니티항공·에어서울, 겨울 여객 수요 공략…나고야 ...",
     "summary": "소노트리니티그룹 트리니티항공은 신규 회원 가입 시 웰컴 쿠폰팩과 발권 수수료 면제, 특가 소식 알림... 한국인 여행객에게는 일본 현지 쇼핑 혜택을, 일본인 여행객에게는 항공권 할인과 한국 관광 제휴 혜택을...",
-    "source": "thevaluenews.co.kr",
+    "source": "더밸류뉴스",
     "link": "http://www.thevaluenews.co.kr/news/view.php?idx=203617",
     "published_at": "2026-11-24",
     "airline": "티웨이항공",
